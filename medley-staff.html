@@ -392,7 +392,7 @@ async function pinSubmit() {
   if (!pinTarget || pinEntry.length !== 4) return;
   if (pinEntry === pinTarget.pin_hash) {
     ME = pinTarget;
-    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    saveSession();
     document.getElementById('pin-screen').style.display = 'none';
     launchApp();
   } else {
@@ -404,7 +404,7 @@ async function pinSubmit() {
 
 function logout() {
   ME = null;
-  sessionStorage.removeItem('medley-staff-session');
+  clearSession();
   clearInterval(refreshInterval);
   clearInterval(clockTimer);
   clearInterval(inactivityTimer);
@@ -1512,26 +1512,58 @@ function renderProfile() {
 async function uploadAvatar(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { showToast('Photo must be under 2MB'); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('Photo must be under 5MB'); return; }
+
+  // Show uploading state
+  const preview = document.getElementById('profile-avatar-preview');
+  if (preview) preview.innerHTML = `<div style="font-size:12px;color:var(--muted)">Uploading…</div>`;
+  showToast('Uploading photo…', 'ok');
+
   try {
-    const ext = file.name.split('.').pop();
+    const ext  = file.name.split('.').pop().toLowerCase() || 'jpg';
     const path = `${ME.id}.${ext}`;
-    const r = await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`, {
-      method: 'POST',
-      headers: {'apikey': SB.key, 'Authorization': `Bearer ${SB.key}`, 'Content-Type': file.type, 'x-upsert': 'true'},
+
+    // Use PUT with upsert header — works whether file exists or not
+    const uploadRes = await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`, {
+      method: 'PUT',
+      headers: {
+        'apikey': SB.key,
+        'Authorization': `Bearer ${SB.key}`,
+        'Content-Type': file.type || 'image/jpeg',
+        'x-upsert': 'true',
+        'cache-control': '3600'
+      },
       body: file
     });
-    if (!r.ok) throw new Error('Upload failed');
+
+    if (!uploadRes.ok) {
+      const errText = await uploadRes.text();
+      throw new Error(`Upload failed (${uploadRes.status}): ${errText.slice(0,100)}`);
+    }
+
+    // Add cache-busting timestamp to force browser to reload the new image
     const url = `${SB.url}/storage/v1/object/public/profile-pics/${path}?t=${Date.now()}`;
+
+    // Save URL to database
     await dbPatch('staff', ME.id, {avatar_url: url});
     ME.avatar_url = url;
-    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    saveSession();
+
+    // Update UI
     document.getElementById('tb-avatar').innerHTML = avatarHtml(ME, 30);
-    document.getElementById('profile-avatar-preview').innerHTML = `<img src="${url}">`;
-    // Refresh staff list cache
-    const idx = ALL_STAFF.findIndex(s=>s.id===ME.id);
-    if (idx>=0) ALL_STAFF[idx].avatar_url = url;
-  } catch(e) { showToast('Error uploading photo: ' + e.message); }
+    if (preview) preview.innerHTML = `<img src="${url}" style="width:100px;height:100px;border-radius:50%;object-fit:cover">`;
+
+    // Update staff list cache
+    const idx = ALL_STAFF.findIndex(s => s.id === ME.id);
+    if (idx >= 0) ALL_STAFF[idx].avatar_url = url;
+
+    showToast('Profile photo updated ✓', 'ok');
+    input.value = '';
+  } catch(e) {
+    showToast('Upload error: ' + e.message);
+    // Restore previous avatar on failure
+    if (preview) preview.innerHTML = avatarHtml(ME, 100);
+  }
 }
 
 async function saveProfile() {
@@ -1543,7 +1575,7 @@ async function saveProfile() {
   try {
     await dbPatch('staff', ME.id, {name, email, phone, address});
     ME = {...ME, name, email, phone, address};
-    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    saveSession();
     document.getElementById('tb-name').textContent = ME.name.split(' ')[0];
     const idx = ALL_STAFF.findIndex(s=>s.id===ME.id);
     if (idx>=0) ALL_STAFF[idx] = {...ALL_STAFF[idx], name, email, phone, address};
@@ -1560,7 +1592,7 @@ async function changePIN() {
   try {
     await dbPatch('staff', ME.id, {pin_hash: np});
     ME.pin_hash = np;
-    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    saveSession();
     showMsg('profile-msg', '✓ PIN updated successfully!', 'ok');
     document.getElementById('new-pin').value = '';
     document.getElementById('confirm-pin').value = '';
@@ -1709,50 +1741,86 @@ function showMsg(id, msg, type) {
    SESSION SECURITY
    ══════════════════════════════════════ */
 
-// Clear session whenever user leaves the page
-// so returning to the URL always requires login
-window.addEventListener('pagehide', () => {
-  sessionStorage.removeItem('medley-staff-session');
-});
-
-// Also clear if page becomes hidden (tab switch, screen lock on phone)
-// Uses a 2-hour grace period — still requires re-login after 2hrs inactivity
-let lastActivity = Date.now();
+const SESSION_KEY  = 'medley-staff-session-v2';
+const SESSION_MS   = 15 * 60 * 1000; // 15 minutes
+const INACTIVITY_MS = 15 * 60 * 1000;
+let lastActivity   = Date.now();
 let inactivityTimer = null;
-const INACTIVITY_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+function saveSession() {
+  if (!ME) return;
+  localStorage.setItem(SESSION_KEY, JSON.stringify({
+    staff: ME,
+    savedAt: Date.now()
+  }));
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const {staff, savedAt} = JSON.parse(raw);
+    if (!staff || !savedAt) return null;
+    // Expire after 15 minutes of inactivity
+    if (Date.now() - savedAt > SESSION_MS) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return staff;
+  } catch(e) { return null; }
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
 
 function resetInactivity() {
   lastActivity = Date.now();
+  // Refresh the session timestamp on activity so it extends to 15 mins from now
+  if (ME) saveSession();
 }
 
 function startInactivityWatch() {
-  ['click','touchstart','keydown','scroll'].forEach(e =>
-    document.addEventListener(e, resetInactivity, {passive:true})
+  ['click','touchstart','keydown','scroll'].forEach(ev =>
+    document.addEventListener(ev, resetInactivity, {passive:true})
   );
   inactivityTimer = setInterval(() => {
     if (ME && Date.now() - lastActivity > INACTIVITY_MS) {
-      showToast('You have been signed out due to inactivity.');
+      showToast('Signed out due to inactivity — please log in again.');
       logout();
     }
-  }, 60000); // check every minute
+  }, 60000);
 }
-
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && ME) {
-    // Page hidden — clear session so returning requires login
-    sessionStorage.removeItem('medley-staff-session');
-  }
-});
 
 /* ══════════════════════════════════════
    INIT
    ══════════════════════════════════════ */
 async function init() {
-  // Always start at login screen — don't restore session
-  // This ensures every visit to the page requires login
+  // Check for valid saved session (within 15 mins)
+  const saved = loadSession();
+  if (saved) {
+    try {
+      ALL_STAFF = await dbGet('staff', 'is_active=eq.true&order=name.asc');
+      // Refresh ME from DB in case rate/role changed
+      const fresh = ALL_STAFF.find(s => s.id === saved.id);
+      ME = fresh || saved;
+      saveSession(); // refresh timestamp
+      document.getElementById('login-screen').style.display = 'none';
+      launchApp();
+      return;
+    } catch(e) {
+      // If DB fetch fails, still restore session from local data
+      ME = saved;
+      ALL_STAFF = [saved]; // minimal fallback
+      document.getElementById('login-screen').style.display = 'none';
+      launchApp();
+      return;
+    }
+  }
+
+  // No valid session — show login
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
-  sessionStorage.removeItem('medley-staff-session');
   loadStaffList();
 }
 
