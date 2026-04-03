@@ -959,28 +959,63 @@ async function renderTimesheets() {
     html += `<div class="card" style="border-left:4px solid var(--orange)">
       <div class="card-title" style="color:var(--orange)">⏳ Shifts Pending Approval (${pendingShifts.length})</div>
       <table class="data-table"><thead><tr>
-        <th>Staff</th><th>Date</th><th>Submitted In</th><th>Out</th><th>Reason</th><th>Actions</th>
+        <th>Staff</th><th>Date</th><th>Start</th><th>Finish</th><th>Break</th><th>Hrs</th><th>Reason</th><th>Actions</th>
       </tr></thead><tbody>`;
 
     pendingShifts.forEach(s => {
-      const st = ALL_STAFF.find(m => m.id === s.staff_id);
-      html += `<tr style="background:#fffbf0">
-        <td><strong>${st ? st.name : 'Unknown'}</strong></td>
-        <td>${fmtDate(s.clock_in)}</td>
-        <td>${fmtTime(s.clock_in)}</td>
-        <td>${s.clock_out ? fmtTime(s.clock_out) : '<span class="badge pending">Not clocked out</span>'}</td>
-        <td style="font-size:12px;color:var(--muted)">${s.notes || '—'}</td>
-        <td style="white-space:nowrap">
-          <button class="btn-teal" style="font-size:11px;padding:4px 10px" onclick="approveShift('${s.id}')">✓ Approve</button>
-          <button class="btn-sm" style="margin-left:4px" onclick="startEditShift('${s.id}')">✏️ Edit</button>
-          <button class="btn-danger" style="margin-left:4px" onclick="adminDeleteShift('${s.id}','${st ? st.name : 'this staff member'}')">🗑️</button>
-        </td>
-      </tr>`;
+      const st      = ALL_STAFF.find(m => m.id === s.staff_id);
+      const isEditing = editingShiftId === s.id;
+      const date    = s.clock_in ? s.clock_in.slice(0,10) : '';
+      const inTime  = s.clock_in  ? new Date(s.clock_in).toTimeString().slice(0,5)  : '';
+      const outTime = s.clock_out ? new Date(s.clock_out).toTimeString().slice(0,5) : '';
+      const hrs     = parseFloat(s.total_hours||0);
+
+      if (isEditing) {
+        html += `<tr style="background:#fffbf0;border-left:3px solid var(--orange)">
+          <td><strong>${st ? st.name : 'Unknown'}</strong></td>
+          <td><input type="date" id="es-date" value="${date}"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:130px"></td>
+          <td><input type="time" id="es-in" value="${inTime}"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:13px;width:95px;font-weight:700"
+            onchange="previewEditHours()"></td>
+          <td><input type="time" id="es-out" value="${outTime}"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:13px;width:95px;font-weight:700"
+            onchange="previewEditHours()"></td>
+          <td><input type="number" id="es-break" value="${s.break_minutes||0}" min="0" max="480"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:12px;width:50px"
+            onchange="previewEditHours()">m</td>
+          <td><span id="es-preview" style="color:var(--teal);font-weight:700">${hrs.toFixed(2)}</span>h</td>
+          <td><input type="text" id="es-notes" value="${s.notes||''}" placeholder="Reason"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:120px"></td>
+          <td style="white-space:nowrap;vertical-align:middle">
+            <button class="btn-teal" style="font-size:11px;padding:4px 8px"
+              onclick="saveEditShift('${s.id}','${s.staff_id}',false)">Save</button>
+            <button class="btn-teal" style="font-size:11px;padding:4px 8px;background:var(--good);margin-left:3px"
+              onclick="saveEditShift('${s.id}','${s.staff_id}',true)">Save & ✓ Approve</button>
+            <button class="btn-sm" style="margin-left:3px" onclick="editingShiftId=null;setTab('timesheets')">✕</button>
+          </td>
+        </tr>`;
+      } else {
+        html += `<tr style="background:#fffbf0">
+          <td><strong>${st ? st.name : 'Unknown'}</strong></td>
+          <td>${fmtDate(s.clock_in)}</td>
+          <td><strong>${fmtTime(s.clock_in)}</strong></td>
+          <td>${s.clock_out ? `<strong>${fmtTime(s.clock_out)}</strong>` : '<span class="badge pending">Not clocked out</span>'}</td>
+          <td>${s.break_minutes||0}m</td>
+          <td>${hrs > 0 ? hrs.toFixed(2)+'h' : '—'}</td>
+          <td style="font-size:12px;color:var(--muted);max-width:180px">${s.notes || '—'}</td>
+          <td style="white-space:nowrap">
+            <button class="btn-teal" style="font-size:11px;padding:4px 8px" onclick="approveShift('${s.id}')">✓ Approve</button>
+            <button class="btn-sm" style="margin-left:3px" onclick="startEditShift('${s.id}')">✏️ Edit</button>
+            <button class="btn-danger" style="margin-left:3px" onclick="adminDeleteShift('${s.id}','${st ? st.name : 'this staff member'}')">🗑️</button>
+          </td>
+        </tr>`;
+      }
     });
 
     html += `</tbody></table>
       <div style="font-size:11px;color:var(--muted);margin-top:8px">
-        Approve to confirm hours as submitted, Edit to adjust times, or Delete if incorrect.
+        ✏️ Edit to correct times · ✓ Approve to confirm · Save &amp; Approve to do both at once
       </div>
     </div>`;
   }
@@ -1111,7 +1146,7 @@ function previewEditHours() {
   preview.textContent = hrs.toFixed(2);
 }
 
-async function saveEditShift(shiftId, staffId) {
+async function saveEditShift(shiftId, staffId, approve = false) {
   const date  = document.getElementById('es-date').value;
   const inT   = document.getElementById('es-in').value;
   const outT  = document.getElementById('es-out').value;
@@ -1133,7 +1168,7 @@ async function saveEditShift(shiftId, staffId) {
       total_hours: totalHours.toFixed(2),
       adjusted_by: ME.id,
       notes,
-      status: clockOut ? 'completed' : 'clocked_in'
+      status: approve ? 'completed' : 'pending_approval'
     });
     editingShiftId = null;
     setTab('timesheets');
