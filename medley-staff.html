@@ -1007,7 +1007,7 @@ async function renderTimesheets() {
           <td style="white-space:nowrap">
             <button class="btn-teal" style="font-size:11px;padding:4px 8px" onclick="approveShift('${s.id}')">✓ Approve</button>
             <button class="btn-sm" style="margin-left:3px" onclick="startEditShift('${s.id}')">✏️ Edit</button>
-            <button class="btn-danger" style="margin-left:3px" onclick="adminDeleteShift('${s.id}','${st ? st.name : 'this staff member'}')">🗑️</button>
+            <button class="btn-danger" style="margin-left:3px" onclick="adminDeleteShift('${s.id}')">🗑️</button>
           </td>
         </tr>`;
       }
@@ -1096,7 +1096,7 @@ async function renderTimesheets() {
           <td>${s.clock_out ? statusBadge : ''}</td>
           ${isSuperAdmin() ? `<td style="white-space:nowrap">
             <button class="btn-sm" onclick="startEditShift('${s.id}')">✏️ Edit</button>
-            <button class="btn-danger" style="margin-left:4px" onclick="adminDeleteShift('${s.id}','${st.name}')">🗑️</button>
+            <button class="btn-danger" style="margin-left:4px" onclick="adminDeleteShift('${s.id}')">🗑️</button>
           </td>` : ''}
         </tr>`;
       }
@@ -1175,9 +1175,12 @@ async function saveEditShift(shiftId, staffId, approve = false) {
   } catch(e) { alert('Error saving: ' + e.message); }
 }
 
-async function adminDeleteShift(shiftId, staffName) {
-  if (!confirm(`Delete this shift for ${staffName}?\n\nThis cannot be undone.`)) return;
+async function adminDeleteShift(shiftId) {
   try {
+    const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
+    const st = shift ? ALL_STAFF.find(s => s.id === shift.staff_id) : null;
+    const name = st ? st.name : 'this staff member';
+    if (!confirm(`Delete this shift for ${name}?\n\nThis cannot be undone.`)) return;
     await dbDelete('shifts', shiftId);
     if (editingShiftId === shiftId) editingShiftId = null;
     setTab('timesheets');
