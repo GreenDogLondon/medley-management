@@ -547,17 +547,29 @@ async function renderClock(){
     <button class="clock-btn out" id="clock-out-btn" onclick="doClockOut('${active.id}','${todayStr}')">CLOCK<br>OUT</button>
     ${isPending?`<div style="margin-top:16px"><button class="btn-sm" style="border-color:#fca5a5;color:var(--bad)" onclick="cancelPending('${active.id}')">✕ Cancel this entry</button></div>`:''}`;
   }else{
-    h+=`<div style="max-width:320px;margin:0 auto 24px;text-align:left">
-      <div class="form-group"><label>Your start time</label>
-        <input type="time" id="clock-in-time" value="${nowTime}" style="width:100%;height:48px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:18px;font-weight:700">
+    h+=`<div style="max-width:340px;margin:0 auto 24px;text-align:left">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="clock-in-date" value="${todayStr}" max="${todayStr}"
+          style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:15px"
+          onchange="checkRotaMatch()">
       </div>
-      <div class="form-group" style="margin-top:12px"><label>Notes (required if entering a past time)</label>
-        <input type="text" id="clock-in-notes" placeholder="e.g. Forgot to clock in at 10am" style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px">
+      <div class="form-group" style="margin-top:12px">
+        <label>Your start time</label>
+        <input type="time" id="clock-in-time" value="${nowTime}"
+          style="width:100%;height:48px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:18px;font-weight:700"
+          onchange="checkRotaMatch()">
       </div>
+      <div class="form-group" style="margin-top:12px" id="notes-group">
+        <label id="notes-label">Notes <span style="font-weight:400;font-size:11px;text-transform:none;color:var(--muted)" id="notes-hint">(optional)</span></label>
+        <input type="text" id="clock-in-notes" placeholder="Any notes for your manager"
+          style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px">
+      </div>
+      <div id="rota-match-msg" style="font-size:12px;margin-top:6px"></div>
     </div>
-    <button class="clock-btn in" id="clock-in-btn" onclick="doClockIn('${todayStr}')">CLOCK<br>IN</button>
+    <button class="clock-btn in" id="clock-in-btn" onclick="doClockIn()">CLOCK<br>IN</button>
     <div style="font-size:12px;color:var(--muted);margin-top:14px;max-width:300px;margin-left:auto;margin-right:auto">
-      Current time pre-filled. Edit if needed.<br>A manager will confirm your hours.
+      You can enter shifts from 1st April onwards.<br>A manager will confirm your hours.
     </div>`;
   }
   h+=`</div>`;
@@ -574,25 +586,82 @@ async function renderClock(){
   return h;
 }
 function startClockTimer(){clearInterval(clockTimer);clockTimer=setInterval(()=>{const el=document.getElementById('live-clock');if(el)el.textContent=fmtHHMM(new Date());},1000);}
-async function doClockIn(dateStr){
+/* ── Rota match check — runs when date or time changes ── */
+async function checkRotaMatch(){
+  const date=document.getElementById('clock-in-date')?.value;
+  const time=document.getElementById('clock-in-time')?.value;
+  const hint=document.getElementById('notes-hint');
+  const msg=document.getElementById('rota-match-msg');
+  const notesInput=document.getElementById('clock-in-notes');
+  if(!date||!time||!hint||!msg)return;
+
+  // Check rota for this staff member on this date
+  try{
+    const rota=await dbGet('rota',`staff_id=eq.${ME.id}&date=eq.${date}`);
+    if(!rota||!rota.length){
+      // No rota entry — note required if not today's current time
+      const isToday=date===new Date().toISOString().slice(0,10);
+      const diffMins=(Date.now()-new Date(`${date}T${time}:00`))/60000;
+      if(isToday&&diffMins<15){
+        hint.textContent='(optional)';hint.style.color='var(--muted)';
+        msg.innerHTML='';
+        notesInput.required=false;
+      }else{
+        hint.textContent='(required — no rota found for this date)';hint.style.color='var(--warn)';
+        msg.innerHTML=`<span style="color:var(--warn)">⚠️ No rota shift found for ${fmtDateShort(date)} — please add a note explaining your hours.</span>`;
+        notesInput.required=true;
+      }
+      return;
+    }
+    // Has rota — check if entered time matches within 15 mins
+    const rotaStart=rota[0].start_time.slice(0,5); // HH:MM
+    const [rh,rm]=rotaStart.split(':').map(Number);
+    const [th,tm]=time.split(':').map(Number);
+    const diffWithRota=Math.abs((th*60+tm)-(rh*60+rm));
+    if(diffWithRota<=15){
+      hint.textContent='(optional — matches your rota ✓)';hint.style.color='var(--good)';
+      msg.innerHTML=`<span style="color:var(--good)">✓ Matches your rota start time of ${rotaStart}</span>`;
+      notesInput.required=false;
+    }else{
+      hint.textContent=`(required — rota shows ${rotaStart})`;hint.style.color='var(--warn)';
+      msg.innerHTML=`<span style="color:var(--warn)">⚠️ Your rota start is ${rotaStart} — please add a note if your time differs.</span>`;
+      notesInput.required=true;
+    }
+  }catch(e){
+    // Silently fail — don't block clock in on rota check error
+    hint.textContent='(optional)';hint.style.color='var(--muted)';
+  }
+}
+
+async function doClockIn(){
+  const date=document.getElementById('clock-in-date')?.value||new Date().toISOString().slice(0,10);
   const tv=(document.getElementById('clock-in-time')?.value||'').trim();
   const notes=(document.getElementById('clock-in-notes')?.value||'').trim();
+  const notesRequired=document.getElementById('clock-in-notes')?.required;
   const btn=document.getElementById('clock-in-btn');
   if(!tv){showToast('Please enter your start time.');return;}
-  const entered=new Date(`${dateStr}T${tv}:00`);
-  if((Date.now()-entered)/60000>10&&!notes){showToast('Entering a past time — please add a note explaining why');return;}
+  if(notesRequired&&!notes){
+    showToast('Please add a note explaining your hours for this shift.');
+    document.getElementById('clock-in-notes')?.focus();
+    return;
+  }
   if(btn){btn.textContent='Saving…';btn.disabled=true;btn.style.opacity='.7';}
+  const entered=new Date(`${date}T${tv}:00`);
   try{
     await dbPost('shifts',{staff_id:ME.id,clock_in:entered.toISOString(),status:'pending_approval',notes:notes||null});
+    const isToday=date===new Date().toISOString().slice(0,10);
     document.getElementById('content').innerHTML=`
       <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
-        <div style="font-size:64px;margin-bottom:16px">🟢</div>
-        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">You're Clocked In!</div>
+        <div style="font-size:64px;margin-bottom:16px">${isToday?'🟢':'📋'}</div>
+        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">${isToday?"You're Clocked In!":'Shift Submitted!'}</div>
         <div style="font-size:15px;color:var(--muted);margin-bottom:24px">
-          Started at <strong>${tv}</strong><br>${notes?`Note: <em>${notes}</em><br>`:''}
+          ${isToday?'Started at':'Shift logged for'} <strong>${isToday?tv:fmtDateShort(date)+' at '+tv}</strong><br>
+          ${notes?`Note: <em>${notes}</em><br>`:''}
           <span style="color:var(--warn);font-weight:600">Awaiting manager approval</span>
         </div>
-        <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">View Clock In/Out</button>
+        <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
+          ${isToday?'View Clock In/Out':'Log another shift'}
+        </button>
       </div>`;
   }catch(e){
     showToast('Clock in failed: '+e.message);
@@ -1000,12 +1069,25 @@ async function uploadAvatar(input){
   try{
     const ext=file.name.split('.').pop().toLowerCase()||'jpg';
     const path=`${ME.id}.${ext}`;
-    const r=await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`,{
-      method:'PUT',
-      headers:{'apikey':SB.jwt,'Authorization':'Bearer '+SB.jwt,'Content-Type':file.type||'image/jpeg','x-upsert':'true','cache-control':'3600'},
-      body:file
-    });
-    if(!r.ok){const tx=await r.text();throw new Error(`${r.status}: ${tx.slice(0,100)}`);}
+    // Try both keys — newer Supabase projects use publishable key for storage
+    let uploaded=false;
+    for(const key of [SB.key, SB.jwt]){
+      const r=await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`,{
+        method:'PUT',
+        headers:{'apikey':key,'Authorization':'Bearer '+key,'Content-Type':file.type||'image/jpeg','x-upsert':'true'},
+        body:file
+      });
+      if(r.ok){uploaded=true;break;}
+      if(key===SB.key){
+        // First key failed, log and try second
+        const tx=await r.text();
+        console.warn('Key 1 failed:',r.status,tx.slice(0,100));
+      } else {
+        const tx=await r.text();
+        throw new Error(`Upload ${r.status}: ${tx.slice(0,120)}`);
+      }
+    }
+    if(!uploaded)throw new Error('Both keys failed for upload');
     const url=`${SB.url}/storage/v1/object/public/profile-pics/${path}?t=${Date.now()}`;
     await dbPatch('staff',ME.id,{avatar_url:url});
     ME.avatar_url=url;saveSession();
