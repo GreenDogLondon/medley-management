@@ -254,20 +254,24 @@ function hWrite(key) {
   };
 }
 
-// Try publishable key first, fall back to JWT
+// Try publishable key first, fall back to JWT — 10s timeout on all calls
 async function sbFetch(method, table, opts = {}) {
   const {query = '', data} = opts;
   const url = `${SB.url}/rest/v1/${table}${query ? '?' + query : ''}`;
 
   for (const key of [SB.key, SB.jwt]) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
     try {
       const headers = (method === 'GET' || method === 'DELETE') ? hGet(key) : hWrite(key);
       const r = await fetch(url, {
         method,
         headers,
+        signal: controller.signal,
         body: data ? JSON.stringify(data) : undefined
       });
-      if (r.status === 401 || r.status === 403) continue; // try next key
+      clearTimeout(timer);
+      if (r.status === 401 || r.status === 403) continue;
       if (!r.ok) {
         const txt = await r.text();
         throw new Error(`HTTP ${r.status}: ${txt.slice(0,200)}`);
@@ -275,8 +279,9 @@ async function sbFetch(method, table, opts = {}) {
       const txt = await r.text();
       return txt ? JSON.parse(txt) : null;
     } catch(e) {
+      clearTimeout(timer);
+      if (e.name === 'AbortError') throw new Error('Request timed out — check your connection');
       if (e.message.startsWith('HTTP')) throw e;
-      // Network error — try next key
       if (key === SB.jwt) throw new Error(`Network error: ${e.message}`);
     }
   }
@@ -425,6 +430,7 @@ function launchApp() {
   let tabs = [];
   if (isSuperAdmin() || isManager()) {
     tabs = [
+      {id:'home',label:'📢 Home'},
       {id:'dashboard',label:'🏠 Dashboard'},
       {id:'clock',label:'🕐 Clock In/Out'},
       {id:'rota',label:'📅 Rota'},
@@ -436,6 +442,7 @@ function launchApp() {
     if (isSuperAdmin()) tabs.push({id:'staff-admin',label:'👥 Staff'});
   } else {
     tabs = [
+      {id:'home',label:'📢 Home'},
       {id:'clock',label:'🕐 Clock In/Out'},
       {id:'my-shifts',label:'📊 My Shifts'},
       {id:'rota',label:'📅 My Rota'},
@@ -479,6 +486,7 @@ async function render() {
   content.innerHTML = '<div class="loading">Loading…</div>';
   try {
     switch(activeTab) {
+      case 'home':        content.innerHTML = await renderHome(); break;
       case 'dashboard':   content.innerHTML = await renderDashboard(); break;
       case 'clock':       content.innerHTML = await renderClock(); startClockTimer(); break;
       case 'my-shifts':   content.innerHTML = await renderMyShifts(); break;
@@ -493,6 +501,115 @@ async function render() {
   } catch(e) {
     content.innerHTML = `<div class="alert err">Error loading: ${e.message}</div>`;
   }
+}
+
+/* ══════════════════════════════════════
+   HOME — Announcements
+   ══════════════════════════════════════ */
+async function renderHome() {
+  let announcements = [];
+  try {
+    announcements = await dbGet('announcements', 'order=created_at.desc&limit=20');
+  } catch(e) {
+    // Table may not exist yet — show setup prompt for admins
+  }
+
+  const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  let html = `
+    <div style="background:var(--teal);color:#fff;border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:20px;font-weight:900">${greeting()}, ${ME.name.split(' ')[0]} 👋</div>
+        <div style="opacity:.8;font-size:13px;margin-top:2px">The Medley · Season 2026</div>
+      </div>
+      <button class="btn-teal" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3)" onclick="setTab('clock')">
+        🕐 Clock In / Out
+      </button>
+    </div>`;
+
+  // Post announcement (managers+)
+  if (isManager()) {
+    html += `<div class="card" style="margin-bottom:14px">
+      <div class="card-title">📢 Post Announcement</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Title</label>
+          <input id="ann-title" placeholder="e.g. Staff meeting this Sunday" style="font-weight:600">
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="ann-body" placeholder="Write your announcement here…" style="height:80px;resize:vertical"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+        <select id="ann-priority" style="height:36px;border:1.5px solid var(--border);border-radius:8px;padding:0 10px;font-size:13px">
+          <option value="normal">📌 Normal</option>
+          <option value="important">⚠️ Important</option>
+          <option value="urgent">🚨 Urgent</option>
+        </select>
+        <button class="btn-teal" onclick="postAnnouncement()">Post to all staff</button>
+      </div>
+    </div>`;
+  }
+
+  // Announcements feed
+  html += `<div class="card"><div class="card-title">📢 Announcements</div>`;
+
+  if (!announcements.length) {
+    html += `<div class="empty"><div class="empty-icon">📢</div>No announcements yet</div>`;
+  } else {
+    announcements.forEach(a => {
+      const poster = ALL_STAFF.find(s => s.id === a.posted_by);
+      const bg  = a.priority === 'urgent' ? '#fdeaea' : a.priority === 'important' ? '#fef3e2' : 'var(--teal-l)';
+      const col = a.priority === 'urgent' ? 'var(--bad)' : a.priority === 'important' ? 'var(--warn)' : 'var(--teal)';
+      const icon = a.priority === 'urgent' ? '🚨' : a.priority === 'important' ? '⚠️' : '📌';
+      html += `<div style="background:${bg};border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid ${col}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <div style="font-weight:800;font-size:15px;color:${col}">${icon} ${a.title}</div>
+          ${isSuperAdmin() ? `<button class="del-btn" onclick="deleteAnnouncement('${a.id}')" style="flex-shrink:0">✕</button>` : ''}
+        </div>
+        <div style="font-size:14px;color:var(--text);margin:8px 0;line-height:1.5">${a.body}</div>
+        <div style="font-size:11px;color:var(--muted)">
+          ${poster ? poster.name : 'Management'} · ${fmtDateShort(a.created_at.slice(0,10))} ${new Date(a.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+        </div>
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+async function postAnnouncement() {
+  const title    = (document.getElementById('ann-title')?.value || '').trim();
+  const body     = (document.getElementById('ann-body')?.value  || '').trim();
+  const priority = document.getElementById('ann-priority')?.value || 'normal';
+  if (!title) { showToast('Please add a title.'); return; }
+  if (!body)  { showToast('Please write a message.'); return; }
+  try {
+    await dbPost('announcements', {title, body, priority, posted_by: ME.id});
+    showToast('Announcement posted ✓', 'ok');
+    setTab('home');
+  } catch(e) {
+    if (e.message.includes('relation') || e.message.includes('does not exist')) {
+      showToast('Run the announcements SQL in Supabase first — see setup instructions.');
+    } else {
+      showToast('Error: ' + e.message);
+    }
+  }
+}
+
+async function deleteAnnouncement(id) {
+  if (!await showConfirm('Delete this announcement?')) return;
+  try {
+    await dbDelete('announcements', id);
+    setTab('home');
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 /* ══════════════════════════════════════
@@ -684,8 +801,20 @@ async function doClockIn(dateStr) {
       status:   'pending_approval',
       notes:    notes || null
     });
-    showToast('Clocked in ✓ — awaiting manager approval', 'ok');
-    setTimeout(() => render(), 800);
+    // Show success immediately — no refetch
+    document.getElementById('content').innerHTML = `
+      <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
+        <div style="font-size:64px;margin-bottom:16px">🟢</div>
+        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">You're Clocked In!</div>
+        <div style="font-size:15px;color:var(--muted);margin-bottom:24px">
+          Started at <strong>${timeVal}</strong><br>
+          ${notes ? `Note: <em>${notes}</em><br>` : ''}
+          <span style="color:var(--warn);font-weight:600">Awaiting manager approval</span>
+        </div>
+        <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
+          View Clock In/Out
+        </button>
+      </div>`;
   } catch(e) {
     showToast('Clock in failed: ' + e.message);
     if (btn) { btn.innerHTML = 'CLOCK<br>IN'; btn.disabled = false; btn.style.opacity = '1'; }
@@ -750,13 +879,31 @@ async function doClockOut(shiftId, dateStr) {
       status:        'pending_approval'
     });
 
-    showToast('Clocked out ✓ — awaiting manager approval', 'ok');
-    setTimeout(() => render(), 1000);
+    // Show success screen immediately — no Supabase refetch needed
+    showShiftComplete(timeVal, totalHours);
 
   } catch(e) {
     showToast('Clock out failed: ' + e.message);
     resetBtn();
   }
+}
+
+function showShiftComplete(finishTime, hours) {
+  document.getElementById('content').innerHTML = `
+    <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
+      <div style="font-size:64px;margin-bottom:16px">✅</div>
+      <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">Shift Complete!</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:24px">
+        Clocked out at <strong>${finishTime}</strong><br>
+        <strong>${hours.toFixed(2)} hours</strong> logged — awaiting manager approval
+      </div>
+      <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:24px">
+        Your hours will appear in your timesheet once a manager confirms them.
+      </div>
+      <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('dashboard')">
+        Back to Dashboard
+      </button>
+    </div>`;
 }
 
 async function getOpenShift(staffId) {
