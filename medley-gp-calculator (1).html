@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Medley — GP & Cost Calculator</title>
+<style>
+:root {
+  --teal:#1a6b5a; --teal-l:#e8f4f1; --teal-d:#134f43;
+  --orange:#e8571a; --orange-l:#fdf0ea;
+  --good:#1a6b5a; --good-bg:#e8f4f1;
+  --mid:#8a5200; --mid-bg:#fef3e2;
+  --bad:#a32d2d; --bad-bg:#fdeaea;
+  --bg:#f7f8f6; --bg2:#ffffff; --border:#dde5e2;
+  --text:#1a2620; --muted:#7a8f89; --small:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+
+/* ── Top bar ── */
+.topbar{background:var(--teal);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.brand{font-weight:800;font-size:17px;letter-spacing:0.04em}
+.brand em{color:#a8d9cf;font-style:normal;font-weight:400;font-size:13px;margin-left:10px}
+.inv-badge{background:rgba(255,255,255,.15);font-size:11px;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
+
+/* ── Nav tabs ── */
+nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 16px;position:sticky;top:45px;z-index:99}
+.navtab{border:none;background:none;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.15s}
+.navtab:hover{color:var(--teal)}
+.navtab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
+
+/* ── Content ── */
+#content{padding:16px 20px;max-width:1200px;margin:0 auto}
+
+/* ── Tab header ── */
+.tab-header{margin-bottom:14px}
+.tab-title{font-size:16px;font-weight:800;color:var(--teal)}
+.tab-sub{font-size:11px;color:var(--muted);margin-top:3px;display:block}
+
+/* ── Master table ── */
+.master-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.master-bar input,.master-bar select{height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;color:var(--text)}
+.master-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.master-table thead tr{background:var(--teal);color:#fff}
+.master-table thead th{padding:8px 10px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.master-table th.num,.master-table td.num{text-align:right}
+.master-table tbody tr{border-bottom:1px solid var(--border);transition:.1s}
+.master-table tbody tr:hover{background:var(--teal-l)}
+.master-table tbody tr.editing-row{background:#fffbf5;border-left:3px solid var(--orange)}
+.master-table td{padding:7px 10px;vertical-align:middle}
+.master-table td input{border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:12px;width:100%}
+.table-footer{font-size:11px;color:var(--muted);margin-top:6px;padding-left:4px}
+.cat-badge{background:var(--teal-l);color:var(--teal);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;white-space:nowrap}
+.cat-badge.ops{background:#f0ebfb;color:#5b3c99}
+.cat-badge.dry{background:var(--orange-l);color:var(--orange)}
+.teal-bold{color:var(--teal);font-weight:700}
+.bold{font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:11px}
+
+/* ── Buttons ── */
+.btn-teal{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
+.btn-teal:hover{background:var(--teal-d)}
+.btn-sm{border:1px solid var(--border);background:#fff;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:11px;color:var(--text)}
+.btn-sm:hover{border-color:var(--teal);color:var(--teal)}
+.btn-sm.del{border-color:#fca5a5;color:var(--bad)}
+.btn-sm.del:hover{background:#fdeaea}
+.del-btn{border:none;background:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
+.del-btn:hover{color:var(--bad)}
+.actions{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap}
+
+/* ── GP Metrics ── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.metric{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.ml{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.mv{font-size:22px;font-weight:800;color:var(--teal);line-height:1.2;margin:3px 0}
+.mv.small-text{font-size:14px;margin:4px 0}
+.ms{font-size:11px;color:var(--muted)}
+.target-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--muted)}
+.target-row input[type=range]{width:140px;accent-color:var(--teal)}
+.tv{font-weight:700;color:var(--teal);min-width:36px}
+
+/* ── GP table ── */
+.gp-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.gp-table colgroup col{}
+.gp-table thead tr{background:var(--teal);color:#fff}
+.gp-table thead th{padding:8px 10px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.gp-table th.num,.gp-table td.num{text-align:right}
+.gp-row{cursor:pointer;transition:.1s}
+.gp-row:hover{background:var(--teal-l)}
+.gp-row.expanded{background:var(--teal-l)}
+.gp-table td{padding:8px 10px;vertical-align:middle;border-bottom:1px solid var(--border)}
+.xi{color:var(--teal);font-size:10px;margin-right:6px;opacity:.7}
+.sell-in{width:62px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px;font-weight:600;color:var(--teal)}
+.psym{color:var(--muted);font-size:11px;margin-right:1px}
+.pill{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.mid{background:var(--mid-bg);color:var(--mid)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+
+/* ── Recipe panel ── */
+.expand-row td{background:#f0f7f5;padding:0 !important;border-bottom:2px solid var(--teal)}
+.recipe-panel{padding:14px 20px}
+.recipe-header{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.recipe-table{width:100%;border-collapse:collapse;font-size:12px}
+.recipe-table thead th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;padding:4px 8px;border-bottom:1px solid var(--border)}
+.recipe-table th.num,.recipe-table td.num{text-align:right}
+.recipe-table td{padding:5px 8px;vertical-align:middle;border-bottom:1px solid #e8f0ee}
+.recipe-table tr:last-child td{border-bottom:none}
+.recipe-total td{background:rgba(26,107,90,.08);font-weight:700;padding:6px 8px}
+.master-tag{background:var(--teal-l);color:var(--teal);font-size:10px;padding:1px 5px;border-radius:3px;font-weight:700;font-family:monospace}
+.master-tag.custom{background:var(--orange-l);color:var(--orange)}
+.qty-in{width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px}
+.cost-in{width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px}
+
+/* ── Add ingredient ── */
+.add-ing-section{margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)}
+.add-ing-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.add-ing-row select,.add-ing-row input{height:28px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px;color:var(--text)}
+.form-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;font-weight:600}
+.ing-preview{font-size:12px;font-weight:700;color:var(--teal);min-width:70px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .master-table td:nth-child(2),.master-table th:nth-child(2),
+  .master-table td:nth-child(4),.master-table th:nth-child(4){display:none}
+}
+
+/* ── Login screen ── */
+#login-screen{position:fixed;inset:0;background:var(--teal);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
+.login-box{background:#fff;border-radius:16px;padding:40px 44px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.login-logo{font-size:26px;font-weight:900;color:var(--teal);letter-spacing:.05em;margin-bottom:4px}
+.login-logo span{color:var(--orange)}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
+.login-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:left;display:block;margin-bottom:5px}
+.login-input{width:100%;height:42px;border:2px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;outline:none;transition:.2s;margin-bottom:10px}
+.login-input:focus{border-color:var(--teal)}
+.login-btn{width:100%;height:42px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;margin-top:4px}
+.login-btn:hover{background:var(--teal-d)}
+.login-error{color:var(--bad);font-size:12px;margin-top:8px;display:none}
+.login-hint{font-size:11px;color:var(--muted);margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ── Topbar enhancements ── */
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.save-status{font-size:11px;color:rgba(255,255,255,.7);white-space:nowrap}
+.save-status.ok{color:#a8d9cf}
+.tb-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s}
+.tb-btn:hover{background:rgba(255,255,255,.28)}
+.tb-import{position:relative;overflow:hidden}
+.tb-import input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+</style>
+</head>
+<body>
+
+<!-- ── Login Screen ── -->
+<div id="login-screen" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">THE MEDLEY<span>.</span></div>
+    <div class="login-sub">GP &amp; Operations Calculator · Management Access</div>
+    <label class="login-label">Password</label>
+    <input class="login-input" type="password" id="pwd-input" placeholder="Enter password"
+      onkeydown="if(event.key==='Enter')attemptLogin()">
+    <button class="login-btn" onclick="attemptLogin()">Enter</button>
+    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+    <div class="login-hint">Access restricted to Medley management team.<br>Contact Charlie to request access.</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand">THE MEDLEY <em>GP & Cost Calculator</em></div>
+  <div class="topbar-right">
+    <span class="save-status" id="save-status">Not saved yet</span>
+    <button class="tb-btn" onclick="exportData()" title="Download your data as a JSON backup file">↓ Export</button>
+    <div class="tb-btn tb-import" title="Import a previously exported JSON file">
+      ↑ Import
+      <input type="file" accept=".json" onchange="importData(this)">
+    </div>
+  </div>
+</div>
+
+<nav>
+  <button class="navtab" id="t-drink" onclick="setTab('drink')">🧴 Drink Ingredients</button>
+  <button class="navtab" id="t-food"  onclick="setTab('food')">🥗 Food Ingredients</button>
+  <button class="navtab" id="t-ops"   onclick="setTab('ops')">📦 Ops & Misc</button>
+  <button class="navtab active" id="t-wet"  onclick="setTab('wet')">🍸 Wet GP</button>
+  <button class="navtab" id="t-dry"   onclick="setTab('dry')">🍕 Dry GP</button>
+</nav>
+
+<div id="content"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   MASTER INGREDIENT DATA
+   ═══════════════════════════════════════════
+   Each entry: {id, type('D'/'F'/'O'), name, sup, cat, pack, cost, size, unit}
+   costPerUnit = cost / size  (auto-calculated everywhere)
+*/
+let MASTERS = [
+
+  /* ── DRINK MASTER (type D) ──────────────────── */
+
+  // Spirits & Liqueurs
+  {id:'DM01',type:'D',name:'Aperol',sup:'Booker',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:11.99,size:700,unit:'ml'},
+  {id:'DM02',type:'D',name:"Pimm's No 1",sup:'Booker',cat:'Spirits & Liqueurs',pack:'70cl bottle (case price)',cost:13.28,size:700,unit:'ml'},
+  {id:'DM03',type:'D',name:'Limoncello',sup:'Various',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:15.10,size:700,unit:'ml'},
+  {id:'DM04',type:'D',name:'House Gin',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:20.00,size:700,unit:'ml'},
+  {id:'DM05',type:'D',name:'Triple Sec',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:12.00,size:700,unit:'ml'},
+  {id:'DM06',type:'D',name:'Tequila',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:19.94,size:700,unit:'ml'},
+
+  // Wine — White
+  {id:'DM10',type:'D',name:'Jean Didier Blanc (House White)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:7.74,size:750,unit:'ml'},
+  {id:'DM11',type:'D',name:'La Barbe SB / Vermentino (French SB)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:8.58,size:750,unit:'ml'},
+  {id:'DM12',type:'D',name:'Pa Road Sauvignon Blanc (NZ)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:10.80,size:750,unit:'ml'},
+  {id:'DM17',type:'D',name:'Vinho Verde',sup:'— update supplier —',cat:'Wine — White',pack:'750ml bottle',cost:8.00,size:750,unit:'ml'},
+  // Wine — Rosé
+  {id:'DM18',type:'D',name:'House Rosé',sup:'— update supplier —',cat:'Wine — Rosé',pack:'750ml bottle',cost:8.00,size:750,unit:'ml'},
+  {id:'DM19',type:'D',name:'Provence Rosé',sup:'— update supplier —',cat:'Wine — Rosé',pack:'750ml bottle',cost:11.00,size:750,unit:'ml'},
+  // Wine — Red
+  {id:'DM13',type:'D',name:'Jean Didier Rouge (House Red)',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:7.74,size:750,unit:'ml'},
+  {id:'DM14',type:'D',name:'Perdido Tinto (Tempranillo)',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:8.58,size:750,unit:'ml'},
+  {id:'DM15',type:'D',name:'Zensa Primitivo',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:10.68,size:750,unit:'ml'},
+  // Wine — Sparkling
+  {id:'DM16',type:'D',name:'A Borga Extra Dry DOC (Prosecco)',sup:'Grape Minds',cat:'Wine — Sparkling',pack:'750ml bottle',cost:10.32,size:750,unit:'ml'},
+  {id:'DM20',type:'D',name:'Champagne',sup:'— update supplier —',cat:'Wine — Sparkling',pack:'750ml bottle',cost:22.00,size:750,unit:'ml'},
+
+  // Draught Beer — size = pints per keg (50L ÷ 0.568L × 0.93 wastage ≈ 82 pints)
+  {id:'DM30',type:'D',name:'Medley Lager (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:127.75,size:82,unit:'pint'},
+  {id:'DM31',type:'D',name:'Stowford Press Cider (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:93.98,size:82,unit:'pint'},
+  {id:'DM32',type:'D',name:'Yabba Dabba Doo (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:153.13,size:82,unit:'pint'},
+  {id:'DM33',type:'D',name:'IPA (keg)',sup:'— update supplier —',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:130.00,size:82,unit:'pint'},
+
+  // Bottled / Canned Beer
+  {id:'DM35',type:'D',name:'0% Heineken',sup:'Various',cat:'Bottled Beer',pack:'Per bottle',cost:0.88,size:1,unit:'each'},
+  {id:'DM36',type:'D',name:'0% Craft Tap Social',sup:'Various',cat:'Bottled Beer',pack:'Per bottle/pint',cost:0.88,size:1,unit:'each'},
+
+  // Canned Cocktails
+  {id:'DM40',type:'D',name:'Margarita (Can)',sup:'Various',cat:'Canned Cocktails',pack:'Per can',cost:1.80,size:1,unit:'each'},
+  {id:'DM41',type:'D',name:'Paloma (Can)',sup:'Various',cat:'Canned Cocktails',pack:'Per can',cost:1.80,size:1,unit:'each'},
+
+  // Mixers — BIBs use effective ml after dilution
+  {id:'DM50',type:'D',name:'Fever Tree Light Tonic 200ml',sup:'Booker',cat:'Mixers',pack:'Case 24×200ml · £15.00/case',cost:15.00,size:4800,unit:'ml'},
+  {id:'DM51',type:'D',name:'Fever Tree Premium Indian Tonic 200ml',sup:'Booker',cat:'Mixers',pack:'Case 24×200ml · £16.99/case',cost:16.99,size:4800,unit:'ml'},
+  {id:'DM52',type:'D',name:'Carters Royal Tonic Water',sup:'Booker',cat:'Mixers',pack:'Case 12×1ltr · £7.59/case',cost:7.59,size:12000,unit:'ml'},
+  {id:'DM53',type:'D',name:'Schweppes Lemonade (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 7.5:1 dilution = 59.5L yield · £83.63',cost:83.63,size:59500,unit:'ml'},
+  {id:'DM54',type:'D',name:'Coca-Cola Draft (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 5.2:1 dilution = 43.4L yield · £87.00',cost:87.00,size:43400,unit:'ml'},
+  {id:'DM55',type:'D',name:'Diet Coke Draft (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 5.2:1 dilution = 43.4L yield · £74.00',cost:74.00,size:43400,unit:'ml'},
+  {id:'DM56',type:'D',name:'Soda Water',sup:'Booker',cat:'Mixers',pack:'Case 12×1ltr · £7.59/case',cost:7.59,size:12000,unit:'ml'},
+
+  // Garnishes (whole items)
+  {id:'DM60',type:'D',name:'Lemon (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.42',cost:0.42,size:1,unit:'each'},
+  {id:'DM61',type:'D',name:'Lime (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.28',cost:0.28,size:1,unit:'each'},
+  {id:'DM62',type:'D',name:'Orange (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.58',cost:0.58,size:1,unit:'each'},
+  {id:'DM63',type:'D',name:'Cucumber (whole)',sup:'Booker',cat:'Garnishes',pack:'Each · £1.25',cost:1.25,size:1,unit:'each'},
+  {id:'DM64',type:'D',name:'Mint pot',sup:'Arthur David',cat:'Garnishes',pack:'Per pot ≈40 sprigs · £2.38',cost:2.38,size:40,unit:'sprig'},
+  // Garnishes (per-serve derived — 1 unit = 1 slice/wedge/sprig)
+  {id:'DM65',type:'D',name:'Lemon slice (1/8 lemon)',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £0.42 ÷ 8',cost:0.053,size:1,unit:'each'},
+  {id:'DM66',type:'D',name:'Lime wedge (1/6 lime)',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £0.28 ÷ 6',cost:0.047,size:1,unit:'each'},
+  {id:'DM67',type:'D',name:'Orange slice (1/8 orange)',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £0.58 ÷ 8',cost:0.073,size:1,unit:'each'},
+  {id:'DM68',type:'D',name:'Cucumber slice (1/15 cucumber)',sup:'Booker',cat:'Garnishes',pack:'Derived: £1.25 ÷ 15',cost:0.083,size:1,unit:'each'},
+  {id:'DM69',type:'D',name:'Mint sprig',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £2.38 ÷ 40',cost:0.060,size:1,unit:'each'},
+
+  // Drink consumables
+  {id:'DM70',type:'D',name:'Paper Straw (black 210mm)',sup:'Booker',cat:'Consumables',pack:'250 per pack · £2.49',cost:2.49,size:250,unit:'each'},
+  {id:'DM71',type:'D',name:'Ice portion (per drink)',sup:'Booker',cat:'Consumables',pack:'Party ice 2.27kg bag · ~20 portions · £1.02/bag',cost:1.015,size:20,unit:'each'},
+
+
+  /* ── FOOD MASTER (type F) ────────────────────── */
+
+  // Flour & Base
+  {id:'FM01',type:'F',name:'Semola Rimacinata (Martimucci)',sup:'Carnevale',cat:'Flour & Base',pack:'25kg sack · £32.40',cost:32.40,size:25000,unit:'g'},
+  {id:'FM02',type:'F',name:'Caputo Pizza Flour Blue (Tipo 00)',sup:'Booker',cat:'Flour & Base',pack:'15kg bag · £17.99',cost:17.99,size:15000,unit:'g'},
+  {id:'FM03',type:'F',name:'GF Flour (pizza blend)',sup:'Various',cat:'Flour & Base',pack:'2kg bag · £17.50',cost:17.50,size:2000,unit:'g'},
+  {id:'FM04',type:'F',name:'Fresh Yeast',sup:'Arthur David',cat:'Flour & Base',pack:'1kg block · £2.85',cost:2.85,size:1000,unit:'g'},
+  {id:'FM05',type:'F',name:'Salt',sup:'Various',cat:'Dry Goods',pack:'Per kg · £1.08',cost:1.08,size:1000,unit:'g'},
+  {id:'FM06',type:'F',name:'Olive Oil (cooking)',sup:'Various',cat:'Dry Goods',pack:'Per kg / litre · £8.76',cost:8.76,size:1000,unit:'g'},
+
+  // Dairy
+  {id:'FM10',type:'F',name:'Fiordilatte Mozzarella (Valerio 10mm cubetti)',sup:'Carnevale',cat:'Dairy',pack:'Case 6×2kg = 12kg · £91.80',cost:91.80,size:12000,unit:'g'},
+  {id:'FM11',type:'F',name:'Provola',sup:'Various',cat:'Dairy',pack:'Per kg · £5.35',cost:5.35,size:1000,unit:'g'},
+  {id:'FM12',type:'F',name:'Parmesan Reggiano (Parmigiano)',sup:'Arthur David',cat:'Dairy',pack:'Per kg · £22.00',cost:22.00,size:1000,unit:'g'},
+  {id:'FM13',type:'F',name:'Pecorino Romano',sup:'Various',cat:'Dairy',pack:'Per kg · £21.10',cost:21.10,size:1000,unit:'g'},
+  {id:'FM14',type:'F',name:'Ricotta Italian',sup:'Arthur David',cat:'Dairy',pack:'1.5kg tub · £6.06',cost:6.06,size:1500,unit:'g'},
+  {id:'FM15',type:'F',name:'Burrata',sup:'Various',cat:'Dairy',pack:'Per ball · £1.65',cost:1.65,size:1,unit:'each'},
+  {id:'FM16',type:'F',name:'Mascarpone',sup:'Various',cat:'Dairy',pack:'Per kg · £8.18',cost:8.18,size:1000,unit:'g'},
+
+  // Produce
+  {id:'FM20',type:'F',name:'Cherry Vine Tomatoes',sup:'Arthur David',cat:'Produce',pack:'3kg box · £18.50',cost:18.50,size:3000,unit:'g'},
+  {id:'FM21',type:'F',name:'Tinned Tomatoes (for sauce batches)',sup:'Various',cat:'Produce',pack:'2.5kg tin · £3.42',cost:3.42,size:2500,unit:'g'},
+  {id:'FM25',type:'F',name:'Garlic (peeled)',sup:'Arthur David',cat:'Produce',pack:'Per kg · £8.16',cost:8.16,size:1000,unit:'g'},
+  {id:'FM26',type:'F',name:'Padron Peppers',sup:'Arthur David',cat:'Produce',pack:'Per kg · £9.54',cost:9.54,size:1000,unit:'g'},
+  {id:'FM27',type:'F',name:'Broccoli',sup:'Arthur David',cat:'Produce',pack:'Per kg · £4.00',cost:4.00,size:1000,unit:'g'},
+  {id:'FM28',type:'F',name:'Aubergine (raw)',sup:'Various',cat:'Produce',pack:'Box ≈5kg · £14.50',cost:14.50,size:5000,unit:'g'},
+  {id:'FM29',type:'F',name:'Red Chillies',sup:'Arthur David',cat:'Produce',pack:'3kg box · £31.35',cost:31.35,size:3000,unit:'g'},
+  {id:'FM30',type:'F',name:'Cavolo Nero (raw)',sup:'Various',cat:'Produce',pack:'Box ≈4.5kg · £20.09',cost:20.09,size:4500,unit:'g'},
+  {id:'FM31',type:'F',name:'Lemons',sup:'Arthur David',cat:'Produce',pack:'Each · £0.42',cost:0.42,size:1,unit:'each'},
+  {id:'FM32',type:'F',name:'Limes',sup:'Arthur David',cat:'Produce',pack:'Each · £0.28',cost:0.28,size:1,unit:'each'},
+
+  // Herbs
+  {id:'FM22',type:'F',name:'Sweet Basil (fresh)',sup:'Arthur David',cat:'Herbs',pack:'Bunch ≈95g · £2.34 → £24.63/kg',cost:2.34,size:95,unit:'g'},
+  {id:'FM23',type:'F',name:'Flat-leaf Parsley',sup:'Arthur David',cat:'Herbs',pack:'Bunch ≈180g · £1.56 → £8.67/kg',cost:1.56,size:180,unit:'g'},
+  {id:'FM24',type:'F',name:'Fresh Mint',sup:'Arthur David',cat:'Herbs',pack:'Pot ≈100g · £2.38',cost:2.38,size:100,unit:'g'},
+
+  // Charcuterie & Proteins
+  {id:'FM40',type:'F',name:'Anchovies',sup:'Various',cat:'Charcuterie',pack:'Per kg · £23.59',cost:23.59,size:1000,unit:'g'},
+  {id:'FM41',type:'F',name:"Nduja (Charcuti')",sup:'Arthur David',cat:'Charcuterie',pack:'250g pack · £6.67',cost:6.67,size:250,unit:'g'},
+  {id:'FM42',type:'F',name:'Pepperoni (sliced)',sup:'Arthur David',cat:'Charcuterie',pack:'Per kg · £17.60',cost:17.60,size:1000,unit:'g'},
+  {id:'FM43',type:'F',name:'Mortadella',sup:'Various',cat:'Charcuterie',pack:'Per kg · £12.30',cost:12.30,size:1000,unit:'g'},
+  {id:'FM44',type:'F',name:'Fennel Sausage',sup:'Various',cat:'Charcuterie',pack:'Per kg · £9.78',cost:9.78,size:1000,unit:'g'},
+
+  // Dry Goods & Pantry
+  {id:'FM50',type:'F',name:'Capers Surfines',sup:'Arthur David',cat:'Dry Goods',pack:'1.6kg tin · £10.83 → £6.77/kg',cost:10.83,size:1600,unit:'g'},
+  {id:'FM51',type:'F',name:'Black Pitted Olives (tinned)',sup:'Arthur David',cat:'Dry Goods',pack:'4.1kg tin · £11.04 → £2.69/kg',cost:11.04,size:4100,unit:'g'},
+  {id:'FM52',type:'F',name:'Misto Mixed Olives',sup:'Arthur David',cat:'Dry Goods',pack:'3kg tub · £20.72 → £6.91/kg',cost:20.72,size:3000,unit:'g'},
+  {id:'FM53',type:'F',name:'White Wine Vinegar',sup:'Arthur David',cat:'Dry Goods',pack:'5ltr · £5.33 → £1.07/ltr',cost:5.33,size:5000,unit:'g'},
+  {id:'FM54',type:'F',name:'Fresh Lemon Juice (squeezed)',sup:'Arthur David',cat:'Dry Goods',pack:'1ltr · £3.73',cost:3.73,size:1000,unit:'g'},
+  {id:'FM55',type:'F',name:'Sugar',sup:'Various',cat:'Dry Goods',pack:'Per kg · £1.72',cost:1.72,size:1000,unit:'g'},
+  {id:'FM56',type:'F',name:'Rubbed Oregano (dried)',sup:'Arthur David',cat:'Dry Goods',pack:'Pack ≈500g · £4.32',cost:4.32,size:500,unit:'g'},
+  {id:'FM57',type:'F',name:'Ground Black Pepper',sup:'Arthur David',cat:'Dry Goods',pack:'Pack ≈500g · £9.47',cost:9.47,size:500,unit:'g'},
+  {id:'FM58',type:'F',name:'Dijon Mustard',sup:'Arthur David',cat:'Dry Goods',pack:'5kg tub · £19.60',cost:19.60,size:5000,unit:'g'},
+  {id:'FM59',type:'F',name:'Vanilla Ice Cream',sup:'Booker',cat:'Frozen',pack:'4ltr tub · £9.59 → £2.40/ltr',cost:9.59,size:4000,unit:'ml'},
+  {id:'FM60',type:'F',name:'Lady Fingers (Savoiardi biscuits)',sup:'Various',cat:'Dry Goods',pack:'2-pack · £7.00 est.',cost:7.00,size:2,unit:'pack'},
+  {id:'FM61',type:'F',name:'Egg Yolk (pasteurised)',sup:'Various',cat:'Dairy',pack:'Per kg · £10.91',cost:10.91,size:1000,unit:'g'},
+  {id:'FM62',type:'F',name:'Egg White (pasteurised)',sup:'Various',cat:'Dairy',pack:'Per kg · £5.41',cost:5.41,size:1000,unit:'g'},
+  {id:'FM63',type:'F',name:'Espresso Coffee (beans)',sup:'Various',cat:'Hot Drinks',pack:'Per kg · £22.55',cost:22.55,size:1000,unit:'g'},
+
+  /* ── COMPOUND / BATCH ITEMS ────────────────────
+     These are house-made preparations. Cost = batch cost ÷ batch yield.
+     Update the batch cost here and all GP recipes auto-recalculate.  */
+  {id:'FM70',type:'F',name:'Pizza Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'15kg flour batch · £22.43 total · ≈93 balls',cost:22.43,size:93,unit:'each'},
+  {id:'FM71',type:'F',name:'GF Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'3.6kg batch · £18.60 · 12 balls',cost:18.60,size:12,unit:'each'},
+  {id:'FM72',type:'F',name:'Tomato Sauce (1 ladle = 70g)',sup:'House',cat:'Compound — Batch',pack:'2.5kg tin batch · £3.59 · 36 ladles',cost:3.59,size:36,unit:'each'},
+  {id:'FM73',type:'F',name:'House Pesto',sup:'House',cat:'Compound — Batch',pack:'1880g batch · £30.97 → £16.48/kg',cost:30.97,size:1880,unit:'g'},
+  {id:'FM74',type:'F',name:'Parsley Sauce',sup:'House',cat:'Compound — Batch',pack:'650g batch · £5.68 → £8.74/kg',cost:5.68,size:650,unit:'g'},
+  {id:'FM75',type:'F',name:'Chilli Dip',sup:'House',cat:'Compound — Batch',pack:'3.1kg batch · £22.93 → £7.40/kg',cost:22.93,size:3100,unit:'g'},
+  {id:'FM76',type:'F',name:'Aubergine Topping (roasted, prepped)',sup:'House',cat:'Compound — Batch',pack:'3.28kg yield from 1 box · £18.72 batch → £5.71/kg',cost:18.72,size:3280,unit:'g'},
+  {id:'FM77',type:'F',name:'Cavolo Nero Topping (wilted, prepped)',sup:'House',cat:'Compound — Batch',pack:'2.05kg yield from 1 box · £21.06 batch → £10.27/kg',cost:21.06,size:2050,unit:'g'},
+  {id:'FM78',type:'F',name:'Aubergine Parmigiana (per serving 1/18)',sup:'House',cat:'Compound — Batch',pack:'18-serving batch · £25.94 → £1.44 each',cost:25.94,size:18,unit:'each'},
+
+
+  /* ── OPS & MISC MASTER (type O) ─────────────── */
+
+  // Packaging
+  {id:'OM01',type:'O',name:'8oz Kraft Food Pot & Lid (combined)',sup:'Booker',cat:'Packaging',pack:'50 per pack · £9.49 → £0.19 each',cost:9.49,size:50,unit:'each'},
+  {id:'OM02',type:'O',name:'Pizza Box 12" (31cm)',sup:'Carnevale',cat:'Packaging',pack:'100 per case · £26.80 → £0.27 each',cost:26.80,size:100,unit:'each'},
+  {id:'OM03',type:'O',name:'White Napkin 30cm (1-ply)',sup:'Booker',cat:'Packaging',pack:'500 per pack · £22.99 → £0.046 each',cost:22.99,size:500,unit:'each'},
+  {id:'OM04',type:'O',name:'Paper Straw Black 210mm',sup:'Booker',cat:'Packaging',pack:'250 per pack · £2.49 → £0.01 each',cost:2.49,size:250,unit:'each'},
+  // PPE
+  {id:'OM05',type:'O',name:'Nitrile Gloves (Black, M)',sup:'Booker',cat:'PPE',pack:'100 per pack · £7.99 → £0.08 each',cost:7.99,size:100,unit:'each'},
+  // Cleaning
+  {id:'OM06',type:'O',name:'2-ply Paper Towel / Blue Roll',sup:'Booker',cat:'Cleaning',pack:'12-pack · £14.89 → £1.24/roll',cost:14.89,size:12,unit:'each'},
+  {id:'OM07',type:'O',name:'Dettol Multi-Action Spray 4ltr',sup:'Booker',cat:'Cleaning',pack:'Each · £6.59',cost:6.59,size:1,unit:'each'},
+  {id:'OM08',type:'O',name:'HD Degreaser 750ml',sup:'Booker',cat:'Cleaning',pack:'Each · £2.49',cost:2.49,size:1,unit:'each'},
+  {id:'OM09',type:'O',name:'Kitchen Cleaner 750ml',sup:'Booker',cat:'Cleaning',pack:'Each · £2.49',cost:2.49,size:1,unit:'each'},
+  // Consumables
+  {id:'OM10',type:'O',name:'Party Ice Cubes 2.27kg bag',sup:'Booker',cat:'Consumables',pack:'6-bag case · £6.09/case → £1.02/bag',cost:6.09,size:6,unit:'each'},
+  {id:'OM11',type:'O',name:'Squeezy Bottle 24oz',sup:'Arthur David',cat:'Equipment',pack:'Each · £2.72',cost:2.72,size:1,unit:'each'},
+  {id:'OM12',type:'O',name:'CO₂ / Gas (draught beer)',sup:'Various',cat:'Consumables',pack:'Per bottle · est. £35',cost:35.00,size:1,unit:'each'},
+];
+
+/* ════════════════════════════════════════════
+   GP RECIPE DATA
+   ════════════════════════════════════════════
+   Recipe ingredient formats:
+   {mid:'DM01', qty:50}           → master-linked (cost = qty × master.cost/master.size)
+   {mid:null, n:'Name', c:0.00}  → manual entry (cost = c)
+*/
+
+let WET_GP = [
+  // ── Canned Cocktails
+  {id:1,name:'Margarita (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[
+    {mid:'DM40',qty:1},
+    {mid:null,n:'Ice & presentation',c:0.05}]},
+  {id:2,name:'Paloma (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[
+    {mid:'DM41',qty:1},
+    {mid:null,n:'Ice & presentation',c:0.05}]},
+
+  // ── Cocktails (quantities from Medley Wet Cost PDF)
+  {id:3,name:'G&T — Single',cat:'Cocktails',sell:6.76,recipe:[
+    {mid:'DM04',qty:25},
+    {mid:'DM50',qty:200},
+    {mid:'DM65',qty:1},
+    {mid:'DM70',qty:1}]},
+  {id:4,name:'G&T — Double',cat:'Cocktails',sell:10.00,recipe:[
+    {mid:'DM04',qty:50},
+    {mid:'DM51',qty:200},
+    {mid:'DM65',qty:1},
+    {mid:'DM70',qty:1}]},
+  {id:5,name:'Aperol Spritz (glass)',cat:'Cocktails',sell:9.20,recipe:[
+    {mid:'DM01',qty:50},
+    {mid:'DM56',qty:125},
+    {mid:'DM16',qty:50},
+    {mid:'DM67',qty:1},
+    {mid:'DM70',qty:1}]},
+  {id:6,name:'Aperol Spritz (jug)',cat:'Cocktails',sell:31.00,recipe:[
+    {mid:'DM01',qty:200},
+    {mid:'DM56',qty:500},
+    {mid:'DM16',qty:200},
+    {mid:'DM67',qty:4},
+    {mid:'DM70',qty:4}]},
+  {id:7,name:"Pimm's (glass)",cat:'Cocktails',sell:8.25,recipe:[
+    {mid:'DM02',qty:50},
+    {mid:'DM53',qty:225},
+    {mid:'DM69',qty:1},
+    {mid:'DM65',qty:1},
+    {mid:'DM66',qty:1},
+    {mid:'DM68',qty:1},
+    {mid:'DM67',qty:1},
+    {mid:'DM70',qty:1}]},
+  {id:8,name:"Pimm's (jug)",cat:'Cocktails',sell:31.00,recipe:[
+    {mid:'DM02',qty:200},
+    {mid:'DM53',qty:900},
+    {mid:'DM69',qty:4},
+    {mid:'DM65',qty:4},
+    {mid:'DM66',qty:4},
+    {mid:'DM68',qty:4},
+    {mid:'DM67',qty:4},
+    {mid:'DM70',qty:4}]},
+  {id:9,name:'Limoncello Spritz',cat:'Cocktails',sell:8.50,recipe:[
+    {mid:'DM03',qty:50},
+    {mid:'DM53',qty:125},
+    {mid:'DM16',qty:50},
+    {mid:'DM65',qty:1},
+    {mid:'DM70',qty:1}]},
+
+  // ── Beers
+  {id:10,name:'Medley Lager (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM30',qty:1}]},
+  {id:11,name:'IPA (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM33',qty:1}]},
+  {id:12,name:'Yabba Dabba Doo (pint)',cat:'Beers',sell:6.90,recipe:[{mid:'DM32',qty:1}]},
+  {id:13,name:'Stowford Press (pint)',cat:'Beers',sell:6.50,recipe:[{mid:'DM31',qty:1}]},
+  {id:14,name:'0% Heineken',cat:'Beers',sell:4.20,recipe:[{mid:'DM35',qty:1}]},
+  {id:15,name:'0% Craft Tap Social',cat:'Beers',sell:5.45,recipe:[{mid:'DM36',qty:1}]},
+
+  // ── Soft Drinks (quantities from Wet Cost PDF)
+  {id:16,name:'Coke',cat:'Soft Drinks',sell:3.10,recipe:[
+    {mid:'DM54',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:17,name:'Diet Coke',cat:'Soft Drinks',sell:3.10,recipe:[
+    {mid:'DM55',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:18,name:'Lemonade',cat:'Soft Drinks',sell:3.10,recipe:[
+    {mid:'DM53',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:19,name:'Cordial & Soda',cat:'Soft Drinks',sell:1.60,recipe:[
+    {mid:'DM56',qty:300},
+    {mid:null,n:'Cordial 50ml (Rocks / Belvoir)',c:0.08},
+    {mid:'DM66',qty:1},{mid:'DM70',qty:1}]},
+  {id:20,name:'Juice',cat:'Soft Drinks',sell:2.90,recipe:[
+    {mid:null,n:'Juice 300ml (OJ / Apple)',c:0.45},
+    {mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
+
+  // ── Wine by the glass (175ml / 125ml)
+  {id:21,name:'House White — 125ml',cat:'Wine',sell:5.00,recipe:[{mid:'DM10',qty:125}]},
+  {id:22,name:'House White — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM10',qty:175}]},
+  {id:23,name:'House White — 250ml',cat:'Wine',sell:8.00,recipe:[{mid:'DM10',qty:250}]},
+  {id:24,name:'House White — Bottle',cat:'Wine',sell:28.00,recipe:[{mid:'DM10',qty:750}]},
+  {id:25,name:'French SB — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM11',qty:175}]},
+  {id:26,name:'NZ SB — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM12',qty:175}]},
+  {id:27,name:'Vinho Verde — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM17',qty:175}]},
+  {id:28,name:'House Rosé — 175ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM18',qty:175}]},
+  {id:29,name:'Provence Rosé — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM19',qty:175}]},
+  {id:30,name:'House Red — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM13',qty:175}]},
+  {id:31,name:'Tempranillo — 175ml',cat:'Wine',sell:7.50,recipe:[{mid:'DM14',qty:175}]},
+  {id:32,name:'Primitivo — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM15',qty:175}]},
+  {id:33,name:'Prosecco — 125ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM16',qty:125}]},
+  {id:34,name:'Prosecco — Bottle',cat:'Wine',sell:35.00,recipe:[{mid:'DM16',qty:750}]},
+  {id:35,name:'Champagne — Bottle',cat:'Wine',sell:50.00,recipe:[{mid:'DM20',qty:750}]},
+];
+
+/* ── DRY GP — quantities from MEDLEY DRY COST PRICING 2025 PDF ── */
+let DRY_GP = [
+  // Starters & Sharers
+  {id:1,name:'Mixed Olives',cat:'Starters',sell:4.50,recipe:[
+    {mid:'FM52',qty:80},      // Mixed olives 80g from tub
+    {mid:null,n:'Olive oil drizzle',c:0.04},
+    {mid:'OM01',qty:1}]},     // 8oz kraft pot & lid
+  {id:2,name:'Garlic Pizette',cat:'Starters',sell:5.00,recipe:[
+    {mid:'FM70',qty:0.5},     // ½ dough ball (PDF)
+    {mid:'FM25',qty:2},       // Garlic 2g (PDF)
+    {mid:'FM06',qty:6}]},     // Olive oil 6g (PDF)
+  {id:3,name:'Padron Peppers',cat:'Starters',sell:6.50,recipe:[
+    {mid:'FM26',qty:100},     // Padron peppers 100g
+    {mid:'FM12',qty:20},      // Parmesan 20g
+    {mid:'FM75',qty:20},      // Chilli dip 20g
+    {mid:'FM05',qty:2}]},     // Sea salt 2g
+
+  // Pizzas — exact quantities from DRY PDF
+  {id:4,name:'Marinara',cat:'Pizza',sell:10.00,recipe:[
+    {mid:'FM70',qty:1},       // 1 dough ball
+    {mid:'FM72',qty:1.5},     // 1.5 ladles tomato sauce (105g ÷ 70g/ladle)
+    {mid:'FM22',qty:2.5},     // Basil 2.5g
+    {mid:'FM20',qty:50},      // Cherry tomatoes 50g
+    {mid:'FM06',qty:6},       // Olive oil 6g
+    {mid:'FM25',qty:2}]},     // Garlic 2g
+  {id:5,name:'Margherita',cat:'Pizza',sell:12.00,recipe:[
+    {mid:'FM70',qty:1},       // 1 dough ball
+    {mid:'FM72',qty:1},       // 1 ladle tomato sauce (70g)
+    {mid:'FM22',qty:2.5},     // Basil 2.5g
+    {mid:'FM06',qty:10},      // Olive oil 10g
+    {mid:'FM10',qty:50}]},    // Fiordilatte 50g
+  {id:6,name:'Anchovie',cat:'Pizza',sell:14.50,recipe:[
+    {mid:'FM70',qty:1},       // Dough ball
+    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
+    {mid:'FM22',qty:2.5},     // Basil 2.5g
+    {mid:'FM10',qty:50},      // Fiordilatte 50g
+    {mid:'FM06',qty:6},       // Olive oil 6g
+    {mid:'FM25',qty:2},       // Garlic 2g
+    {mid:'FM51',qty:27},      // Black olives 27g
+    {mid:'FM40',qty:10},      // Anchovies 10g
+    {mid:'FM50',qty:7},       // Capers 7g
+    {mid:'FM74',qty:17}]},    // Parsley sauce 17g
+  {id:7,name:'Pepperoni & Nduja',cat:'Pizza',sell:14.50,recipe:[
+    {mid:'FM70',qty:1},       // Dough ball
+    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
+    {mid:'FM22',qty:2.5},     // Basil 2.5g
+    {mid:'FM10',qty:50},      // Fiordilatte 50g
+    {mid:'FM42',qty:36},      // Pepperoni 36g
+    {mid:'FM41',qty:20}]},    // Nduja 20g
+  {id:8,name:'Broccoli Ricotta',cat:'Pizza',sell:14.50,recipe:[
+    {mid:'FM70',qty:1},       // Dough ball
+    {mid:'FM14',qty:80},      // Ricotta 80g
+    {mid:'FM10',qty:75},      // Fiordilatte 75g
+    {mid:'FM27',qty:100},     // Broccoli 100g
+    {mid:'FM12',qty:20},      // Parmesan 20g
+    {mid:null,n:'Chilli flakes',c:0.03},
+    {mid:'FM54',qty:15}]},    // Lemon juice 15g
+
+  // Upcoming menu (May) — from DRY PDF
+  {id:9,name:'Wood Fired Aubergine',cat:'Pizza — May Menu',sell:14.50,recipe:[
+    {mid:'FM70',qty:1},       // Dough ball
+    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
+    {mid:'FM22',qty:2.5},     // Basil 2.5g
+    {mid:'FM10',qty:50},      // Fiordilatte 50g
+    {mid:'FM76',qty:65},      // Aubergine topping 65g
+    {mid:'FM20',qty:50},      // Cherry toms 50g
+    {mid:'FM13',qty:4}]},     // Pecorino 4g
+  {id:10,name:'Cavolo Nero',cat:'Pizza — May Menu',sell:14.50,recipe:[
+    {mid:'FM70',qty:1},       // Dough ball
+    {mid:'FM06',qty:15},      // Olive oil 15g
+    {mid:'FM10',qty:50},      // Fiordilatte 50g
+    {mid:'FM11',qty:50},      // Provola 50g
+    {mid:'FM77',qty:70},      // Cavolo nero topping 70g
+    {mid:'FM44',qty:80},      // Fennel sausage 80g
+    {mid:'FM75',qty:20}]},    // Chilli dip 20g
+  {id:11,name:'Genovese Pesto',cat:'Pizza — May Menu',sell:14.50,recipe:[
+    {mid:'FM70',qty:1},       // Dough ball
+    {mid:'FM73',qty:55},      // House pesto 55g
+    {mid:'FM10',qty:50},      // Fiordilatte 50g
+    {mid:'FM20',qty:55},      // Cherry tomatoes 55g
+    {mid:'FM15',qty:1},       // Burrata 1 ball
+    {mid:'FM12',qty:3}]},     // Parmesan 3g
+
+  // Sides — May Menu (from DRY PDF)
+  {id:12,name:'Caprese',cat:'Sides — May Menu',sell:7.00,recipe:[
+    {mid:'FM20',qty:200},     // Tomatoes 200g
+    {mid:'FM22',qty:5},       // Basil 5g
+    {mid:'FM74',qty:15},      // Parsley sauce 15g
+    {mid:'FM15',qty:1}]},     // Burrata 1 ball
+  {id:13,name:'Aubergine Parmigiana',cat:'Sides — May Menu',sell:6.67,recipe:[
+    {mid:'FM78',qty:1},       // 1 serving from batch
+    {mid:null,n:'Tomato sauce (1.5 ladle)',c:0.15},
+    {mid:'FM22',qty:1},       // Basil 1 leaf ≈1g
+    {mid:'FM12',qty:3},       // Parmesan 3g
+    {mid:'FM70',qty:0.25}]},  // ¼ dough ball (bread)
+  {id:14,name:'Broccoli (side)',cat:'Sides — May Menu',sell:5.00,recipe:[
+    {mid:'FM27',qty:165},     // Broccoli 165g
+    {mid:'FM75',qty:20},      // Chilli dip 20g
+    {mid:'FM06',qty:10}]},    // Olive oil 10g
+
+  // Desserts
+  {id:15,name:'Affogato',cat:'Desserts',sell:6.50,recipe:[
+    {mid:'FM63',qty:16},      // Coffee ≈2 shots × 8g
+    {mid:'FM59',qty:150}]},   // Vanilla ice cream 150ml
+  {id:16,name:'Dough Ring',cat:'Desserts',sell:7.50,recipe:[
+    {mid:'FM70',qty:0.25},    // ¼ dough ball
+    {mid:null,n:'Chocolate filling 30g',c:0.40},
+    {mid:'FM14',qty:50},      // Ricotta 50g
+    {mid:'FM59',qty:100}]},   // Ice cream 100ml
+  {id:17,name:'Tiramisu (per serving, 1/24)',cat:'Desserts',sell:6.00,recipe:[
+    {mid:null,n:'Lady fingers (⅞ of 2 packs ÷ 24)',c:0.25},
+    {mid:'FM61',qty:10.4},    // Egg yolk 250g ÷ 24
+    {mid:'FM62',qty:16.7},    // Egg white 400g ÷ 24
+    {mid:'FM55',qty:15.6},    // Sugar 375g ÷ 24
+    {mid:'FM16',qty:83.3},    // Mascarpone 2000g ÷ 24
+    {mid:'FM63',qty:4}]},     // Coffee per serve
+];
+
+/* ════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════ */
+let activeTab = 'wet';
+let expandedId = null;
+let expandedType = null;
+let editingMId = null;
+let target = 70;
+let mFilter = '';
+let nextIds = {D:80, F:90, O:20};
+let nextWet = 40;
+let nextDry = 20;
+
+/* ════════════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════════════ */
+function getMaster(id){ return MASTERS.find(m=>m.id===id) }
+
+function cpu(m){
+  if(!m||!m.size) return 0;
+  return m.cost/m.size;
+}
+
+function ingCost(ri){
+  if(ri.mid){
+    const m=getMaster(ri.mid);
+    return m ? ri.qty*cpu(m) : 0;
+  }
+  return ri.c||0;
+}
+
+function ingLabel(ri){
+  if(ri.mid){
+    const m=getMaster(ri.mid);
+    return m ? `${m.name} — ${ri.qty}${m.unit}` : `[deleted] — ${ri.qty}`;
+  }
+  return ri.n||'Custom';
+}
+
+function totalCost(item){ return item.recipe.reduce((s,r)=>s+ingCost(r),0) }
+
+function gpPct(item){
+  const c=totalCost(item);
+  return item.sell>0 ? ((item.sell-c)/item.sell*100) : 0;
+}
+
+function gpPill(pct){
+  const cls=pct>=target?'good':pct>=target-10?'mid':'bad';
+  return `<span class="pill ${cls}">${pct.toFixed(1)}%</span>`;
+}
+
+function fmtCpu(m){
+  const c=cpu(m);
+  if(m.unit==='ml'){
+    if(c<0.01) return `£${(c*1000).toFixed(3)}/L`;
+    return `£${(c*100).toFixed(3)}/100ml`;
+  }
+  if(m.unit==='g') return `£${(c*100).toFixed(4)}/100g`;
+  if(m.unit==='each'||m.unit==='pint'||m.unit==='sprig'||m.unit==='pack')
+    return `£${c.toFixed(4)}/ea`;
+  return `£${c.toFixed(5)}/${m.unit}`;
+}
+
+function fmtCpuDisplay(m){
+  // More human-readable for table display
+  const c=cpu(m);
+  if(m.unit==='ml'){
+    if(c>=0.001) return `£${(c*1000).toFixed(2)}/L`;
+    return `£${(c*100).toFixed(3)}/100ml`;
+  }
+  if(m.unit==='g') return `£${(c*1000).toFixed(2)}/kg`;
+  return `£${c.toFixed(3)} each`;
+}
+
+function getGP(type){ return type==='wet'?WET_GP:DRY_GP }
+
+/* ════════════════════════════════════════════
+   MASTER RENDER
+   ════════════════════════════════════════════ */
+function renderMaster(type){
+  const all=MASTERS.filter(m=>m.type===type);
+  const filtered=mFilter
+    ? all.filter(m=>m.name.toLowerCase().includes(mFilter.toLowerCase())||m.cat.toLowerCase().includes(mFilter.toLowerCase())||m.sup.toLowerCase().includes(mFilter.toLowerCase()))
+    : all;
+
+  const cats=[...new Set(all.map(m=>m.cat))].sort();
+
+  let h=`<div class="master-bar">
+    <input type="text" placeholder="Search name, category, supplier…" value="${mFilter}"
+      oninput="mFilter=this.value;render()" style="width:240px">
+    <select onchange="mFilter=this.value;render()">
+      <option value="">All categories (${all.length})</option>
+      ${cats.map(c=>`<option${mFilter===c?' selected':''}>${c}</option>`).join('')}
+    </select>
+    <button class="btn-teal" onclick="addMaster('${type}')">+ Add ingredient</button>
+  </div>
+  <table class="master-table">
+    <thead><tr>
+      <th>Name</th><th>Supplier</th><th>Category</th><th>Pack / Purchase unit</th>
+      <th class="num">Pack £</th><th class="num">Size</th><th class="num">Unit</th>
+      <th class="num" style="background:rgba(255,255,255,.15)">Cost / unit</th><th></th>
+    </tr></thead>
+    <tbody>`;
+
+  filtered.forEach(m=>{
+    const isEd=editingMId===m.id;
+    if(isEd){
+      h+=`<tr class="editing-row">
+        <td><input id="e-n" value="${esc(m.name)}" style="width:100%"></td>
+        <td><input id="e-s" value="${esc(m.sup)}" style="width:100%"></td>
+        <td><input id="e-c" value="${esc(m.cat)}" style="width:100%"></td>
+        <td><input id="e-p" value="${esc(m.pack)}" style="width:100%"></td>
+        <td class="num"><input id="e-co" type="number" step="0.01" value="${m.cost}" style="width:70px;text-align:right"></td>
+        <td class="num"><input id="e-si" type="number" step="0.001" value="${m.size}" style="width:70px;text-align:right"></td>
+        <td class="num"><input id="e-u" value="${m.unit}" style="width:50px"></td>
+        <td class="num teal-bold">${fmtCpuDisplay(m)}</td>
+        <td class="actions">
+          <button class="btn-sm btn-teal" onclick="saveMaster('${m.id}')">✓ Save</button>
+          <button class="btn-sm" onclick="editingMId=null;render()">✕</button>
+        </td></tr>`;
+    } else {
+      h+=`<tr>
+        <td class="bold">${m.name}</td>
+        <td class="muted">${m.sup}</td>
+        <td><span class="cat-badge${m.type==='O'?' ops':''}">${m.cat}</span></td>
+        <td class="muted small">${m.pack}</td>
+        <td class="num">£${m.cost.toFixed(2)}</td>
+        <td class="num">${m.size}</td>
+        <td class="num muted">${m.unit}</td>
+        <td class="num teal-bold">${fmtCpuDisplay(m)}</td>
+        <td class="actions">
+          <button class="btn-sm" onclick="editingMId='${m.id}';render()">Edit</button>
+          <button class="btn-sm del" onclick="delMaster('${m.id}')">✕</button>
+        </td></tr>`;
+    }
+  });
+
+  h+=`</tbody></table>
+  <div class="table-footer">${filtered.length} of ${all.length} ingredients${mFilter?' (filtered)':''}</div>`;
+  return h;
+}
+
+/* ════════════════════════════════════════════
+   MASTER CRUD
+   ════════════════════════════════════════════ */
+function saveMaster(id){
+  const m=getMaster(id);
+  if(!m)return;
+  m.name=document.getElementById('e-n').value.trim()||m.name;
+  m.sup=document.getElementById('e-s').value.trim();
+  m.cat=document.getElementById('e-c').value.trim();
+  m.pack=document.getElementById('e-p').value.trim();
+  m.cost=parseFloat(document.getElementById('e-co').value)||m.cost;
+  m.size=parseFloat(document.getElementById('e-si').value)||m.size;
+  m.unit=document.getElementById('e-u').value.trim()||m.unit;
+  editingMId=null;
+  render();
+}
+
+function delMaster(id){
+  if(!confirm('Remove this ingredient? Linked GP recipes will show £0 for this ingredient.'))return;
+  MASTERS=MASTERS.filter(m=>m.id!==id);
+  render();
+}
+
+function addMaster(type){
+  const prefix={D:'DM',F:'FM',O:'OM'}[type];
+  const id=prefix+nextIds[type]++;
+  MASTERS.push({id,type,name:'New ingredient',sup:'',cat:'',pack:'',cost:0,size:1,unit:'g'});
+  editingMId=id;
+  mFilter='';
+  render();
+}
+
+/* ════════════════════════════════════════════
+   GP RENDER
+   ════════════════════════════════════════════ */
+function renderGP(gpType){
+  const items=getGP(gpType);
+  const avgGP=items.length ? items.reduce((s,i)=>s+gpPct(i),0)/items.length : 0;
+  const totalSell=items.reduce((s,i)=>s+i.sell,0);
+  const totalGPVal=items.reduce((s,i)=>s+(i.sell-totalCost(i)),0);
+  const onTarget=items.filter(i=>gpPct(i)>=target).length;
+  const best=items.length?items.reduce((a,b)=>gpPct(a)>gpPct(b)?a:b):null;
+  const col=avgGP>=target?'var(--good)':avgGP>=target-10?'var(--mid)':'var(--bad)';
+
+  let h=`
+  <div class="metrics">
+    <div class="metric"><div class="ml">Average GP%</div>
+      <div class="mv" style="color:${col}">${avgGP.toFixed(1)}%</div>
+      <div class="ms">Target ${target}%</div></div>
+    <div class="metric"><div class="ml">Menu sell value</div>
+      <div class="mv">£${totalSell.toFixed(2)}</div>
+      <div class="ms">GP pot £${totalGPVal.toFixed(2)}</div></div>
+    <div class="metric"><div class="ml">At / above target</div>
+      <div class="mv">${onTarget} / ${items.length}</div>
+      <div class="ms">${items.length?Math.round(onTarget/items.length*100):0}% of items</div></div>
+    <div class="metric"><div class="ml">Best performer</div>
+      <div class="mv small-text">${best?best.name:'—'}</div>
+      <div class="ms">${best?gpPct(best).toFixed(1)+'%':''}</div></div>
+  </div>
+  <div class="target-row">
+    <label>Target GP%</label>
+    <input type="range" min="50" max="85" value="${target}"
+      oninput="target=+this.value;this.nextElementSibling.textContent=this.value+'%';render()">
+    <span class="tv">${target}%</span>
+  </div>
+  <table class="gp-table">
+    <colgroup>
+      <col style="width:26%"><col style="width:16%"><col style="width:12%">
+      <col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:5%">
+    </colgroup>
+    <thead><tr>
+      <th>Item</th><th>Category</th><th class="num">Sell £</th>
+      <th class="num">Cost £</th><th class="num">GP £</th><th class="num">GP%</th><th></th>
+    </tr></thead>
+    <tbody>`;
+
+  items.forEach(item=>{
+    const cost=totalCost(item);
+    const pct=gpPct(item);
+    const isExp=expandedId===item.id && expandedType===gpType;
+
+    h+=`<tr class="gp-row${isExp?' expanded':''}" onclick="toggleExp(${item.id},'${gpType}')">
+      <td><span class="xi">${isExp?'▼':'▶'}</span><strong>${item.name}</strong></td>
+      <td><span class="cat-badge${gpType==='dry'?' dry':''}">${item.cat}</span></td>
+      <td class="num" onclick="event.stopPropagation()">
+        <span class="psym">£</span><input class="sell-in" type="number" step="0.05"
+          value="${item.sell.toFixed(2)}"
+          onchange="setSell(${item.id},'${gpType}',+this.value)"
+          onclick="event.stopPropagation()">
+      </td>
+      <td class="num">£${cost.toFixed(2)}</td>
+      <td class="num">£${(item.sell-cost).toFixed(2)}</td>
+      <td class="num">${gpPill(pct)}</td>
+      <td><button class="del-btn" onclick="delItem(${item.id},'${gpType}',event)">✕</button></td>
+    </tr>`;
+
+    if(isExp){
+      h+=`<tr class="expand-row"><td colspan="7"><div class="recipe-panel">
+        <div class="recipe-header">Recipe — ${item.name}</div>
+        <table class="recipe-table">
+          <thead><tr>
+            <th style="width:34%">Ingredient</th>
+            <th style="width:28%">Master ID / pack</th>
+            <th class="num" style="width:18%">Qty / cost</th>
+            <th class="num" style="width:14%">£ cost</th>
+            <th style="width:6%"></th>
+          </tr></thead>
+          <tbody>`;
+
+      item.recipe.forEach((ri,idx)=>{
+        const m=ri.mid?getMaster(ri.mid):null;
+        const rCost=ingCost(ri);
+        const name=ri.mid?(m?m.name:'[deleted master]'):(ri.n||'Custom');
+        const midTag=m
+          ?`<span class="master-tag">${m.id}</span> <span class="muted small">${m.pack.split('·')[0].trim()}</span>`
+          :`<span class="master-tag custom">manual</span>`;
+
+        h+=`<tr>
+          <td>${name}</td>
+          <td>${midTag}</td>
+          <td class="num">`;
+
+        if(ri.mid && m){
+          h+=`<input class="qty-in" type="number" step="${m.unit==='each'||m.unit==='pint'||m.unit==='sprig'?'0.1':'1'}"
+              value="${ri.qty}"
+              onchange="setQty(${item.id},'${gpType}',${idx},+this.value)"
+              onclick="event.stopPropagation()"> <span class="muted small">${m.unit}</span>`;
+        } else {
+          h+=`£<input class="cost-in" type="number" step="0.01"
+              value="${(ri.c||0).toFixed(2)}"
+              onchange="setCost(${item.id},'${gpType}',${idx},+this.value)"
+              onclick="event.stopPropagation()">`;
+        }
+
+        h+=`</td>
+          <td class="num teal-bold">£${rCost.toFixed(3)}</td>
+          <td><button class="del-btn" onclick="delIng(${item.id},'${gpType}',${idx},event)">✕</button></td>
+        </tr>`;
+      });
+
+      h+=`<tr class="recipe-total">
+          <td colspan="3"><strong>Total cost per serve</strong></td>
+          <td class="num teal-bold"><strong>£${cost.toFixed(3)}</strong></td>
+          <td></td>
+        </tr>
+        </tbody></table>
+
+        <!-- ── Add ingredient from master ── -->
+        <div class="add-ing-section" onclick="event.stopPropagation()">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Add ingredient</div>
+          <div class="add-ing-row">
+            <select id="ms-${item.id}" style="flex:2;min-width:200px" onchange="onMSel(${item.id})">
+              <option value="">— select from master —</option>`;
+
+      // Group master dropdown by type
+      [{t:'D',label:'Drink Master'},{t:'F',label:'Food Master'},{t:'O',label:'Ops & Misc'}].forEach(({t,label})=>{
+        const ms=MASTERS.filter(m=>m.type===t);
+        if(!ms.length)return;
+        h+=`<optgroup label="${label}">`;
+        const cats=[...new Set(ms.map(m=>m.cat))].sort();
+        cats.forEach(cat=>{
+          ms.filter(m=>m.cat===cat).forEach(m=>{
+            h+=`<option value="${m.id}">[${m.id}] ${m.name} — ${fmtCpuDisplay(m)}</option>`;
+          });
+        });
+        h+=`</optgroup>`;
+      });
+
+      h+=`</select>
+            <input type="number" id="mq-${item.id}" placeholder="qty" step="1" style="width:80px" oninput="onQtyIn(${item.id})">
+            <span id="mu-${item.id}" class="muted small" style="min-width:30px"></span>
+            <span id="mp-${item.id}" class="ing-preview" style="min-width:70px"></span>
+            <button class="btn-sm btn-teal" onclick="addFromMaster(${item.id},'${gpType}')">Add ↓</button>
+          </div>
+          <div class="add-ing-row" style="margin-top:8px">
+            <span class="muted small" style="white-space:nowrap">or custom:</span>
+            <input type="text" id="cn-${item.id}" placeholder="Ingredient name" style="flex:2">
+            <span style="color:var(--muted);font-size:12px">£</span>
+            <input type="number" id="cc-${item.id}" placeholder="0.00" step="0.01" style="width:80px">
+            <button class="btn-sm btn-teal" onclick="addCustom(${item.id},'${gpType}')">Add ↓</button>
+          </div>
+        </div>
+      </div></td></tr>`;
+    }
+  });
+
+  h+=`</tbody></table>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap">
+    <button class="btn-teal" onclick="document.getElementById('ngf-${gpType}').style.display='block'">+ Add menu item</button>
+  </div>
+  <div id="ngf-${gpType}" style="display:none;margin-top:10px;padding:14px;background:#fff;border:1px solid var(--border);border-radius:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div><label class="form-label">Item name</label>
+        <input id="nn-${gpType}" placeholder="e.g. Negroni" style="width:180px;height:30px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px">
+      </div>
+      <div><label class="form-label">Category</label>
+        <select id="nc-${gpType}" style="height:30px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px">
+          ${[...new Set(items.map(i=>i.cat))].map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="form-label">Sell price £</label>
+        <input id="np-${gpType}" type="number" step="0.50" placeholder="0.00" style="width:80px;height:30px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px;text-align:right">
+      </div>
+      <button class="btn-teal" onclick="addItem('${gpType}')">Add item</button>
+      <button class="btn-sm" onclick="document.getElementById('ngf-${gpType}').style.display='none'">Cancel</button>
+    </div>
+  </div>`;
+
+  return h;
+}
+
+/* ════════════════════════════════════════════
+   GP EVENT HANDLERS
+   ════════════════════════════════════════════ */
+function toggleExp(id,type){
+  if(expandedId===id&&expandedType===type){expandedId=null;expandedType=null;}
+  else{expandedId=id;expandedType=type;}
+  render();
+}
+
+function setSell(id,type,val){
+  const item=getGP(type).find(i=>i.id===id);
+  if(item){item.sell=val;render();}
+}
+
+function setQty(id,type,idx,val){
+  const item=getGP(type).find(i=>i.id===id);
+  if(item&&item.recipe[idx]){item.recipe[idx].qty=val;render();}
+}
+
+function setCost(id,type,idx,val){
+  const item=getGP(type).find(i=>i.id===id);
+  if(item&&item.recipe[idx]){item.recipe[idx].c=val;render();}
+}
+
+function delIng(id,type,idx,e){
+  e.stopPropagation();
+  const item=getGP(type).find(i=>i.id===id);
+  if(item){item.recipe.splice(idx,1);render();}
+}
+
+function delItem(id,type,e){
+  e.stopPropagation();
+  if(!confirm('Remove this menu item?'))return;
+  if(type==='wet')WET_GP=WET_GP.filter(i=>i.id!==id);
+  else DRY_GP=DRY_GP.filter(i=>i.id!==id);
+  if(expandedId===id){expandedId=null;expandedType=null;}
+  render();
+}
+
+function onMSel(itemId){
+  const sel=document.getElementById(`ms-${itemId}`);
+  const qIn=document.getElementById(`mq-${itemId}`);
+  const uSp=document.getElementById(`mu-${itemId}`);
+  const pSp=document.getElementById(`mp-${itemId}`);
+  const m=getMaster(sel.value);
+  if(m){
+    uSp.textContent=m.unit;
+    qIn.oninput=()=>{
+      const qty=parseFloat(qIn.value)||0;
+      const cost=qty*cpu(m);
+      pSp.textContent=cost>0?`= £${cost.toFixed(3)}`:'';
+    };
+  } else {
+    uSp.textContent=''; pSp.textContent='';
+  }
+}
+
+function onQtyIn(itemId){
+  const sel=document.getElementById(`ms-${itemId}`);
+  const qIn=document.getElementById(`mq-${itemId}`);
+  const pSp=document.getElementById(`mp-${itemId}`);
+  const m=getMaster(sel.value);
+  if(m){
+    const qty=parseFloat(qIn.value)||0;
+    const cost=qty*cpu(m);
+    pSp.textContent=cost>0?`= £${cost.toFixed(3)}`:'';
+  }
+}
+
+function addFromMaster(itemId,gpType){
+  const mid=document.getElementById(`ms-${itemId}`).value;
+  const qty=parseFloat(document.getElementById(`mq-${itemId}`).value);
+  if(!mid){alert('Please select an ingredient from the master.');return;}
+  if(isNaN(qty)||qty<=0){alert('Please enter a quantity greater than 0.');return;}
+  const item=getGP(gpType).find(i=>i.id===itemId);
+  if(item){
+    item.recipe.push({mid,qty});
+    expandedId=itemId; expandedType=gpType;
+    render();
+  }
+}
+
+function addCustom(itemId,gpType){
+  const n=(document.getElementById(`cn-${itemId}`).value||'').trim();
+  const c=parseFloat(document.getElementById(`cc-${itemId}`).value);
+  if(!n){alert('Please enter an ingredient name.');return;}
+  if(isNaN(c)){alert('Please enter a cost (£).');return;}
+  const item=getGP(gpType).find(i=>i.id===itemId);
+  if(item){
+    item.recipe.push({mid:null,n,c});
+    expandedId=itemId; expandedType=gpType;
+    render();
+  }
+}
+
+function addItem(gpType){
+  const name=(document.getElementById(`nn-${gpType}`).value||'').trim();
+  const cat=document.getElementById(`nc-${gpType}`).value;
+  const sell=parseFloat(document.getElementById(`np-${gpType}`).value);
+  if(!name||isNaN(sell)||sell<=0){alert('Enter a name and sell price.');return;}
+  if(gpType==='wet') WET_GP.push({id:nextWet++,name,cat,sell,recipe:[]});
+  else DRY_GP.push({id:nextDry++,name,cat,sell,recipe:[]});
+  render();
+}
+
+/* ════════════════════════════════════════════
+   MAIN RENDER
+   ════════════════════════════════════════════ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') }
+
+function setTab(t){
+  activeTab=t;
+  expandedId=null;
+  expandedType=null;
+  mFilter='';
+  render();
+}
+
+function render(){
+  const labels={
+    drink:'Drink Ingredients Master',
+    food:'Food Ingredients Master',
+    ops:'Ops & Miscellaneous',
+    wet:'Wet GP — Drinks Menu',
+    dry:'Dry GP — Food Menu'
+  };
+  const subs={
+    drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',
+    food:'Prices from Arthur David & Carnevale · 03/04/26 · Compound items (green badge) are house-made batch preparations',
+    ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',
+    wet:'Click any item to expand its recipe · Select from master to link ingredients — cost auto-calculates from purchase price',
+    dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included'
+  };
+
+  let html=`<div class="tab-header">
+    <div class="tab-title">${labels[activeTab]}</div>
+    <div class="tab-sub">${subs[activeTab]}</div>
+  </div>`;
+
+  if(activeTab==='drink') html+=renderMaster('D');
+  else if(activeTab==='food') html+=renderMaster('F');
+  else if(activeTab==='ops') html+=renderMaster('O');
+  else if(activeTab==='wet') html+=renderGP('wet');
+  else if(activeTab==='dry') html+=renderGP('dry');
+
+  document.getElementById('content').innerHTML=html;
+
+  document.querySelectorAll('.navtab').forEach(b=>b.classList.remove('active'));
+  const at=document.getElementById('t-'+activeTab);
+  if(at) at.classList.add('active');
+}
+
+/* ════════════════════════════════════════════
+   PERSISTENCE — localStorage + JSON export/import
+   ════════════════════════════════════════════ */
+
+const STORAGE_KEY = 'medley-gp-v1';
+
+// ── Set your shared password here ─────────────────────────────────────────
+// All three of you (owner, GM, head chef) use this same password.
+// To change it: update the line below, save the file, share the new version.
+const ACCESS_PASSWORD = 'medley2025';
+// ──────────────────────────────────────────────────────────────────────────
+
+function saveState() {
+  try {
+    const state = {
+      v: 1,
+      savedAt: new Date().toISOString(),
+      MASTERS, WET_GP, DRY_GP,
+      nextIds, nextWet, nextDry, target
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateSaveStatus(state.savedAt);
+  } catch(e) { console.warn('Save failed:', e); }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !s.MASTERS) return null;
+    MASTERS  = s.MASTERS;
+    WET_GP   = s.WET_GP;
+    DRY_GP   = s.DRY_GP;
+    nextIds  = s.nextIds  || nextIds;
+    nextWet  = s.nextWet  || nextWet;
+    nextDry  = s.nextDry  || nextDry;
+    target   = s.target   || 70;
+    return s.savedAt;
+  } catch(e) { return null; }
+}
+
+function updateSaveStatus(isoStr) {
+  const el = document.getElementById('save-status');
+  if (!el || !isoStr) return;
+  const d    = new Date(isoStr);
+  const time = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+  const date = d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+  el.textContent = '💾 Saved ' + date + ' ' + time;
+  el.className = 'save-status ok';
+}
+
+function exportData() {
+  const state = {
+    v: 1,
+    exportedAt: new Date().toISOString(),
+    MASTERS, WET_GP, DRY_GP,
+    nextIds, nextWet, nextDry, target
+  };
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'medley-gp-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const s = JSON.parse(e.target.result);
+      if (!s || !s.MASTERS || !s.WET_GP) {
+        alert('Invalid file — use a Medley GP export (.json) file.');
+        return;
+      }
+      const exported = s.exportedAt
+        ? new Date(s.exportedAt).toLocaleString('en-GB') : 'unknown time';
+      if (!confirm(
+        'Replace all current data with file exported ' + exported + '?\n\nYour current data will be overwritten. Continue?'
+      )) { input.value=''; return; }
+      MASTERS  = s.MASTERS;
+      WET_GP   = s.WET_GP;
+      DRY_GP   = s.DRY_GP;
+      nextIds  = s.nextIds  || nextIds;
+      nextWet  = s.nextWet  || nextWet;
+      nextDry  = s.nextDry  || nextDry;
+      target   = s.target   || 70;
+      saveState();
+      render();
+      input.value = '';
+      alert('✓ Data imported and saved.');
+    } catch(err) { alert('Error reading file: ' + err.message); input.value=''; }
+  };
+  reader.readAsText(file);
+}
+
+/* ════════════════════════════════════════════
+   AUTHENTICATION
+   ════════════════════════════════════════════ */
+
+function checkAuth() {
+  return sessionStorage.getItem('medley-authed') === '1';
+}
+
+function attemptLogin() {
+  const pwd = (document.getElementById('pwd-input').value || '').trim();
+  if (pwd === ACCESS_PASSWORD) {
+    sessionStorage.setItem('medley-authed', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('login-error').style.display  = 'none';
+    const savedAt = loadState();
+    if (savedAt) updateSaveStatus(savedAt);
+    else { /* first ever open — default data already loaded */ }
+    render();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+/* ── Auto-save wrapper — called after every data mutation ─────── */
+function withSave(fn) {
+  return function(...args) { fn(...args); saveState(); };
+}
+
+saveMaster    = withSave(saveMaster);
+delMaster     = withSave(delMaster);
+addMaster     = withSave(addMaster);
+setSell       = withSave(setSell);
+setQty        = withSave(setQty);
+setCost       = withSave(setCost);
+delIng        = withSave(delIng);
+delItem       = withSave(delItem);
+addFromMaster = withSave(addFromMaster);
+addCustom     = withSave(addCustom);
+addItem       = withSave(addItem);
+
+/* ════════════════════════════════════════════
+   INIT
+   ════════════════════════════════════════════ */
+
+function init() {
+  if (checkAuth()) {
+    // Returning within same browser session (e.g. refresh)
+    document.getElementById('login-screen').style.display = 'none';
+    const savedAt = loadState();
+    if (savedAt) updateSaveStatus(savedAt);
+    render();
+  } else {
+    // New session — show login
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
