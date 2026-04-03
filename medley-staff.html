@@ -160,6 +160,17 @@ nav::-webkit-scrollbar{display:none}
 .alert.err{background:var(--bad-bg);color:var(--bad)}
 .two-col{display:grid;gap:14px}
 @media(min-width:700px){.two-col{grid-template-columns:1fr 1fr}}
+
+/* ── Toast & Confirm (iframe-safe, no browser dialogs) ── */
+.toast{position:fixed;top:16px;right:16px;z-index:99999;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:320px;animation:slideIn .2s ease}
+.toast.ok{background:var(--teal)}.toast.err{background:var(--bad)}.toast.warn{background:var(--warn)}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99998;display:flex;align-items:center;justify-content:center}
+.confirm-box{background:#fff;border-radius:14px;padding:24px 28px;max-width:360px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.confirm-msg{font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px;line-height:1.4}
+.confirm-btns{display:flex;gap:10px;justify-content:center}
+.confirm-yes{padding:9px 22px;background:var(--bad);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}
+.confirm-no{padding:9px 22px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-size:14px}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
 </style>
 </head>
 <body>
@@ -653,20 +664,20 @@ async function doClockIn(dateStr) {
   const timeVal = (document.getElementById('clock-in-time')?.value || '').trim();
   const notes   = (document.getElementById('clock-in-notes')?.value || '').trim();
 
-  if (!timeVal) { alert('Please enter your start time.'); return; }
+  if (!timeVal) { showToast('Please enter your start time.'); return; }
 
   // Require a note if the time is more than 10 minutes in the past
   const entered  = new Date(`${dateStr}T${timeVal}:00`);
   const diffMins = (Date.now() - entered) / 60000;
   if (diffMins > 10 && !notes) {
-    alert('You\'re entering a past start time — please add a note explaining why (e.g. "Forgot to clock in").');
+    showToast("Entering a past time — please add a note explaining why (e.g. Forgot to clock in)");
     document.getElementById('clock-in-notes')?.focus();
     return;
   }
 
   try {
-    if (await getOpenShift(ME.id))    { alert('You are already clocked in.'); return; }
-    if (await getPendingShift(ME.id)) { alert('You have a shift pending approval.'); return; }
+    if (await getOpenShift(ME.id))    { showToast('You are already clocked in.'); return; }
+    if (await getPendingShift(ME.id)) { showToast('You have a shift pending approval.'); return; }
 
     await dbPost('shifts', {
       staff_id: ME.id,
@@ -675,40 +686,54 @@ async function doClockIn(dateStr) {
       notes:    notes || null
     });
     render();
-  } catch(e) { alert('Clock in failed: ' + e.message); }
+  } catch(e) { showToast('Clock in failed: ' + e.message); }
 }
 
 async function cancelPendingShift(shiftId) {
-  if (!confirm('Cancel this shift entry?')) return;
+  if (!await showConfirm('Cancel this shift entry?')) return;
   try { await dbDelete('shifts', shiftId); render(); }
-  catch(e) { alert('Error: ' + e.message); }
+  catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function doClockOut(shiftId, dateStr) {
-  const timeVal  = (document.getElementById('clock-out-time')?.value || '').trim();
+  const timeVal   = (document.getElementById('clock-out-time')?.value || '').trim();
   const breakMins = parseInt(document.getElementById('break-select')?.value || '0') || 0;
+  const btn = document.querySelector('.clock-btn.out');
 
-  if (!timeVal) { alert('Please enter your finish time.'); return; }
+  if (!timeVal) { showToast('Please enter your finish time.'); return; }
+
+  // Show loading state on button
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; btn.style.opacity = '0.7'; }
 
   try {
     const shift    = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
+    if (!shift) { showToast('Shift not found — please refresh.'); if (btn) { btn.innerHTML = 'CLOCK<br>OUT'; btn.disabled = false; btn.style.opacity = '1'; } return; }
+
     const date     = shift.clock_in.slice(0,10);
     const clockOut = new Date(`${date}T${timeVal}:00`);
     const clockIn  = new Date(shift.clock_in);
 
-    if (clockOut <= clockIn) { alert('Finish time must be after start time.'); return; }
+    if (clockOut <= clockIn) {
+      showToast('Finish time must be after your start time.');
+      if (btn) { btn.innerHTML = 'CLOCK<br>OUT'; btn.disabled = false; btn.style.opacity = '1'; }
+      return;
+    }
 
     const totalMins  = (clockOut - clockIn) / 60000 - breakMins;
     const totalHours = Math.max(0, totalMins / 60);
 
     await dbPatch('shifts', shiftId, {
-      clock_out:    clockOut.toISOString(),
+      clock_out:     clockOut.toISOString(),
       break_minutes: breakMins,
-      total_hours:  totalHours.toFixed(2),
-      status:       'pending_approval'   // always pending until manager confirms
+      total_hours:   totalHours.toFixed(2),
+      status:        'pending_approval'
     });
-    render();
-  } catch(e) { alert('Clock out failed: ' + e.message); }
+    showToast('Clocked out — awaiting manager approval', 'ok');
+    setTimeout(() => render(), 800);
+  } catch(e) {
+    showToast('Clock out failed: ' + e.message);
+    if (btn) { btn.innerHTML = 'CLOCK<br>OUT'; btn.disabled = false; btn.style.opacity = '1'; }
+  }
 }
 
 async function getOpenShift(staffId) {
@@ -843,12 +868,12 @@ async function addRotaShift(staffId, date) {
   try {
     await dbPost('rota', {staff_id: staffId, date, start_time: start, end_time: end, created_by: ME.id});
     setTab('rota');
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function delRotaShift(id, e) {
   e.stopPropagation();
-  if (!confirm('Remove this shift from the rota?')) return;
+  if (!await showConfirm('Remove this shift from the rota?')) return;
   await dbDelete('rota', id);
   setTab('rota');
 }
@@ -1038,7 +1063,7 @@ async function approveShift(shiftId) {
     }
     await dbPatch('shifts', shiftId, updates);
     setTab('timesheets');
-  } catch(e) { alert('Error approving: ' + e.message); }
+  } catch(e) { showToast('Error approving: ' + e.message); }
 }
 
 function startEditShift(shiftId) {
@@ -1067,7 +1092,7 @@ async function saveEditShift(shiftId, staffId, approve = false) {
   const brk   = parseInt(document.getElementById('es-break').value)||0;
   const notes = document.getElementById('es-notes').value.trim();
 
-  if (!date || !inT) { alert('Date and clock-in time are required.'); return; }
+  if (!date || !inT) { showToast('Date and clock-in time are required.'); return; }
 
   const clockIn  = new Date(`${date}T${inT}:00`).toISOString();
   const clockOut = outT ? new Date(`${date}T${outT}:00`).toISOString() : null;
@@ -1086,7 +1111,7 @@ async function saveEditShift(shiftId, staffId, approve = false) {
     });
     editingShiftId = null;
     setTab('timesheets');
-  } catch(e) { alert('Error saving: ' + e.message); }
+  } catch(e) { showToast('Error saving: ' + e.message); }
 }
 
 async function adminDeleteShift(shiftId) {
@@ -1094,11 +1119,11 @@ async function adminDeleteShift(shiftId) {
     const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
     const st = shift ? ALL_STAFF.find(s => s.id === shift.staff_id) : null;
     const name = st ? st.name : 'this staff member';
-    if (!confirm(`Delete this shift for ${name}?\n\nThis cannot be undone.`)) return;
+    if (!await showConfirm(`Delete shift for <strong>${name}</strong>?<br><small>This cannot be undone.</small>`, 'Delete', 'confirm-yes')) return;
     await dbDelete('shifts', shiftId);
     if (editingShiftId === shiftId) editingShiftId = null;
     setTab('timesheets');
-  } catch(e) { alert('Error deleting: ' + e.message); }
+  } catch(e) { showToast('Error deleting: ' + e.message); }
 }
 
 /* ══════════════════════════════════════
@@ -1189,18 +1214,18 @@ async function renderPayPeriods() {
 async function createPayPeriod() {
   const start = document.getElementById('pp-start').value;
   const end = document.getElementById('pp-end').value;
-  if (!start || !end) { alert('Please set start and end dates.'); return; }
-  if (end < start) { alert('End date must be after start date.'); return; }
+  if (!start || !end) { showToast('Please set start and end dates.'); return; }
+  if (end < start) { showToast('End date must be after start date.'); return; }
   try {
     await dbPost('pay_periods', {start_date: start, end_date: end, tips_total: 0, status: 'open'});
     setTab('pay');
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function updateTips(id, val) {
   try {
     await dbPatch('pay_periods', id, {tips_total: val});
-  } catch(e) { alert('Error saving tips: ' + e.message); }
+  } catch(e) { showToast('Error saving tips: ' + e.message); }
 }
 
 /* ══════════════════════════════════════
@@ -1317,7 +1342,7 @@ function renderProfile() {
 async function uploadAvatar(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { alert('Photo must be under 2MB'); return; }
+  if (file.size > 2 * 1024 * 1024) { showToast('Photo must be under 2MB'); return; }
   try {
     const ext = file.name.split('.').pop();
     const path = `${ME.id}.${ext}`;
@@ -1336,7 +1361,7 @@ async function uploadAvatar(input) {
     // Refresh staff list cache
     const idx = ALL_STAFF.findIndex(s=>s.id===ME.id);
     if (idx>=0) ALL_STAFF[idx].avatar_url = url;
-  } catch(e) { alert('Error uploading photo: ' + e.message); }
+  } catch(e) { showToast('Error uploading photo: ' + e.message); }
 }
 
 async function saveProfile() {
@@ -1344,7 +1369,7 @@ async function saveProfile() {
   const email = document.getElementById('p-email').value.trim();
   const phone = document.getElementById('p-phone').value.trim();
   const address = document.getElementById('p-address').value.trim();
-  if (!name) { alert('Name cannot be empty.'); return; }
+  if (!name) { showToast('Name cannot be empty.'); return; }
   try {
     await dbPatch('staff', ME.id, {name, email, phone, address});
     ME = {...ME, name, email, phone, address};
@@ -1452,15 +1477,15 @@ async function updateRate(id, val) {
     await dbPatch('staff', id, {hourly_rate: val});
     const st = ALL_STAFF.find(s=>s.id===id);
     if (st) st.hourly_rate = val;
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function resetPIN(id, name) {
-  if (!confirm(`Reset ${name}'s PIN to 0000?`)) return;
+  if (!await showConfirm(`Reset <strong>${name}</strong>'s PIN to 0000?`)) return;
   try {
     await dbPatch('staff', id, {pin_hash: '0000'});
-    alert(`${name}'s PIN has been reset to 0000. They must change it on next login.`);
-  } catch(e) { alert('Error: ' + e.message); }
+    showToast(`${name}'s PIN reset to 0000`, 'ok');
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function toggleActive(id, active) {
@@ -1469,16 +1494,16 @@ async function toggleActive(id, active) {
     const st = ALL_STAFF.find(s=>s.id===id);
     if (st) st.is_active = active;
     if (!active) ALL_STAFF = ALL_STAFF.filter(s=>s.id!==id||s.id===ME.id);
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function removeStaff(id, name) {
-  if (!confirm(`Remove ${name} from the system? Their shift history will be kept.`)) return;
+  if (!await showConfirm(`Remove <strong>${name}</strong> from the system?<br><small>Shift history will be kept.</small>`)) return;
   try {
     await dbPatch('staff', id, {is_active: false});
     ALL_STAFF = ALL_STAFF.filter(s=>s.id!==id);
     setTab('staff-admin');
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 /* ══════════════════════════════════════
@@ -1536,7 +1561,7 @@ function startInactivityWatch() {
   );
   inactivityTimer = setInterval(() => {
     if (ME && Date.now() - lastActivity > INACTIVITY_MS) {
-      alert('You have been signed out due to inactivity.');
+      showToast('You have been signed out due to inactivity.');
       logout();
     }
   }, 60000); // check every minute
