@@ -437,6 +437,16 @@ function launchApp() {
     `<button class="navtab${t.id===tabs[0].id?' active':''}" id="tab-${t.id}" onclick="setTab('${t.id}')">${t.label}</button>`
   ).join('');
 
+  // Add GP Calculator link for managers and admins — opens in new tab
+  if (isManager()) {
+    nav.innerHTML += `<button class="navtab" 
+      onclick="window.open('https://greendoglondon.github.io/medley-management/medley-gp-calculator.html','_blank')"
+      title="Opens the GP &amp; Cost Calculator in a new tab"
+      style="color:var(--orange);border-bottom-color:transparent;margin-left:auto">
+      📊 GP Calculator ↗
+    </button>`;
+  }
+
   setTab(tabs[0].id);
 
   // Auto-refresh every 60s
@@ -758,11 +768,12 @@ async function delRotaShift(id, e) {
 /* ══════════════════════════════════════
    TIMESHEETS (admin/manager)
    ══════════════════════════════════════ */
+
+let editingShiftId = null;
+
 async function renderTimesheets() {
   const monthStart = new Date().toISOString().slice(0,8) + '01';
-  const shifts = await dbGet('shifts',
-    `clock_in=gte.${monthStart}T00:00:00Z&order=clock_in.desc`
-  );
+  const shifts = await dbGet('shifts', `clock_in=gte.${monthStart}T00:00:00Z&order=clock_in.desc`);
 
   const grouped = {};
   shifts.forEach(s => {
@@ -773,42 +784,78 @@ async function renderTimesheets() {
   let totalCost = 0;
   let totalHrs = 0;
 
-  let html = `<div class="card"><div class="card-title">Timesheets — This Month</div>`;
+  let html = `<div class="card"><div class="card-title">Timesheets — This Month
+    <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Super admins can edit or delete any shift</span>
+  </div>`;
 
   ALL_STAFF.forEach(st => {
     const stShifts = grouped[st.id] || [];
-    const hrs = stShifts.reduce((s,x)=>s+(parseFloat(x.total_hours)||0),0);
+    const hrs = stShifts.reduce((s,x) => s + (parseFloat(x.total_hours)||0), 0);
     const cost = hrs * (st.hourly_rate||0);
     totalCost += cost;
     totalHrs += hrs;
-
     if (!stShifts.length) return;
 
-    html += `<div style="margin-bottom:16px">
+    html += `<div style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:2px solid var(--teal-l)">
         <strong>${st.name}</strong>
         <span style="font-size:12px;color:var(--muted)">${hrs.toFixed(1)}h · <span style="color:var(--teal);font-weight:700">£${cost.toFixed(2)}</span></span>
       </div>
       <table class="data-table"><thead><tr>
-        <th>Date</th><th>In</th><th>Out</th><th>Break</th><th class="r">Hrs</th><th class="r">Pay</th>
-        ${isSuperAdmin()?'<th>Edit</th>':''}
+        <th>Date</th><th>In</th><th>Out</th><th>Break</th>
+        <th class="r">Hrs</th><th class="r">Pay</th><th>Status</th>
+        ${isSuperAdmin() ? '<th style="min-width:120px">Actions</th>' : ''}
       </tr></thead><tbody>`;
 
     stShifts.forEach(s => {
       const h = parseFloat(s.total_hours||0);
       const p = h * (st.hourly_rate||0);
-      const statusBadge = s.status === 'clocked_in'
-        ? '<span class="badge pending">On shift</span>'
-        : '<span class="badge ok">✓</span>';
-      html += `<tr>
-        <td>${fmtDate(s.clock_in)}</td>
-        <td>${fmtTime(s.clock_in)}</td>
-        <td>${s.clock_out ? fmtTime(s.clock_out) : statusBadge}</td>
-        <td>${s.break_minutes||0}m</td>
-        <td class="r">${h.toFixed(2)}</td>
-        <td class="r">£${p.toFixed(2)}</td>
-        ${isSuperAdmin()?`<td><button class="btn-sm" onclick="editShift('${s.id}','${st.id}')">Edit</button></td>`:''}
-      </tr>`;
+      const isEditing = isSuperAdmin() && editingShiftId === s.id;
+      const date = s.clock_in ? s.clock_in.slice(0,10) : '';
+      const inTime = s.clock_in ? new Date(s.clock_in).toTimeString().slice(0,5) : '';
+      const outTime = s.clock_out ? new Date(s.clock_out).toTimeString().slice(0,5) : '';
+
+      if (isEditing) {
+        // Inline edit row
+        html += `<tr style="background:#fffbf0;border-left:3px solid var(--orange)">
+          <td><input type="date" id="es-date" value="${date}"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:130px"></td>
+          <td><input type="time" id="es-in" value="${inTime}"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:90px" onchange="previewEditHours()"></td>
+          <td><input type="time" id="es-out" value="${outTime}"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:90px" onchange="previewEditHours()"></td>
+          <td><input type="number" id="es-break" value="${s.break_minutes||0}" min="0" max="480"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:12px;width:55px" onchange="previewEditHours()">m</td>
+          <td class="r"><span id="es-preview" style="color:var(--teal);font-weight:700">${h.toFixed(2)}</span></td>
+          <td class="r" id="es-pay-preview">£${p.toFixed(2)}</td>
+          <td><input type="text" id="es-notes" value="${s.notes||''}" placeholder="Notes"
+            style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:100px"></td>
+          <td style="white-space:nowrap">
+            <button class="btn-teal" style="font-size:11px;padding:4px 10px" onclick="saveEditShift('${s.id}','${st.id}')">✓ Save</button>
+            <button class="btn-sm" style="margin-left:4px" onclick="editingShiftId=null;setTab('timesheets')">✕</button>
+          </td>
+        </tr>`;
+      } else {
+        const statusBadge = s.status === 'clocked_in'
+          ? '<span class="badge pending">On shift</span>'
+          : (s.adjusted_by
+            ? '<span class="badge warn" style="background:#fef3e2;color:#8a5200">Edited</span>'
+            : '<span class="badge ok">✓</span>');
+
+        html += `<tr>
+          <td>${fmtDate(s.clock_in)}</td>
+          <td>${fmtTime(s.clock_in)}</td>
+          <td>${s.clock_out ? fmtTime(s.clock_out) : statusBadge}</td>
+          <td>${s.break_minutes||0}m</td>
+          <td class="r">${h.toFixed(2)}</td>
+          <td class="r">£${p.toFixed(2)}</td>
+          <td>${s.clock_out ? statusBadge : ''}</td>
+          ${isSuperAdmin() ? `<td style="white-space:nowrap">
+            <button class="btn-sm" onclick="startEditShift('${s.id}')">✏️ Edit</button>
+            <button class="btn-danger" style="margin-left:4px" onclick="adminDeleteShift('${s.id}','${st.name}')">🗑️</button>
+          </td>` : ''}
+        </tr>`;
+      }
     });
 
     html += `</tbody></table></div>`;
@@ -822,36 +869,61 @@ async function renderTimesheets() {
   return html;
 }
 
-async function editShift(shiftId, staffId) {
-  const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
-  const st = ALL_STAFF.find(s => s.id === staffId);
-  const newIn = prompt(`Edit clock-in time for ${st.name}\nCurrent: ${fmtTime(shift.clock_in)}\n\nEnter new time (HH:MM) or leave blank to keep:`, shift.clock_in ? new Date(shift.clock_in).toTimeString().slice(0,5) : '');
-  if (newIn === null) return;
+function startEditShift(shiftId) {
+  editingShiftId = shiftId;
+  setTab('timesheets');
+}
 
-  const newOut = prompt(`Edit clock-out time:\nCurrent: ${fmtTime(shift.clock_out)}\n\nEnter new time (HH:MM) or leave blank to keep:`, shift.clock_out ? new Date(shift.clock_out).toTimeString().slice(0,5) : '');
-  if (newOut === null) return;
+function previewEditHours() {
+  const inEl = document.getElementById('es-in');
+  const outEl = document.getElementById('es-out');
+  const breakEl = document.getElementById('es-break');
+  const preview = document.getElementById('es-preview');
+  if (!inEl || !outEl || !preview) return;
+  const [sh,sm] = (inEl.value||'00:00').split(':').map(Number);
+  const [eh,em] = (outEl.value||'00:00').split(':').map(Number);
+  const breakMins = parseInt(breakEl?.value||0);
+  const totalMins = ((eh*60+em)-(sh*60+sm)) - breakMins;
+  const hrs = Math.max(0, totalMins/60);
+  preview.textContent = hrs.toFixed(2);
+}
 
-  const newBreak = prompt(`Break minutes:\nCurrent: ${shift.break_minutes||0}`, shift.break_minutes||0);
-  if (newBreak === null) return;
+async function saveEditShift(shiftId, staffId) {
+  const date  = document.getElementById('es-date').value;
+  const inT   = document.getElementById('es-in').value;
+  const outT  = document.getElementById('es-out').value;
+  const brk   = parseInt(document.getElementById('es-break').value)||0;
+  const notes = document.getElementById('es-notes').value.trim();
 
-  const date = shift.clock_in.slice(0,10);
-  const clockIn = newIn ? new Date(`${date}T${newIn}:00`).toISOString() : shift.clock_in;
-  const clockOut = newOut ? new Date(`${date}T${newOut}:00`).toISOString() : shift.clock_out;
-  const breakMins = parseInt(newBreak)||0;
-  const totalMins = clockOut ? (new Date(clockOut) - new Date(clockIn)) / 60000 - breakMins : 0;
+  if (!date || !inT) { alert('Date and clock-in time are required.'); return; }
+
+  const clockIn  = new Date(`${date}T${inT}:00`).toISOString();
+  const clockOut = outT ? new Date(`${date}T${outT}:00`).toISOString() : null;
+  const totalMins = clockOut ? (new Date(clockOut)-new Date(clockIn))/60000 - brk : 0;
   const totalHours = Math.max(0, totalMins/60);
 
   try {
     await dbPatch('shifts', shiftId, {
       clock_in: clockIn,
-      clock_out: clockOut || null,
-      break_minutes: breakMins,
+      clock_out: clockOut,
+      break_minutes: brk,
       total_hours: totalHours.toFixed(2),
       adjusted_by: ME.id,
+      notes,
       status: clockOut ? 'completed' : 'clocked_in'
     });
+    editingShiftId = null;
     setTab('timesheets');
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { alert('Error saving: ' + e.message); }
+}
+
+async function adminDeleteShift(shiftId, staffName) {
+  if (!confirm(`Delete this shift for ${staffName}?\n\nThis cannot be undone.`)) return;
+  try {
+    await dbDelete('shifts', shiftId);
+    if (editingShiftId === shiftId) editingShiftId = null;
+    setTab('timesheets');
+  } catch(e) { alert('Error deleting: ' + e.message); }
 }
 
 /* ══════════════════════════════════════
