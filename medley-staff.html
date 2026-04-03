@@ -537,7 +537,9 @@ async function renderDashboard() {
    ══════════════════════════════════════ */
 async function renderClock() {
   const openShift = await getOpenShift(ME.id);
+  const pendingShift = await getPendingShift(ME.id);
   const now = new Date();
+  const todayStr = now.toISOString().slice(0,10);
   const dateStr = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
   let html = `<div class="card clock-section">
@@ -545,30 +547,81 @@ async function renderClock() {
     <div class="clock-date">${dateStr}</div>`;
 
   if (openShift) {
-    const startedAt = new Date(openShift.clock_in);
-    const elapsed = fmtElapsed(startedAt);
+    // Currently clocked in normally
+    const elapsed = fmtElapsed(new Date(openShift.clock_in));
     html += `<div style="margin-bottom:16px">
-      <div class="clock-status">You clocked in at <strong>${fmtTime(openShift.clock_in)}</strong></div>
+      <div class="clock-status">Clocked in at <strong>${fmtTime(openShift.clock_in)}</strong></div>
       <div class="clock-timer" id="elapsed-timer">${elapsed} on shift</div>
     </div>
     <button class="clock-btn out" onclick="showClockOut('${openShift.id}')">CLOCK<br>OUT</button>
     <div id="clock-out-form"></div>`;
+
+  } else if (pendingShift) {
+    // Has a shift awaiting approval
+    html += `<div style="background:var(--warn-bg);border-radius:12px;padding:16px;margin-bottom:16px;max-width:340px;margin-left:auto;margin-right:auto">
+      <div style="font-weight:700;color:var(--warn);margin-bottom:4px">⏳ Shift pending approval</div>
+      <div style="font-size:13px;color:var(--warn)">
+        You submitted a shift starting <strong>${fmtTime(pendingShift.clock_in)}</strong>.<br>
+        A manager will review and confirm your hours.
+      </div>
+    </div>
+    <button class="clock-btn out" onclick="showClockOut('${pendingShift.id}')" style="margin-bottom:8px">CLOCK<br>OUT</button>
+    <div id="clock-out-form"></div>
+    <div style="margin-top:12px">
+      <button class="btn-sm del" onclick="cancelPendingShift('${pendingShift.id}')">✕ Cancel this shift</button>
+    </div>`;
+
   } else {
-    html += `<button class="clock-btn in" onclick="doClockIn()">CLOCK<br>IN</button>`;
-    html += `<div class="clock-status" style="margin-top:16px">You are not clocked in</div>`;
+    // Not clocked in — show clock in + late entry option
+    html += `<button class="clock-btn in" onclick="doClockIn()">CLOCK<br>IN</button>
+    <div class="clock-status" style="margin-top:16px">You are not clocked in</div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);max-width:340px;margin-left:auto;margin-right:auto">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px">
+        Forgot to clock in? Enter your actual start time:
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;justify-content:center">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px">Start time</label>
+          <input type="time" id="late-time" style="height:38px;border:1.5px solid var(--border);border-radius:8px;padding:0 10px;font-size:14px">
+        </div>
+        <div style="flex:1;min-width:160px">
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px">Reason (required)</label>
+          <input type="text" id="late-reason" placeholder="e.g. Forgot to clock in"
+            style="width:100%;height:38px;border:1.5px solid var(--border);border-radius:8px;padding:0 10px;font-size:13px">
+        </div>
+        <button class="btn-teal" onclick="submitLateClockIn('${todayStr}')" style="height:38px;white-space:nowrap">
+          Submit for approval
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">
+        This will be marked as <strong>Pending</strong> until a manager confirms your hours.
+      </div>
+    </div>`;
   }
 
   html += `</div>`;
 
-  // Today's shifts
-  const today = new Date().toISOString().slice(0,10);
-  const todayShifts = await dbGet('shifts', `staff_id=eq.${ME.id}&clock_in=gte.${today}T00:00:00Z&status=eq.completed&order=clock_in.desc`);
+  // Today's completed shifts
+  const todayShifts = await dbGet('shifts',
+    `staff_id=eq.${ME.id}&clock_in=gte.${todayStr}T00:00:00Z&status=eq.completed&order=clock_in.desc`
+  );
   if (todayShifts.length) {
     html += `<div class="card"><div class="card-title">Today's Shifts</div>
-      <table class="data-table"><thead><tr><th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th></tr></thead><tbody>`;
+      <table class="data-table"><thead><tr>
+        <th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th><th>Status</th>
+      </tr></thead><tbody>`;
     todayShifts.forEach(s => {
-      html += `<tr><td>${fmtTime(s.clock_in)}</td><td>${fmtTime(s.clock_out)}</td>
-        <td>${s.break_minutes||0} min</td><td class="r">${parseFloat(s.total_hours||0).toFixed(2)}h</td></tr>`;
+      const badge = s.adjusted_by
+        ? '<span class="badge warn" style="background:#fef3e2;color:#8a5200">Edited by manager</span>'
+        : '<span class="badge ok">✓ Confirmed</span>';
+      html += `<tr>
+        <td>${fmtTime(s.clock_in)}</td>
+        <td>${fmtTime(s.clock_out)}</td>
+        <td>${s.break_minutes||0}m</td>
+        <td class="r">${parseFloat(s.total_hours||0).toFixed(2)}h</td>
+        <td>${badge}</td>
+      </tr>`;
     });
     html += `</tbody></table></div>`;
   }
@@ -580,9 +633,7 @@ function startClockTimer() {
   clearInterval(clockTimer);
   clockTimer = setInterval(() => {
     const el = document.getElementById('live-clock');
-    const et = document.getElementById('elapsed-timer');
     if (el) el.textContent = fmtHHMM(new Date());
-    // elapsed updated on next render
   }, 1000);
 }
 
@@ -590,9 +641,46 @@ async function doClockIn() {
   try {
     const open = await getOpenShift(ME.id);
     if (open) { alert('You are already clocked in!'); return; }
-    await dbPost('shifts', {staff_id: ME.id, clock_in: new Date().toISOString(), status: 'clocked_in'});
+    const pending = await getPendingShift(ME.id);
+    if (pending) { alert('You have a shift pending approval. Please wait for a manager to confirm it.'); return; }
+    await dbPost('shifts', {
+      staff_id: ME.id,
+      clock_in: new Date().toISOString(),
+      status: 'clocked_in'
+    });
     render();
   } catch(e) { alert('Clock in failed: ' + e.message); }
+}
+
+async function submitLateClockIn(dateStr) {
+  const timeVal = document.getElementById('late-time').value;
+  const reason  = (document.getElementById('late-reason').value||'').trim();
+  if (!timeVal) { alert('Please enter your start time.'); return; }
+  if (!reason)  { alert('Please enter a reason — this helps your manager approve the shift.'); return; }
+
+  const open = await getOpenShift(ME.id);
+  if (open) { alert('You are already clocked in.'); return; }
+  const pending = await getPendingShift(ME.id);
+  if (pending) { alert('You already have a shift pending approval.'); return; }
+
+  const clockIn = new Date(`${dateStr}T${timeVal}:00`).toISOString();
+  try {
+    await dbPost('shifts', {
+      staff_id: ME.id,
+      clock_in: clockIn,
+      status: 'pending_approval',
+      notes: `Late entry — ${reason}`
+    });
+    render();
+  } catch(e) { alert('Error submitting: ' + e.message); }
+}
+
+async function cancelPendingShift(shiftId) {
+  if (!confirm('Cancel this pending shift submission?')) return;
+  try {
+    await dbDelete('shifts', shiftId);
+    render();
+  } catch(e) { alert('Error: ' + e.message); }
 }
 
 function showClockOut(shiftId) {
@@ -615,7 +703,7 @@ async function doClockOut(shiftId) {
   const breakMins = parseInt(document.getElementById('break-select').value) || 0;
   try {
     const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
-    const clockIn = new Date(shift.clock_in);
+    const clockIn  = new Date(shift.clock_in);
     const clockOut = new Date();
     const totalMins = (clockOut - clockIn) / 60000 - breakMins;
     const totalHours = Math.max(0, totalMins / 60);
@@ -623,7 +711,7 @@ async function doClockOut(shiftId) {
       clock_out: clockOut.toISOString(),
       break_minutes: breakMins,
       total_hours: totalHours.toFixed(2),
-      status: 'completed'
+      status: shift.status === 'pending_approval' ? 'pending_approval' : 'completed'
     });
     render();
   } catch(e) { alert('Clock out failed: ' + e.message); }
@@ -631,6 +719,11 @@ async function doClockOut(shiftId) {
 
 async function getOpenShift(staffId) {
   const r = await dbGet('shifts', `staff_id=eq.${staffId}&status=eq.clocked_in&order=clock_in.desc&limit=1`);
+  return r[0] || null;
+}
+
+async function getPendingShift(staffId) {
+  const r = await dbGet('shifts', `staff_id=eq.${staffId}&status=eq.pending_approval&order=clock_in.desc&limit=1`);
   return r[0] || null;
 }
 
@@ -773,18 +866,53 @@ let editingShiftId = null;
 
 async function renderTimesheets() {
   const monthStart = new Date().toISOString().slice(0,8) + '01';
-  const shifts = await dbGet('shifts', `clock_in=gte.${monthStart}T00:00:00Z&order=clock_in.desc`);
+  const [shifts, pendingShifts] = await Promise.all([
+    dbGet('shifts', `clock_in=gte.${monthStart}T00:00:00Z&status=neq.pending_approval&order=clock_in.desc`),
+    dbGet('shifts', `status=eq.pending_approval&order=clock_in.desc`)
+  ]);
+
+  let html = '';
+
+  // ── Pending approval banner (managers see this first) ──
+  if (pendingShifts.length) {
+    html += `<div class="card" style="border-left:4px solid var(--orange)">
+      <div class="card-title" style="color:var(--orange)">⏳ Shifts Pending Approval (${pendingShifts.length})</div>
+      <table class="data-table"><thead><tr>
+        <th>Staff</th><th>Date</th><th>Submitted In</th><th>Out</th><th>Reason</th><th>Actions</th>
+      </tr></thead><tbody>`;
+
+    pendingShifts.forEach(s => {
+      const st = ALL_STAFF.find(m => m.id === s.staff_id);
+      html += `<tr style="background:#fffbf0">
+        <td><strong>${st ? st.name : 'Unknown'}</strong></td>
+        <td>${fmtDate(s.clock_in)}</td>
+        <td>${fmtTime(s.clock_in)}</td>
+        <td>${s.clock_out ? fmtTime(s.clock_out) : '<span class="badge pending">Not clocked out</span>'}</td>
+        <td style="font-size:12px;color:var(--muted)">${s.notes || '—'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn-teal" style="font-size:11px;padding:4px 10px" onclick="approveShift('${s.id}')">✓ Approve</button>
+          <button class="btn-sm" style="margin-left:4px" onclick="startEditShift('${s.id}')">✏️ Edit</button>
+          <button class="btn-danger" style="margin-left:4px" onclick="adminDeleteShift('${s.id}','${st ? st.name : 'this staff member'}')">🗑️</button>
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        Approve to confirm hours as submitted, Edit to adjust times, or Delete if incorrect.
+      </div>
+    </div>`;
+  }
 
   const grouped = {};
   shifts.forEach(s => {
     if (!grouped[s.staff_id]) grouped[s.staff_id] = [];
     grouped[s.staff_id].push(s);
   });
-
   let totalCost = 0;
   let totalHrs = 0;
 
-  let html = `<div class="card"><div class="card-title">Timesheets — This Month
+  html += `<div class="card"><div class="card-title">Timesheets — This Month
     <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Super admins can edit or delete any shift</span>
   </div>`;
 
@@ -867,6 +995,20 @@ async function renderTimesheets() {
   </div></div>`;
 
   return html;
+}
+
+async function approveShift(shiftId) {
+  try {
+    const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
+    // Calculate hours if clock_out exists, otherwise just mark approved
+    let updates = {status: 'completed', adjusted_by: ME.id};
+    if (shift.clock_in && shift.clock_out) {
+      const totalMins = (new Date(shift.clock_out) - new Date(shift.clock_in)) / 60000 - (shift.break_minutes||0);
+      updates.total_hours = Math.max(0, totalMins/60).toFixed(2);
+    }
+    await dbPatch('shifts', shiftId, updates);
+    setTab('timesheets');
+  } catch(e) { alert('Error approving: ' + e.message); }
 }
 
 function startEditShift(shiftId) {
