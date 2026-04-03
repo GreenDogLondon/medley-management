@@ -536,11 +536,190 @@ async function renderDashboard() {
    CLOCK IN / OUT
    ══════════════════════════════════════ */
 async function renderClock() {
-  const openShift = await getOpenShift(ME.id);
+  const openShift    = await getOpenShift(ME.id);
   const pendingShift = await getPendingShift(ME.id);
-  const now = new Date();
+  const now     = new Date();
+  const nowTime = fmtHHMM(now);
   const todayStr = now.toISOString().slice(0,10);
-  const dateStr = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const dateStr  = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  let html = `<div class="card clock-section">
+    <div class="clock-display" id="live-clock">${nowTime}</div>
+    <div class="clock-date">${dateStr}</div>`;
+
+  const activeShift = openShift || pendingShift;
+
+  if (activeShift) {
+    /* ── Already has a shift open / pending ── */
+    const isPending = !!pendingShift && !openShift;
+    const elapsed   = fmtElapsed(new Date(activeShift.clock_in));
+
+    html += `<div style="margin-bottom:20px">
+      <div class="clock-status">
+        ${isPending ? '⏳ Pending shift — started at' : 'Clocked in at'}
+        <strong>${fmtTime(activeShift.clock_in)}</strong>
+      </div>
+      <div class="clock-timer">${elapsed} on shift</div>
+      ${isPending ? `<div style="font-size:12px;color:var(--warn);margin-top:4px">Awaiting manager approval</div>` : ''}
+    </div>
+
+    <div style="max-width:320px;margin:0 auto 20px;text-align:left">
+      <div class="form-group">
+        <label>Your finish time</label>
+        <input type="time" id="clock-out-time" value="${nowTime}"
+          style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:16px">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Unpaid break taken</label>
+        <select id="break-select" class="break-select">
+          <option value="0">No break</option>
+          <option value="15">15 minutes</option>
+          <option value="20">20 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">1 hour</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="clock-btn out" onclick="doClockOut('${activeShift.id}','${todayStr}')">CLOCK<br>OUT</button>
+
+    ${isPending ? `<div style="margin-top:16px">
+      <button class="btn-sm" style="border-color:#fca5a5;color:var(--bad)" onclick="cancelPendingShift('${activeShift.id}')">
+        ✕ Cancel this shift entry
+      </button>
+    </div>` : ''}`;
+
+  } else {
+    /* ── Not clocked in — show start time form ── */
+    html += `<div style="max-width:320px;margin:0 auto 24px;text-align:left">
+      <div class="form-group">
+        <label>Your start time</label>
+        <input type="time" id="clock-in-time" value="${nowTime}"
+          style="width:100%;height:48px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:18px;font-weight:700">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Notes <span style="font-weight:400;text-transform:none">(optional — required if entering a past time)</span></label>
+        <input type="text" id="clock-in-notes" placeholder="e.g. Forgot to clock in at 10am"
+          style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px">
+      </div>
+    </div>
+
+    <button class="clock-btn in" onclick="doClockIn('${todayStr}')">CLOCK<br>IN</button>
+    <div style="font-size:12px;color:var(--muted);margin-top:14px;max-width:300px;margin-left:auto;margin-right:auto">
+      Enter your actual start time above — current time is pre-filled.<br>
+      A manager will confirm your hours.
+    </div>`;
+  }
+
+  html += `</div>`;
+
+  /* ── Today's confirmed shifts ── */
+  const todayShifts = await dbGet('shifts',
+    `staff_id=eq.${ME.id}&clock_in=gte.${todayStr}T00:00:00Z&status=eq.completed&order=clock_in.desc`
+  );
+  if (todayShifts.length) {
+    html += `<div class="card"><div class="card-title">Today's Confirmed Shifts</div>
+      <table class="data-table"><thead><tr>
+        <th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th><th>Note</th>
+      </tr></thead><tbody>`;
+    todayShifts.forEach(s => {
+      const adj = s.adjusted_by
+        ? '<span class="badge pending">Manager edited</span>'
+        : '<span class="badge ok">✓</span>';
+      html += `<tr>
+        <td>${fmtTime(s.clock_in)}</td>
+        <td>${fmtTime(s.clock_out)}</td>
+        <td>${s.break_minutes||0}m</td>
+        <td class="r">${parseFloat(s.total_hours||0).toFixed(2)}h</td>
+        <td>${adj}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  return html;
+}
+
+function startClockTimer() {
+  clearInterval(clockTimer);
+  clockTimer = setInterval(() => {
+    const el = document.getElementById('live-clock');
+    if (el) el.textContent = fmtHHMM(new Date());
+  }, 1000);
+}
+
+async function doClockIn(dateStr) {
+  const timeVal = (document.getElementById('clock-in-time')?.value || '').trim();
+  const notes   = (document.getElementById('clock-in-notes')?.value || '').trim();
+
+  if (!timeVal) { alert('Please enter your start time.'); return; }
+
+  // Require a note if the time is more than 10 minutes in the past
+  const entered  = new Date(`${dateStr}T${timeVal}:00`);
+  const diffMins = (Date.now() - entered) / 60000;
+  if (diffMins > 10 && !notes) {
+    alert('You\'re entering a past start time — please add a note explaining why (e.g. "Forgot to clock in").');
+    document.getElementById('clock-in-notes')?.focus();
+    return;
+  }
+
+  try {
+    if (await getOpenShift(ME.id))    { alert('You are already clocked in.'); return; }
+    if (await getPendingShift(ME.id)) { alert('You have a shift pending approval.'); return; }
+
+    await dbPost('shifts', {
+      staff_id: ME.id,
+      clock_in: entered.toISOString(),
+      status:   'pending_approval',
+      notes:    notes || null
+    });
+    render();
+  } catch(e) { alert('Clock in failed: ' + e.message); }
+}
+
+async function cancelPendingShift(shiftId) {
+  if (!confirm('Cancel this shift entry?')) return;
+  try { await dbDelete('shifts', shiftId); render(); }
+  catch(e) { alert('Error: ' + e.message); }
+}
+
+async function doClockOut(shiftId, dateStr) {
+  const timeVal  = (document.getElementById('clock-out-time')?.value || '').trim();
+  const breakMins = parseInt(document.getElementById('break-select')?.value || '0') || 0;
+
+  if (!timeVal) { alert('Please enter your finish time.'); return; }
+
+  try {
+    const shift    = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
+    const date     = shift.clock_in.slice(0,10);
+    const clockOut = new Date(`${date}T${timeVal}:00`);
+    const clockIn  = new Date(shift.clock_in);
+
+    if (clockOut <= clockIn) { alert('Finish time must be after start time.'); return; }
+
+    const totalMins  = (clockOut - clockIn) / 60000 - breakMins;
+    const totalHours = Math.max(0, totalMins / 60);
+
+    await dbPatch('shifts', shiftId, {
+      clock_out:    clockOut.toISOString(),
+      break_minutes: breakMins,
+      total_hours:  totalHours.toFixed(2),
+      status:       'pending_approval'   // always pending until manager confirms
+    });
+    render();
+  } catch(e) { alert('Clock out failed: ' + e.message); }
+}
+
+async function getOpenShift(staffId) {
+  const r = await dbGet('shifts', `staff_id=eq.${staffId}&status=eq.clocked_in&order=clock_in.desc&limit=1`);
+  return r[0] || null;
+}
+
+async function getPendingShift(staffId) {
+  const r = await dbGet('shifts', `staff_id=eq.${staffId}&status=eq.pending_approval&order=clock_in.desc&limit=1`);
+  return r[0] || null;
+}
 
   let html = `<div class="card clock-section">
     <div class="clock-display" id="live-clock">${fmtHHMM(now)}</div>
@@ -627,104 +806,6 @@ async function renderClock() {
   }
 
   return html;
-}
-
-function startClockTimer() {
-  clearInterval(clockTimer);
-  clockTimer = setInterval(() => {
-    const el = document.getElementById('live-clock');
-    if (el) el.textContent = fmtHHMM(new Date());
-  }, 1000);
-}
-
-async function doClockIn() {
-  try {
-    const open = await getOpenShift(ME.id);
-    if (open) { alert('You are already clocked in!'); return; }
-    const pending = await getPendingShift(ME.id);
-    if (pending) { alert('You have a shift pending approval. Please wait for a manager to confirm it.'); return; }
-    await dbPost('shifts', {
-      staff_id: ME.id,
-      clock_in: new Date().toISOString(),
-      status: 'clocked_in'
-    });
-    render();
-  } catch(e) { alert('Clock in failed: ' + e.message); }
-}
-
-async function submitLateClockIn(dateStr) {
-  const timeVal = document.getElementById('late-time').value;
-  const reason  = (document.getElementById('late-reason').value||'').trim();
-  if (!timeVal) { alert('Please enter your start time.'); return; }
-  if (!reason)  { alert('Please enter a reason — this helps your manager approve the shift.'); return; }
-
-  const open = await getOpenShift(ME.id);
-  if (open) { alert('You are already clocked in.'); return; }
-  const pending = await getPendingShift(ME.id);
-  if (pending) { alert('You already have a shift pending approval.'); return; }
-
-  const clockIn = new Date(`${dateStr}T${timeVal}:00`).toISOString();
-  try {
-    await dbPost('shifts', {
-      staff_id: ME.id,
-      clock_in: clockIn,
-      status: 'pending_approval',
-      notes: `Late entry — ${reason}`
-    });
-    render();
-  } catch(e) { alert('Error submitting: ' + e.message); }
-}
-
-async function cancelPendingShift(shiftId) {
-  if (!confirm('Cancel this pending shift submission?')) return;
-  try {
-    await dbDelete('shifts', shiftId);
-    render();
-  } catch(e) { alert('Error: ' + e.message); }
-}
-
-function showClockOut(shiftId) {
-  document.getElementById('clock-out-form').innerHTML = `
-    <div class="break-form">
-      <label>Did you take an unpaid break?</label>
-      <select class="break-select" id="break-select">
-        <option value="0">No break</option>
-        <option value="15">15 minutes</option>
-        <option value="20">20 minutes</option>
-        <option value="30">30 minutes</option>
-        <option value="45">45 minutes</option>
-        <option value="60">1 hour</option>
-      </select>
-      <button class="confirm-btn" onclick="doClockOut('${shiftId}')">Confirm Clock Out</button>
-    </div>`;
-}
-
-async function doClockOut(shiftId) {
-  const breakMins = parseInt(document.getElementById('break-select').value) || 0;
-  try {
-    const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
-    const clockIn  = new Date(shift.clock_in);
-    const clockOut = new Date();
-    const totalMins = (clockOut - clockIn) / 60000 - breakMins;
-    const totalHours = Math.max(0, totalMins / 60);
-    await dbPatch('shifts', shiftId, {
-      clock_out: clockOut.toISOString(),
-      break_minutes: breakMins,
-      total_hours: totalHours.toFixed(2),
-      status: shift.status === 'pending_approval' ? 'pending_approval' : 'completed'
-    });
-    render();
-  } catch(e) { alert('Clock out failed: ' + e.message); }
-}
-
-async function getOpenShift(staffId) {
-  const r = await dbGet('shifts', `staff_id=eq.${staffId}&status=eq.clocked_in&order=clock_in.desc&limit=1`);
-  return r[0] || null;
-}
-
-async function getPendingShift(staffId) {
-  const r = await dbGet('shifts', `staff_id=eq.${staffId}&status=eq.pending_approval&order=clock_in.desc&limit=1`);
-  return r[0] || null;
 }
 
 /* ══════════════════════════════════════
