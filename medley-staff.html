@@ -687,7 +687,10 @@ async function doClockOut(shiftId,dateStr){
       clearTimeout(t);
       if(r.ok){const d=await r.json();if(d[0]?.clock_in)clockIn=new Date(d[0].clock_in);}
     }catch(fe){}
-    const totalHours=Math.max(0,((clockOut-clockIn)/60000-brk)/60);
+    // Handle midnight crossover
+    let adjustedOut=new Date(clockOut);
+    if(adjustedOut<=clockIn)adjustedOut=new Date(adjustedOut.getTime()+86400000);
+    const totalHours=Math.max(0,((adjustedOut-clockIn)/60000-brk)/60);
     await dbPatch('shifts',shiftId,{clock_out:clockOut.toISOString(),break_minutes:brk,total_hours:totalHours.toFixed(2),status:'pending_approval'});
     document.getElementById('content').innerHTML=`
       <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
@@ -741,39 +744,164 @@ function getWeekDates(offset=0){
   monday.setDate(now.getDate()-(day===0?6:day-1)+offset*7);
   return Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d.toISOString().slice(0,10);});
 }
+
 async function renderRota(){
   const dates=getWeekDates(rotaWeekOffset);
   const weekLabel=`${fmtDateShort(dates[0])} – ${fmtDateShort(dates[6])}`;
   const rota=await dbGet('rota',`date=gte.${dates[0]}&date=lte.${dates[6]}&order=start_time.asc`);
-  const staffToShow=isManager()?ALL_STAFF:ALL_STAFF.filter(s=>s.id===ME.id);
+
+  // Split staff into FOH / BOH based on team field
+  const allStaff=isManager()?ALL_STAFF:ALL_STAFF.filter(s=>s.id===ME.id);
+  const foh=allStaff.filter(s=>s.team!=='boh');
+  const boh=allStaff.filter(s=>s.team==='boh');
+
+  const makeTeamTable=(teamStaff,teamLabel,color)=>{
+    if(!teamStaff.length)return'';
+    let t=`<div style="font-weight:800;font-size:13px;color:#fff;background:${color};padding:8px 12px;border-radius:8px 8px 0 0;letter-spacing:.04em;text-transform:uppercase">${teamLabel}</div>
+    <div class="rota-wrap" style="margin-bottom:16px"><table class="rota-table" id="rota-tbl-${teamLabel.replace(/\s/g,'')}">
+      <thead><tr><th>Name</th>${dates.map((d,i)=>`<th>${DAYS[i]}<br><small>${d.slice(8)}</small></th>`).join('')}</tr></thead>
+      <tbody>`;
+    teamStaff.forEach(st=>{
+      t+=`<tr><td>${st.name.split(' ')[0]}</td>`;
+      dates.forEach(date=>{
+        const dayShifts=rota.filter(r=>r.staff_id===st.id&&r.date===date);
+        t+=`<td ${isManager()?`onclick="showRotaAdd('${st.id}','${date}')"`:''}">`;
+        dayShifts.forEach(r=>{
+          t+=`<div class="rota-shift" style="background:${color}"><span>${r.start_time.slice(0,5)}–${r.end_time.slice(0,5)}</span>
+            ${isManager()?`<button class="del" onclick="delRota('${r.id}',event)">×</button>`:''}
+          </div>`;
+        });
+        if(!dayShifts.length&&isManager())t+=`<div class="rota-empty">+ Add</div>`;
+        t+=`</td>`;
+      });
+      t+=`</tr>`;
+    });
+    t+=`</tbody></table></div>`;
+    return t;
+  };
+
   let h=`<div class="rota-nav">
     <button onclick="rotaWeekOffset--;setTab('rota')">← Prev</button>
     <div class="rota-week-label">Week of ${weekLabel}</div>
     <button onclick="rotaWeekOffset++;setTab('rota')">Next →</button>
     ${rotaWeekOffset!==0?`<button onclick="rotaWeekOffset=0;setTab('rota')" style="margin-left:auto">Today</button>`:''}
-  </div>
-  <div class="rota-wrap"><table class="rota-table">
-    <thead><tr><th>Staff</th>${dates.map((d,i)=>`<th>${DAYS[i]}<br><small>${d.slice(8)}</small></th>`).join('')}</tr></thead>
-    <tbody>`;
-  staffToShow.forEach(st=>{
-    h+=`<tr><td>${st.name.split(' ')[0]}</td>`;
-    dates.forEach(date=>{
-      const dayShifts=rota.filter(r=>r.staff_id===st.id&&r.date===date);
-      h+=`<td ${isManager()?`onclick="showRotaAdd('${st.id}','${date}')"`:''}">`;
-      dayShifts.forEach(r=>{
-        h+=`<div class="rota-shift"><span>${r.start_time.slice(0,5)}–${r.end_time.slice(0,5)}</span>
-          ${isManager()?`<button class="del" onclick="delRota('${r.id}',event)">×</button>`:''}
-        </div>`;
-      });
-      if(!dayShifts.length&&isManager())h+=`<div class="rota-empty">+ Add</div>`;
-      h+=`</td>`;
-    });
-    h+=`</tr>`;
-  });
-  h+=`</tbody></table></div>`;
-  if(isManager())h+=`<div id="rota-add-form"></div>`;
+  </div>`;
+
+  if(isManager()){
+    h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <button class="btn-teal" onclick="duplicateLastWeek()">📋 Copy last week</button>
+      <button class="btn-sm" onclick="exportRotaImage()">🖼️ Download image</button>
+      <button class="btn-sm" onclick="exportRotaPDF()">📄 Download PDF</button>
+      ${rota.length===0?`<span style="font-size:12px;color:var(--muted);margin-left:4px">No shifts this week yet — add some or copy from last week</span>`:''}
+    </div>`;
+  }
+
+  h+=`<div id="rota-export-area">`;
+  h+=`<div style="background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-weight:800;color:var(--teal)">📅 Rota — ${weekLabel}</div>
+    <div style="font-size:12px;color:var(--muted)">The Medley · Season 2026</div>
+  </div>`;
+  h+=makeTeamTable(foh,'🍸 Front of House — Bar Team','var(--teal)');
+  h+=makeTeamTable(boh,'🍕 Back of House — Kitchen Team','#c44414');
+  h+=`</div>`;
+
+  if(isManager()){
+    h+=`<div id="rota-add-form"></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">Tap any cell to add a shift · Tap shift × to remove · Staff team (FOH/BOH) set in Staff admin</p>`;
+  }
   return h;
 }
+
+async function duplicateLastWeek(){
+  const lastDates=getWeekDates(rotaWeekOffset-1);
+  const thisDates=getWeekDates(rotaWeekOffset);
+  try{
+    const lastRota=await dbGet('rota',`date=gte.${lastDates[0]}&date=lte.${lastDates[6]}`);
+    if(!lastRota.length){showToast('No shifts found in last week to copy.','warn');return;}
+    // Check if this week already has shifts
+    const thisRota=await dbGet('rota',`date=gte.${thisDates[0]}&date=lte.${thisDates[6]}`);
+    if(thisRota.length>0){
+      // Use twoTap-style confirmation via a button — just show toast and require second call
+      if(!duplicateLastWeek._confirmed){
+        duplicateLastWeek._confirmed=true;
+        showToast('This week already has shifts. Tap Copy again to add on top.','warn');
+        setTimeout(()=>{duplicateLastWeek._confirmed=false;},4000);
+        return;
+      }
+      duplicateLastWeek._confirmed=false;
+    }
+    // Map each day offset
+    let count=0;
+    for(const shift of lastRota){
+      const dayIdx=lastDates.indexOf(shift.date);
+      if(dayIdx<0)continue;
+      const newDate=thisDates[dayIdx];
+      try{
+        await dbPost('rota',{staff_id:shift.staff_id,date:newDate,start_time:shift.start_time,end_time:shift.end_time,created_by:ME.id});
+        count++;
+      }catch(e){}
+    }
+    showToast(`✓ Copied ${count} shifts from last week`,'ok');
+    setTimeout(()=>setTab('rota'),700);
+  }catch(e){showToast('Error copying rota: '+e.message);}
+}
+
+async function exportRotaImage(){
+  showToast('Generating image…','ok');
+  try{
+    // Load html2canvas dynamically
+    if(!window.html2canvas){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=res;s.onerror=rej;
+        document.head.appendChild(s);
+      });
+    }
+    const el=document.getElementById('rota-export-area');
+    if(!el){showToast('Rota not found — please reload');return;}
+    const canvas=await html2canvas(el,{backgroundColor:'#f5f7f6',scale:2,useCORS:true});
+    const a=document.createElement('a');
+    const dates=getWeekDates(rotaWeekOffset);
+    a.download=`medley-rota-${dates[0]}.png`;
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+    showToast('Image downloaded ✓','ok');
+  }catch(e){showToast('Export failed: '+e.message);}
+}
+
+async function exportRotaPDF(){
+  showToast('Generating PDF…','ok');
+  try{
+    if(!window.html2canvas){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      });
+    }
+    if(!window.jspdf){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      });
+    }
+    const el=document.getElementById('rota-export-area');
+    if(!el){showToast('Rota not found');return;}
+    const canvas=await html2canvas(el,{backgroundColor:'#f5f7f6',scale:2,useCORS:true});
+    const imgData=canvas.toDataURL('image/png');
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pdfW=pdf.internal.pageSize.getWidth();
+    const pdfH=(canvas.height*pdfW)/canvas.width;
+    pdf.addImage(imgData,'PNG',0,0,pdfW,Math.min(pdfH,pdf.internal.pageSize.getHeight()));
+    const dates=getWeekDates(rotaWeekOffset);
+    pdf.save(`medley-rota-${dates[0]}.pdf`);
+    showToast('PDF downloaded ✓','ok');
+  }catch(e){showToast('Export failed: '+e.message);}
+}
+
 function showRotaAdd(staffId,date){
   const st=ALL_STAFF.find(s=>s.id===staffId);
   const form=document.getElementById('rota-add-form');
@@ -935,7 +1063,9 @@ async function approveShift(id){
     const shift=(await dbGet('shifts',`id=eq.${id}`))[0];
     let u={status:'completed',adjusted_by:ME.id};
     if(shift.clock_in&&shift.clock_out){
-      const mins=(new Date(shift.clock_out)-new Date(shift.clock_in))/60000-(shift.break_minutes||0);
+      let co=new Date(shift.clock_out),ci=new Date(shift.clock_in);
+      if(co<=ci)co=new Date(co.getTime()+86400000);
+      const mins=(co-ci)/60000-(shift.break_minutes||0);
       u.total_hours=Math.max(0,mins/60).toFixed(2);
     }
     await dbPatch('shifts',id,u);
@@ -958,11 +1088,13 @@ async function saveEdit(shiftId,staffId,approve=false){
   const brk=parseInt(document.getElementById('es-break').value)||0;
   const notes=document.getElementById('es-notes').value.trim();
   if(!date||!inT){showToast('Date and start time required.');return;}
-  const ci=new Date(`${date}T${inT}:00`).toISOString();
-  const co=outT?new Date(`${date}T${outT}:00`).toISOString():null;
-  const mins=co?(new Date(co)-new Date(ci))/60000-brk:0;
+  const ci=new Date(`${date}T${inT}:00`);
+  let co=outT?new Date(`${date}T${outT}:00`):null;
+  // Handle midnight crossover — if out is earlier than in, shift goes to next day
+  if(co&&co<=ci)co=new Date(co.getTime()+86400000);
+  const mins=co?(co-ci)/60000-brk:0;
   try{
-    await dbPatch('shifts',shiftId,{clock_in:ci,clock_out:co,break_minutes:brk,total_hours:Math.max(0,mins/60).toFixed(2),adjusted_by:ME.id,notes:notes||null,status:approve?'completed':'pending_approval'});
+    await dbPatch('shifts',shiftId,{clock_in:ci.toISOString(),clock_out:co?co.toISOString():null,break_minutes:brk,total_hours:Math.max(0,mins/60).toFixed(2),adjusted_by:ME.id,notes:notes||null,status:approve?'completed':'pending_approval'});
     editingShiftId=null;showToast('Saved ✓','ok');setTimeout(()=>setTab('timesheets'),600);
   }catch(e){showToast('Error: '+e.message);}
 }
@@ -1126,6 +1258,7 @@ async function renderStaffAdmin(){
     <div class="form-grid cols2">
       <div class="form-group"><label>Full Name *</label><input id="ns-name" placeholder="First Last"></div>
       <div class="form-group"><label>Role</label><select id="ns-role"><option value="staff">Staff</option><option value="manager">Manager</option><option value="super_admin">Super Admin</option></select></div>
+      <div class="form-group"><label>Team</label><select id="ns-team"><option value="foh">🍸 Front of House (Bar)</option><option value="boh">🍕 Back of House (Kitchen)</option></select></div>
       <div class="form-group"><label>Email</label><input type="email" id="ns-email"></div>
       <div class="form-group"><label>Phone</label><input type="tel" id="ns-phone"></div>
       <div class="form-group"><label>Hourly Rate £</label><input type="number" step="0.01" id="ns-rate" placeholder="12.21"></div>
@@ -1133,11 +1266,15 @@ async function renderStaffAdmin(){
     <button class="btn-teal" onclick="addStaff()" style="margin-top:10px">Add Staff Member</button>
     <div id="add-staff-msg" style="margin-top:8px"></div></div>
   <div class="card"><div class="card-title">All Staff (${ALL_STAFF.length})</div>
-    <table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Email</th><th class="r">Rate</th><th>PIN</th><th>Active</th><th></th></tr></thead><tbody>`;
+    <table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Email</th><th class="r">Rate</th><th>PIN</th><th>Active</th><th></th></tr></thead><tbody>`;
   ALL_STAFF.forEach(st=>{
     h+=`<tr>
       <td><strong>${st.name}</strong></td>
       <td><span class="badge ${st.role}">${ROLES[st.role]||st.role}</span></td>
+      <td><select style="border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:12px" onchange="updateTeam('${st.id}',this.value)">
+        <option value="foh" ${st.team!=='boh'?'selected':''}>🍸 FOH</option>
+        <option value="boh" ${st.team==='boh'?'selected':''}>🍕 BOH</option>
+      </select></td>
       <td style="font-size:12px;color:var(--muted)">${st.email||'—'}</td>
       <td class="r">£<input type="number" step="0.01" value="${parseFloat(st.hourly_rate||0).toFixed(2)}" style="width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px" onchange="updateRate('${st.id}',+this.value)"></td>
       <td>${st.id===ME.id?'—':`<button class="btn-sm" onclick="resetPIN('${st.id}','${st.name.replace(/'/g,'&#39;')}')">Reset</button>`}</td>
@@ -1153,9 +1290,10 @@ async function addStaff(){
   const email=document.getElementById('ns-email').value.trim();
   const phone=document.getElementById('ns-phone').value.trim();
   const rate=parseFloat(document.getElementById('ns-rate').value)||0;
+  const team=document.getElementById('ns-team').value||'foh';
   if(!name){showMsg('add-staff-msg','Name is required.','err');return;}
   try{
-    const result=await dbPost('staff',{name,role,email,phone,hourly_rate:rate,pin_hash:'0000',is_active:true});
+    const result=await dbPost('staff',{name,role,email,phone,hourly_rate:rate,pin_hash:'0000',is_active:true,team});
     const newStaff=Array.isArray(result)?result[0]:result;
     if(newStaff){ALL_STAFF.push(newStaff);ALL_STAFF.sort((a,b)=>a.name.localeCompare(b.name));}
     showMsg('add-staff-msg',`✓ ${name} added. Default PIN is 0000.`,'ok');
@@ -1164,6 +1302,7 @@ async function addStaff(){
   }catch(e){showMsg('add-staff-msg','Error: '+e.message,'err');}
 }
 async function updateRate(id,val){try{await dbPatch('staff',id,{hourly_rate:val});const st=ALL_STAFF.find(s=>s.id===id);if(st)st.hourly_rate=val;}catch(e){showToast('Error: '+e.message);}}
+async function updateTeam(id,val){try{await dbPatch('staff',id,{team:val});const st=ALL_STAFF.find(s=>s.id===id);if(st)st.team=val;showToast('Team updated ✓','ok');}catch(e){showToast('Error: '+e.message);}}
 async function resetPIN(id,name){
   try{await dbPatch('staff',id,{pin_hash:'0000'});showToast(`${name}'s PIN reset to 0000`,'ok');}
   catch(e){showToast('Error: '+e.message);}
