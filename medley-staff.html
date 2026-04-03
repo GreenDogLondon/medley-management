@@ -261,8 +261,7 @@ const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 // Always use LOCAL date string — avoids BST/UTC midnight shift
 function localDate(d=new Date()){
-  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${dd}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 const SESSION_KEY='medley-staff-v3';
 const SESSION_MS=15*60*1000;
@@ -533,13 +532,21 @@ async function renderClock(){
   const active=openShift||pendingShift;
   if(active){
     const isPending=!!pendingShift&&!openShift;
+    // Default clock-out date to the shift's start date (not today) — avoids the 63h bug
+    const shiftDate=active.clock_in?active.clock_in.slice(0,10):todayStr;
+    const isOldShift=shiftDate!==todayStr;
     h+=`<div style="margin-bottom:20px">
-      <div class="clock-status">${isPending?'⏳ Pending — started at':'Clocked in at'} <strong>${fmtTime(active.clock_in)}</strong></div>
-      <div class="clock-timer">${fmtElapsed(new Date(active.clock_in))} on shift</div>
+      <div class="clock-status">${isPending?'⏳ Pending — started at':'Clocked in at'} <strong>${fmtTime(active.clock_in)}</strong> on ${fmtDateShort(shiftDate)}</div>
+      <div class="clock-timer">${fmtElapsed(new Date(active.clock_in))} since shift started</div>
       ${isPending?`<div style="font-size:12px;color:var(--warn);margin-top:4px">Awaiting manager approval</div>`:''}
     </div>
-    <div style="max-width:320px;margin:0 auto 20px;text-align:left">
-      <div class="form-group"><label>Your finish time</label>
+    <div style="max-width:340px;margin:0 auto 20px;text-align:left">
+      <div class="form-group">
+        <label>Finish date</label>
+        <input type="date" id="clock-out-date" value="${shiftDate}" max="${todayStr}"
+          style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:15px">
+      </div>
+      <div class="form-group" style="margin-top:12px"><label>Your finish time</label>
         <input type="time" id="clock-out-time" value="${nowTime}" style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:16px">
       </div>
       <div class="form-group" style="margin-top:12px"><label>Unpaid break</label>
@@ -549,8 +556,14 @@ async function renderClock(){
           <option value="45">45 min</option><option value="60">1 hour</option>
         </select>
       </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Notes <span style="font-weight:400;font-size:11px;text-transform:none;color:${isOldShift?'var(--bad)':'var(--muted)'}" id="out-notes-hint">${isOldShift?'(required — this is a past shift)':'(optional)'}</span></label>
+        <input type="text" id="clock-out-notes" placeholder="e.g. Forgot to clock out at end of shift"
+          style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px"
+          ${isOldShift?'required':''}>
+      </div>
     </div>
-    <button class="clock-btn out" id="clock-out-btn" onclick="doClockOut('${active.id}','${todayStr}')">CLOCK<br>OUT</button>
+    <button class="clock-btn out" id="clock-out-btn" onclick="doClockOut('${active.id}','${shiftDate}')">CLOCK<br>OUT</button>
     ${isPending?`<div style="margin-top:16px"><button class="btn-sm" style="border-color:#fca5a5;color:var(--bad)" onclick="cancelPending('${active.id}')">✕ Cancel this entry</button></div>`:''}`;
   }else{
     h+=`<div style="max-width:340px;margin:0 auto 24px;text-align:left">
@@ -677,11 +690,15 @@ async function doClockIn(){
 async function cancelPending(id){
   try{await dbDel('shifts',id);render();}catch(e){showToast('Error: '+e.message);}
 }
-async function doClockOut(shiftId,dateStr){
+async function doClockOut(shiftId,fallbackDateStr){
+  const dateStr=(document.getElementById('clock-out-date')?.value||fallbackDateStr||localDate()).trim();
   const tv=(document.getElementById('clock-out-time')?.value||'').trim();
   const brk=parseInt(document.getElementById('break-select')?.value||'0')||0;
+  const notes=(document.getElementById('clock-out-notes')?.value||'').trim();
   const btn=document.getElementById('clock-out-btn');
+  const isToday=dateStr===localDate();
   if(!tv){showToast('Please enter your finish time.');return;}
+  if(!isToday&&!notes){showToast('Please add a note — e.g. "Forgot to clock out"');document.getElementById('clock-out-notes')?.focus();return;}
   if(btn){btn.textContent='Saving…';btn.disabled=true;btn.style.opacity='.7';}
   try{
     const clockOut=new Date(`${dateStr}T${tv}:00`);
@@ -693,11 +710,10 @@ async function doClockOut(shiftId,dateStr){
       clearTimeout(t);
       if(r.ok){const d=await r.json();if(d[0]?.clock_in)clockIn=new Date(d[0].clock_in);}
     }catch(fe){}
-    // Handle midnight crossover
     let adjustedOut=new Date(clockOut);
     if(adjustedOut<=clockIn)adjustedOut=new Date(adjustedOut.getTime()+86400000);
     const totalHours=Math.max(0,((adjustedOut-clockIn)/60000-brk)/60);
-    await dbPatch('shifts',shiftId,{clock_out:clockOut.toISOString(),break_minutes:brk,total_hours:totalHours.toFixed(2),status:'pending_approval'});
+    await dbPatch('shifts',shiftId,{clock_out:clockOut.toISOString(),break_minutes:brk,total_hours:totalHours.toFixed(2),status:'pending_approval',notes:notes||null});
     document.getElementById('content').innerHTML=`
       <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
         <div style="font-size:64px;margin-bottom:16px">✅</div>
@@ -746,19 +762,20 @@ async function renderMyShifts(){
 
 /* ── ROTA ── */
 function getWeekDates(offset=0){
-  const now=new Date();
-  const day=now.getDay(); // 0=Sun, 1=Mon … 6=Sat
-  const monday=new Date(now);
-  monday.setDate(now.getDate()-(day===0?6:day-1)+offset*7);
-  monday.setHours(0,0,0,0); // normalise to local midnight
+  // Build today's date string from LOCAL parts first — avoids any UTC/BST slip
+  const n=new Date();
+  const todayStr=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  // Parse as local midnight so getDay() is definitely the local weekday
+  const today=new Date(todayStr+'T00:00:00');
+  const dow=today.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const daysSinceMonday=dow===0?6:dow-1;
+  // Monday of the target week
+  const monday=new Date(today);
+  monday.setDate(today.getDate()-daysSinceMonday+(offset*7));
   return Array.from({length:7},(_,i)=>{
     const d=new Date(monday);
     d.setDate(monday.getDate()+i);
-    // Use LOCAL date parts — avoids UTC offset shifting the date
-    const y=d.getFullYear();
-    const m=String(d.getMonth()+1).padStart(2,'0');
-    const dd=String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${dd}`;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   });
 }
 
