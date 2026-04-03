@@ -258,6 +258,12 @@ let ME=null,ALL_STAFF=[],activeTab='',pinEntry='',pinTarget=null,clockTimer=null
 let _posting=false;
 const ROLES={super_admin:'Super Admin',manager:'Manager',staff:'Staff'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// Always use LOCAL date string — avoids BST/UTC midnight shift
+function localDate(d=new Date()){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
 const SESSION_KEY='medley-staff-v3';
 const SESSION_MS=15*60*1000;
 let lastActivity=Date.now(),inactivityTimer=null;
@@ -487,7 +493,7 @@ function deleteAnn(btn,id){
 
 /* ── DASHBOARD ── */
 async function renderDashboard(){
-  const today=new Date().toISOString().slice(0,10);
+  const today=localDate();
   const monthStart=today.slice(0,8)+'01';
   const [allShifts,openShifts]=await Promise.all([
     dbGet('shifts',`clock_in=gte.${monthStart}T00:00:00Z&status=eq.completed`),
@@ -519,7 +525,7 @@ async function renderDashboard(){
 async function renderClock(){
   const openShift=await getOpenShift(ME.id);
   const pendingShift=await getPendingShift(ME.id);
-  const now=new Date(),nowTime=fmtHHMM(now),todayStr=now.toISOString().slice(0,10);
+  const now=new Date(),nowTime=fmtHHMM(now),todayStr=localDate(now);
   const dateStr=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   let h=`<div class="card clock-section">
     <div class="clock-display" id="live-clock">${nowTime}</div>
@@ -600,7 +606,7 @@ async function checkRotaMatch(){
     const rota=await dbGet('rota',`staff_id=eq.${ME.id}&date=eq.${date}`);
     if(!rota||!rota.length){
       // No rota entry — note required if not today's current time
-      const isToday=date===new Date().toISOString().slice(0,10);
+      const isToday=date===localDate();
       const diffMins=(Date.now()-new Date(`${date}T${time}:00`))/60000;
       if(isToday&&diffMins<15){
         hint.textContent='(optional)';hint.style.color='var(--muted)';
@@ -634,7 +640,7 @@ async function checkRotaMatch(){
 }
 
 async function doClockIn(){
-  const date=document.getElementById('clock-in-date')?.value||new Date().toISOString().slice(0,10);
+  const date=document.getElementById('clock-in-date')?.value||localDate();
   const tv=(document.getElementById('clock-in-time')?.value||'').trim();
   const notes=(document.getElementById('clock-in-notes')?.value||'').trim();
   const notesRequired=document.getElementById('clock-in-notes')?.required;
@@ -649,7 +655,7 @@ async function doClockIn(){
   const entered=new Date(`${date}T${tv}:00`);
   try{
     await dbPost('shifts',{staff_id:ME.id,clock_in:entered.toISOString(),status:'pending_approval',notes:notes||null});
-    const isToday=date===new Date().toISOString().slice(0,10);
+    const isToday=date===localDate();
     document.getElementById('content').innerHTML=`
       <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
         <div style="font-size:64px;margin-bottom:16px">${isToday?'🟢':'📋'}</div>
@@ -740,9 +746,20 @@ async function renderMyShifts(){
 
 /* ── ROTA ── */
 function getWeekDates(offset=0){
-  const now=new Date(),day=now.getDay(),monday=new Date(now);
+  const now=new Date();
+  const day=now.getDay(); // 0=Sun, 1=Mon … 6=Sat
+  const monday=new Date(now);
   monday.setDate(now.getDate()-(day===0?6:day-1)+offset*7);
-  return Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d.toISOString().slice(0,10);});
+  monday.setHours(0,0,0,0); // normalise to local midnight
+  return Array.from({length:7},(_,i)=>{
+    const d=new Date(monday);
+    d.setDate(monday.getDate()+i);
+    // Use LOCAL date parts — avoids UTC offset shifting the date
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,'0');
+    const dd=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dd}`;
+  });
 }
 
 async function renderRota(){
@@ -1301,8 +1318,44 @@ async function addStaff(){
     setTimeout(()=>setTab('staff-admin'),800);
   }catch(e){showMsg('add-staff-msg','Error: '+e.message,'err');}
 }
-async function updateRate(id,val){try{await dbPatch('staff',id,{hourly_rate:val});const st=ALL_STAFF.find(s=>s.id===id);if(st)st.hourly_rate=val;}catch(e){showToast('Error: '+e.message);}}
-async function updateTeam(id,val){try{await dbPatch('staff',id,{team:val});const st=ALL_STAFF.find(s=>s.id===id);if(st)st.team=val;showToast('Team updated ✓','ok');}catch(e){showToast('Error: '+e.message);}}
+async function updateStaffField(id, field, val){
+  try{
+    await dbPatch('staff',id,{[field]:val});
+    const st=ALL_STAFF.find(s=>s.id===id);
+    if(st)st[field]=val;
+    showToast(`✓ ${field==='hourly_rate'?'Rate':field==='role'?'Role':field==='team'?'Team':'Name'} updated`,'ok');
+  }catch(e){showToast('Error: '+e.message);}
+}
+async function updateRate(id,val){return updateStaffField(id,'hourly_rate',val);}
+async function updateTeam(id,val){return updateStaffField(id,'team',val);}
+async function archiveStaff(id,name){
+  try{
+    await dbPatch('staff',id,{is_active:false});
+    ALL_STAFF=ALL_STAFF.filter(s=>s.id!==id);
+    showToast(`${name} archived — shift history kept`,'ok');
+    setTimeout(()=>setTab('staff-admin'),600);
+  }catch(e){showToast('Error: '+e.message);}
+}
+async function restoreStaff(id,name){
+  try{
+    await dbPatch('staff',id,{is_active:true});
+    showToast(`${name} restored ✓`,'ok');
+    const fresh=await dbGet('staff','is_active=eq.true&order=name.asc');
+    ALL_STAFF=fresh;
+    setTimeout(()=>setTab('staff-admin'),600);
+  }catch(e){showToast('Error: '+e.message);}
+}
+function hardDeleteStaff(btn,id,name){
+  twoTapDelete(btn,async()=>{
+    try{
+      // Anonymise their shifts rather than deleting (keeps payroll history intact)
+      await dbPatch('staff',id,{is_active:false,name:`[Deleted] ${name}`,email:null,phone:null,pin_hash:'0000'});
+      ALL_STAFF=ALL_STAFF.filter(s=>s.id!==id);
+      showToast(`${name} permanently deleted`,'ok');
+      setTimeout(()=>setTab('staff-admin'),600);
+    }catch(e){showToast('Delete failed: '+e.message);}
+  });
+}
 async function resetPIN(id,name){
   try{await dbPatch('staff',id,{pin_hash:'0000'});showToast(`${name}'s PIN reset to 0000`,'ok');}
   catch(e){showToast('Error: '+e.message);}
@@ -1311,10 +1364,7 @@ async function toggleActive(id,active){
   try{await dbPatch('staff',id,{is_active:active});const st=ALL_STAFF.find(s=>s.id===id);if(st)st.is_active=active;}
   catch(e){showToast('Error: '+e.message);}
 }
-async function removeStaff(id,name){
-  try{await dbPatch('staff',id,{is_active:false});ALL_STAFF=ALL_STAFF.filter(s=>s.id!==id);setTab('staff-admin');}
-  catch(e){showToast('Error: '+e.message);}
-}
+async function removeStaff(id,name){return archiveStaff(id,name);}
 
 /* ── UTILS ── */
 function fmtHHMM(d){return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
