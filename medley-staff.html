@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>The Medley — Staff Portal</title>
+<style>
+:root {
+  --teal:#1a6b5a; --teal-d:#134f43; --teal-l:#e8f4f1;
+  --orange:#e8571a; --orange-l:#fdf0ea;
+  --bg:#f5f7f6; --white:#ffffff; --border:#dde5e2;
+  --text:#1a2620; --muted:#7a8f89;
+  --good:#1a6b5a; --good-bg:#e8f4f1;
+  --warn:#8a5200; --warn-bg:#fef3e2;
+  --bad:#a32d2d; --bad-bg:#fdeaea;
+  --radius:12px; --shadow:0 2px 12px rgba(0,0,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ── Login Screen ── */
+#login-screen{position:fixed;inset:0;background:var(--teal);z-index:9000;display:flex;flex-direction:column;align-items:center;overflow-y:auto}
+.login-header{text-align:center;padding:32px 20px 20px;color:#fff}
+.login-logo{font-size:28px;font-weight:900;letter-spacing:.06em}
+.login-tagline{font-size:13px;opacity:.7;margin-top:4px}
+.login-instruction{font-size:13px;opacity:.8;margin-top:16px}
+
+/* Staff grid */
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;padding:16px;width:100%;max-width:600px}
+.staff-card{background:rgba(255,255,255,.12);border:2px solid transparent;border-radius:var(--radius);padding:16px 8px;text-align:center;cursor:pointer;transition:.15s;color:#fff}
+.staff-card:hover,.staff-card.selected{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5)}
+.staff-avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;overflow:hidden}
+.staff-avatar img{width:100%;height:100%;object-fit:cover}
+.staff-card-name{font-size:13px;font-weight:600;line-height:1.3}
+.staff-card-role{font-size:10px;opacity:.7;margin-top:2px}
+
+/* PIN pad */
+#pin-screen{display:none;position:fixed;inset:0;background:var(--teal);z-index:9100;flex-direction:column;align-items:center;justify-content:center}
+.pin-who{color:#fff;font-size:16px;font-weight:700;margin-bottom:8px}
+.pin-dots{display:flex;gap:12px;margin-bottom:28px}
+.pin-dot{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.3);transition:.15s}
+.pin-dot.filled{background:#fff}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px}
+.pin-btn{height:64px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:24px;font-weight:600;transition:.15s}
+.pin-btn:active{background:rgba(255,255,255,.3);transform:scale(.95)}
+.pin-btn.action{font-size:14px}
+.pin-error{color:#ffb3b3;font-size:13px;margin-top:12px;text-align:center;min-height:18px}
+.pin-back{color:rgba(255,255,255,.7);font-size:13px;margin-top:20px;text-decoration:underline;cursor:pointer;background:none;border:none}
+
+/* ── App Shell ── */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{background:var(--teal);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{font-weight:900;font-size:15px;letter-spacing:.04em}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.topbar-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;overflow:hidden}
+.topbar-avatar img{width:100%;height:100%;object-fit:cover}
+.topbar-name{font-size:13px;font-weight:600}
+.topbar-role{font-size:10px;opacity:.7}
+.logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600}
+
+nav{background:#fff;border-bottom:2px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 12px;position:sticky;top:52px;z-index:99}
+nav::-webkit-scrollbar{display:none}
+.navtab{border:none;background:none;padding:11px 14px;font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;cursor:pointer;transition:.15s}
+.navtab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
+
+#content{padding:16px;max-width:1100px;margin:0 auto;width:100%}
+
+/* ── Cards & Panels ── */
+.card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.card-title{font-size:13px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.metric-grid{grid-template-columns:repeat(4,1fr)}}
+.metric{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);text-align:center}
+.metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.metric-value{font-size:26px;font-weight:900;color:var(--teal);margin:4px 0}
+.metric-sub{font-size:11px;color:var(--muted)}
+
+/* ── Clock In/Out ── */
+.clock-section{text-align:center;padding:24px 16px}
+.clock-display{font-size:42px;font-weight:900;color:var(--teal);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.clock-date{color:var(--muted);font-size:13px;margin-bottom:24px}
+.clock-btn{display:inline-block;width:160px;height:160px;border-radius:50%;border:none;font-size:20px;font-weight:800;cursor:pointer;transition:.2s;box-shadow:0 6px 24px rgba(0,0,0,.15)}
+.clock-btn.in{background:var(--teal);color:#fff}
+.clock-btn.in:active{background:var(--teal-d);transform:scale(.97)}
+.clock-btn.out{background:var(--orange);color:#fff}
+.clock-btn.out:active{background:#c44414;transform:scale(.97)}
+.clock-status{margin-top:20px;font-size:14px;color:var(--muted)}
+.clock-timer{font-size:18px;font-weight:700;color:var(--orange)}
+.break-form{background:var(--teal-l);border-radius:var(--radius);padding:16px;margin-top:16px;text-align:left}
+.break-form label{font-size:12px;font-weight:700;color:var(--teal);display:block;margin-bottom:6px}
+.break-select{width:100%;height:40px;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:14px}
+.confirm-btn{width:100%;height:44px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;margin-top:10px}
+
+/* ── Tables ── */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;padding:8px 10px;border-bottom:2px solid var(--border);text-align:left;white-space:nowrap}
+.data-table th.r,.data-table td.r{text-align:right}
+.data-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tbody tr:hover{background:var(--teal-l)}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.badge.super{background:#f0ebfb;color:#5b3c99}
+.badge.manager{background:var(--warn-bg);color:var(--warn)}
+.badge.staff{background:var(--teal-l);color:var(--teal)}
+.badge.ok{background:var(--good-bg);color:var(--good)}
+.badge.pending{background:var(--warn-bg);color:var(--warn)}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}
+
+/* ── Forms ── */
+.form-grid{display:grid;gap:12px}
+@media(min-width:500px){.form-grid.cols2{grid-template-columns:1fr 1fr}}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;transition:.2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--teal)}
+.form-group textarea{height:80px;resize:vertical}
+.btn-teal{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700}
+.btn-teal:hover{background:var(--teal-d)}
+.btn-sm{border:1px solid var(--border);background:#fff;border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text)}
+.btn-danger{background:var(--bad);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px}
+.del-btn{border:none;background:none;color:#ccc;font-size:16px;cursor:pointer}
+.del-btn:hover{color:var(--bad)}
+
+/* ── Rota ── */
+.rota-nav{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.rota-nav button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:14px}
+.rota-week-label{font-size:14px;font-weight:700;color:var(--teal)}
+.rota-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+.rota-wrap{overflow-x:auto}
+.rota-table th{background:var(--teal);color:#fff;padding:8px;font-size:11px;font-weight:700;text-align:center}
+.rota-table th:first-child{text-align:left;padding-left:10px}
+.rota-table td{border:1px solid var(--border);padding:4px;vertical-align:top;min-width:80px;min-height:50px;cursor:pointer}
+.rota-table td:first-child{background:#f9fbfa;font-weight:600;font-size:12px;cursor:default;min-width:120px;padding:6px 10px}
+.rota-table td:hover:not(:first-child){background:var(--teal-l)}
+.rota-shift{background:var(--teal);color:#fff;border-radius:4px;padding:3px 6px;font-size:11px;margin:2px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.rota-shift .del{background:none;border:none;color:rgba(255,255,255,.7);font-size:12px;padding:0;margin-left:4px;cursor:pointer}
+.rota-empty{color:#ccc;font-size:10px;text-align:center;padding:8px 0}
+
+/* ── Profile ── */
+.profile-avatar-wrap{text-align:center;margin-bottom:20px}
+.profile-avatar{width:100px;height:100px;border-radius:50%;border:4px solid var(--teal-l);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:var(--teal);background:var(--teal-l);margin:0 auto 10px;overflow:hidden}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.avatar-upload{display:inline-block;background:var(--teal-l);color:var(--teal);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.avatar-upload input{display:none}
+
+/* ── Pay Period ── */
+.pay-card{background:var(--teal);color:#fff;border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.pay-card-period{font-size:12px;opacity:.8}
+.pay-card-amount{font-size:32px;font-weight:900;margin:4px 0}
+.pay-card-detail{font-size:12px;opacity:.8}
+.tips-badge{background:rgba(255,255,255,.2);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;display:inline-block;margin-top:6px}
+
+/* ── Misc ── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:10px}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.alert{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px}
+.alert.ok{background:var(--good-bg);color:var(--good)}
+.alert.err{background:var(--bad-bg);color:var(--bad)}
+.two-col{display:grid;gap:14px}
+@media(min-width:700px){.two-col{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ── Login: Staff Selection ── -->
+<div id="login-screen">
+  <div class="login-header">
+    <div class="login-logo">THE MEDLEY</div>
+    <div class="login-tagline">Staff Portal · Season 2026</div>
+    <div class="login-instruction">Tap your name to sign in</div>
+  </div>
+  <div class="staff-grid" id="staff-grid">
+    <div class="loading">Loading staff…</div>
+  </div>
+</div>
+
+<!-- ── Login: PIN Entry ── -->
+<div id="pin-screen">
+  <div class="pin-who" id="pin-who"></div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div>
+    <div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinKey('1')">1</button>
+    <button class="pin-btn" onclick="pinKey('2')">2</button>
+    <button class="pin-btn" onclick="pinKey('3')">3</button>
+    <button class="pin-btn" onclick="pinKey('4')">4</button>
+    <button class="pin-btn" onclick="pinKey('5')">5</button>
+    <button class="pin-btn" onclick="pinKey('6')">6</button>
+    <button class="pin-btn" onclick="pinKey('7')">7</button>
+    <button class="pin-btn" onclick="pinKey('8')">8</button>
+    <button class="pin-btn" onclick="pinKey('9')">9</button>
+    <button class="pin-btn action" onclick="pinClear()">⌫</button>
+    <button class="pin-btn" onclick="pinKey('0')">0</button>
+    <button class="pin-btn action" onclick="pinSubmit()">✓</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <button class="pin-back" onclick="showLogin()">← Back to staff list</button>
+</div>
+
+<!-- ── App Shell ── -->
+<div id="app" style="display:flex">
+  <div class="topbar">
+    <div class="topbar-brand">THE MEDLEY</div>
+    <div class="topbar-user">
+      <div class="topbar-avatar" id="tb-avatar"></div>
+      <div>
+        <div class="topbar-name" id="tb-name"></div>
+        <div class="topbar-role" id="tb-role"></div>
+      </div>
+      <button class="logout-btn" onclick="logout()">🚪 Sign out</button>
+    </div>
+  </div>
+  <nav id="app-nav"></nav>
+  <div id="content"><div class="loading">Loading…</div></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   SUPABASE CONFIG
+   ══════════════════════════════════════ */
+const SB = {
+  url: 'https://aborbyeavyyuqfevnjwh.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFib3JidmVhdnl5dXFmZXZuandoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MzMsImV4cCI6MjA5MDgwNDYzM30.kf-dkJko3WCcubIeIT-sa2UOss-_Ol_77amDw9u4CqI'
+};
+
+const H = () => ({
+  'apikey': SB.key,
+  'Authorization': `Bearer ${SB.key}`,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation'
+});
+
+async function dbGet(table, query = '') {
+  const r = await fetch(`${SB.url}/rest/v1/${table}${query ? '?' + query : ''}`, {headers: H()});
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function dbPost(table, data) {
+  const r = await fetch(`${SB.url}/rest/v1/${table}`, {method:'POST', headers:H(), body:JSON.stringify(data)});
+  if (!r.ok) throw new Error(await r.text());
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+async function dbPatch(table, id, data) {
+  const r = await fetch(`${SB.url}/rest/v1/${table}?id=eq.${id}`, {method:'PATCH', headers:H(), body:JSON.stringify(data)});
+  if (!r.ok) throw new Error(await r.text());
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+async function dbDelete(table, id) {
+  const r = await fetch(`${SB.url}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:H()});
+  if (!r.ok) throw new Error(await r.text());
+}
+
+/* ══════════════════════════════════════
+   STATE
+   ══════════════════════════════════════ */
+let ME = null;          // logged-in staff object
+let ALL_STAFF = [];     // all active staff
+let activeTab = '';
+let pinEntry = '';
+let pinTarget = null;   // staff selected for PIN
+let clockTimer = null;
+let rotaWeekOffset = 0; // 0 = current week
+let refreshInterval = null;
+
+const ROLES = {super_admin:'Super Admin', manager:'Manager', staff:'Staff'};
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+/* ══════════════════════════════════════
+   AUTH
+   ══════════════════════════════════════ */
+function isSuperAdmin() { return ME && ME.role === 'super_admin'; }
+function isManager()    { return ME && (ME.role === 'manager' || ME.role === 'super_admin'); }
+
+function avatarHtml(person, size = 40) {
+  if (person && person.avatar_url) {
+    return `<img src="${person.avatar_url}" alt="${person.name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`;
+  }
+  const initials = (person ? person.name : '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return `<span style="font-size:${Math.round(size*0.4)}px;font-weight:800">${initials}</span>`;
+}
+
+async function loadStaffList() {
+  try {
+    ALL_STAFF = await dbGet('staff', 'is_active=eq.true&order=name.asc');
+    renderStaffGrid();
+  } catch(e) {
+    document.getElementById('staff-grid').innerHTML = `<div style="color:rgba(255,255,255,.7);text-align:center;padding:20px">Connection error. Please refresh.</div>`;
+  }
+}
+
+function renderStaffGrid() {
+  const grid = document.getElementById('staff-grid');
+  if (!ALL_STAFF.length) {
+    grid.innerHTML = `<div style="color:rgba(255,255,255,.7);text-align:center;width:100%;padding:20px">No staff added yet.</div>`;
+    return;
+  }
+  grid.innerHTML = ALL_STAFF.map(s => `
+    <div class="staff-card" onclick="selectStaff('${s.id}')">
+      <div class="staff-avatar">${s.avatar_url ? `<img src="${s.avatar_url}">` : s.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div class="staff-card-name">${s.name}</div>
+      <div class="staff-card-role">${ROLES[s.role]||s.role}</div>
+    </div>
+  `).join('');
+}
+
+function selectStaff(id) {
+  pinTarget = ALL_STAFF.find(s => s.id === id);
+  pinEntry = '';
+  document.getElementById('pin-who').textContent = `Hi ${pinTarget.name.split(' ')[0]} 👋`;
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('pin-screen').style.display = 'flex';
+}
+
+function showLogin() {
+  pinTarget = null; pinEntry = '';
+  document.getElementById('pin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function pinKey(d) {
+  if (pinEntry.length >= 4) return;
+  pinEntry += d;
+  updatePinDots();
+  if (pinEntry.length === 4) setTimeout(pinSubmit, 100);
+}
+
+function pinClear() {
+  pinEntry = pinEntry.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots() {
+  document.querySelectorAll('.pin-dot').forEach((d,i) => {
+    d.classList.toggle('filled', i < pinEntry.length);
+  });
+}
+
+async function pinSubmit() {
+  if (!pinTarget || pinEntry.length !== 4) return;
+  if (pinEntry === pinTarget.pin_hash) {
+    ME = pinTarget;
+    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    document.getElementById('pin-screen').style.display = 'none';
+    launchApp();
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+    pinEntry = '';
+    updatePinDots();
+  }
+}
+
+function logout() {
+  ME = null;
+  sessionStorage.removeItem('medley-staff-session');
+  clearInterval(refreshInterval);
+  clearInterval(clockTimer);
+  clearInterval(inactivityTimer);
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  loadStaffList();
+}
+
+/* ══════════════════════════════════════
+   APP LAUNCH
+   ══════════════════════════════════════ */
+function launchApp() {
+  startInactivityWatch();
+  document.getElementById('app').style.display = 'flex';
+
+  // Topbar
+  document.getElementById('tb-avatar').innerHTML = avatarHtml(ME, 30);
+  document.getElementById('tb-name').textContent = ME.name.split(' ')[0];
+  document.getElementById('tb-role').textContent = ROLES[ME.role] || ME.role;
+
+  // Nav based on role
+  const nav = document.getElementById('app-nav');
+  let tabs = [];
+  if (isSuperAdmin() || isManager()) {
+    tabs = [
+      {id:'dashboard',label:'🏠 Dashboard'},
+      {id:'clock',label:'🕐 Clock In/Out'},
+      {id:'rota',label:'📅 Rota'},
+      {id:'timesheets',label:'📋 Timesheets'},
+      {id:'pay',label:'💰 Pay Periods'},
+      {id:'menu',label:'🍕 Menu'},
+      {id:'profile',label:'👤 My Profile'},
+    ];
+    if (isSuperAdmin()) tabs.push({id:'staff-admin',label:'👥 Staff'});
+  } else {
+    tabs = [
+      {id:'clock',label:'🕐 Clock In/Out'},
+      {id:'my-shifts',label:'📊 My Shifts'},
+      {id:'rota',label:'📅 My Rota'},
+      {id:'menu',label:'🍕 Menu'},
+      {id:'profile',label:'👤 My Profile'},
+    ];
+  }
+
+  nav.innerHTML = tabs.map(t =>
+    `<button class="navtab${t.id===tabs[0].id?' active':''}" id="tab-${t.id}" onclick="setTab('${t.id}')">${t.label}</button>`
+  ).join('');
+
+  setTab(tabs[0].id);
+
+  // Auto-refresh every 60s
+  refreshInterval = setInterval(() => {
+    if (activeTab === 'dashboard' || activeTab === 'timesheets') render();
+  }, 60000);
+}
+
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.navtab').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('tab-' + tab);
+  if (el) el.classList.add('active');
+  render();
+}
+
+async function render() {
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    switch(activeTab) {
+      case 'dashboard':   content.innerHTML = await renderDashboard(); break;
+      case 'clock':       content.innerHTML = await renderClock(); startClockTimer(); break;
+      case 'my-shifts':   content.innerHTML = await renderMyShifts(); break;
+      case 'rota':        content.innerHTML = await renderRota(); break;
+      case 'timesheets':  content.innerHTML = await renderTimesheets(); break;
+      case 'pay':         content.innerHTML = await renderPayPeriods(); break;
+      case 'menu':        content.innerHTML = renderMenu(); break;
+      case 'profile':     content.innerHTML = renderProfile(); break;
+      case 'staff-admin': content.innerHTML = await renderStaffAdmin(); break;
+      default:            content.innerHTML = '<div class="loading">Coming soon</div>';
+    }
+  } catch(e) {
+    content.innerHTML = `<div class="alert err">Error loading: ${e.message}</div>`;
+  }
+}
+
+/* ══════════════════════════════════════
+   DASHBOARD
+   ══════════════════════════════════════ */
+async function renderDashboard() {
+  const today = new Date().toISOString().slice(0,10);
+  const monthStart = today.slice(0,8) + '01';
+
+  const [allShifts, openShifts] = await Promise.all([
+    dbGet('shifts', `clock_in=gte.${monthStart}T00:00:00Z&status=eq.completed`),
+    dbGet('shifts', `status=eq.clocked_in`)
+  ]);
+
+  const totalHrs = allShifts.reduce((s,x) => s + (parseFloat(x.total_hours)||0), 0);
+  const staffWorked = new Set(allShifts.map(x=>x.staff_id)).size;
+  const totalCost = allShifts.reduce((s,x) => {
+    const st = ALL_STAFF.find(m => m.id === x.staff_id);
+    return s + (st ? (parseFloat(x.total_hours)||0) * st.hourly_rate : 0);
+  }, 0);
+
+  let html = `<div class="metric-grid">
+    <div class="metric"><div class="metric-label">Clocked in now</div>
+      <div class="metric-value" style="color:${openShifts.length?'var(--orange)':'var(--muted)'}">${openShifts.length}</div>
+      <div class="metric-sub">staff on shift</div></div>
+    <div class="metric"><div class="metric-label">This month</div>
+      <div class="metric-value">£${totalCost.toFixed(0)}</div>
+      <div class="metric-sub">${totalHrs.toFixed(0)} hours · ${staffWorked} staff</div></div>
+    <div class="metric"><div class="metric-label">Total staff</div>
+      <div class="metric-value">${ALL_STAFF.length}</div>
+      <div class="metric-sub">${ALL_STAFF.filter(s=>s.role==='super_admin').length} admin · ${ALL_STAFF.filter(s=>s.role==='manager').length} managers</div></div>
+    <div class="metric"><div class="metric-label">Season start</div>
+      <div class="metric-value" style="font-size:18px">3 Apr 2026</div>
+      <div class="metric-sub">April → September</div></div>
+  </div>`;
+
+  if (openShifts.length) {
+    html += `<div class="card"><div class="card-title">Currently On Shift</div>
+      <table class="data-table"><thead><tr><th>Staff</th><th>Clocked in</th><th>Hours so far</th></tr></thead><tbody>`;
+    openShifts.forEach(s => {
+      const st = ALL_STAFF.find(m => m.id === s.staff_id);
+      const hrs = s.clock_in ? ((Date.now() - new Date(s.clock_in))/(3600000)).toFixed(1) : '—';
+      html += `<tr><td>${st?st.name:'Unknown'}</td><td>${fmtTime(s.clock_in)}</td><td>${hrs}h</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  return html;
+}
+
+/* ══════════════════════════════════════
+   CLOCK IN / OUT
+   ══════════════════════════════════════ */
+async function renderClock() {
+  const openShift = await getOpenShift(ME.id);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  let html = `<div class="card clock-section">
+    <div class="clock-display" id="live-clock">${fmtHHMM(now)}</div>
+    <div class="clock-date">${dateStr}</div>`;
+
+  if (openShift) {
+    const startedAt = new Date(openShift.clock_in);
+    const elapsed = fmtElapsed(startedAt);
+    html += `<div style="margin-bottom:16px">
+      <div class="clock-status">You clocked in at <strong>${fmtTime(openShift.clock_in)}</strong></div>
+      <div class="clock-timer" id="elapsed-timer">${elapsed} on shift</div>
+    </div>
+    <button class="clock-btn out" onclick="showClockOut('${openShift.id}')">CLOCK<br>OUT</button>
+    <div id="clock-out-form"></div>`;
+  } else {
+    html += `<button class="clock-btn in" onclick="doClockIn()">CLOCK<br>IN</button>`;
+    html += `<div class="clock-status" style="margin-top:16px">You are not clocked in</div>`;
+  }
+
+  html += `</div>`;
+
+  // Today's shifts
+  const today = new Date().toISOString().slice(0,10);
+  const todayShifts = await dbGet('shifts', `staff_id=eq.${ME.id}&clock_in=gte.${today}T00:00:00Z&status=eq.completed&order=clock_in.desc`);
+  if (todayShifts.length) {
+    html += `<div class="card"><div class="card-title">Today's Shifts</div>
+      <table class="data-table"><thead><tr><th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th></tr></thead><tbody>`;
+    todayShifts.forEach(s => {
+      html += `<tr><td>${fmtTime(s.clock_in)}</td><td>${fmtTime(s.clock_out)}</td>
+        <td>${s.break_minutes||0} min</td><td class="r">${parseFloat(s.total_hours||0).toFixed(2)}h</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  return html;
+}
+
+function startClockTimer() {
+  clearInterval(clockTimer);
+  clockTimer = setInterval(() => {
+    const el = document.getElementById('live-clock');
+    const et = document.getElementById('elapsed-timer');
+    if (el) el.textContent = fmtHHMM(new Date());
+    // elapsed updated on next render
+  }, 1000);
+}
+
+async function doClockIn() {
+  try {
+    const open = await getOpenShift(ME.id);
+    if (open) { alert('You are already clocked in!'); return; }
+    await dbPost('shifts', {staff_id: ME.id, clock_in: new Date().toISOString(), status: 'clocked_in'});
+    render();
+  } catch(e) { alert('Clock in failed: ' + e.message); }
+}
+
+function showClockOut(shiftId) {
+  document.getElementById('clock-out-form').innerHTML = `
+    <div class="break-form">
+      <label>Did you take an unpaid break?</label>
+      <select class="break-select" id="break-select">
+        <option value="0">No break</option>
+        <option value="15">15 minutes</option>
+        <option value="20">20 minutes</option>
+        <option value="30">30 minutes</option>
+        <option value="45">45 minutes</option>
+        <option value="60">1 hour</option>
+      </select>
+      <button class="confirm-btn" onclick="doClockOut('${shiftId}')">Confirm Clock Out</button>
+    </div>`;
+}
+
+async function doClockOut(shiftId) {
+  const breakMins = parseInt(document.getElementById('break-select').value) || 0;
+  try {
+    const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
+    const clockIn = new Date(shift.clock_in);
+    const clockOut = new Date();
+    const totalMins = (clockOut - clockIn) / 60000 - breakMins;
+    const totalHours = Math.max(0, totalMins / 60);
+    await dbPatch('shifts', shiftId, {
+      clock_out: clockOut.toISOString(),
+      break_minutes: breakMins,
+      total_hours: totalHours.toFixed(2),
+      status: 'completed'
+    });
+    render();
+  } catch(e) { alert('Clock out failed: ' + e.message); }
+}
+
+async function getOpenShift(staffId) {
+  const r = await dbGet('shifts', `staff_id=eq.${staffId}&status=eq.clocked_in&order=clock_in.desc&limit=1`);
+  return r[0] || null;
+}
+
+/* ══════════════════════════════════════
+   MY SHIFTS
+   ══════════════════════════════════════ */
+async function renderMyShifts() {
+  const shifts = await dbGet('shifts', `staff_id=eq.${ME.id}&status=eq.completed&order=clock_in.desc&limit=50`);
+  const totalHrs = shifts.reduce((s,x) => s+(parseFloat(x.total_hours)||0), 0);
+  const totalPay = totalHrs * (ME.hourly_rate || 0);
+
+  let html = `<div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total hours</div>
+      <div class="metric-value">${totalHrs.toFixed(1)}</div><div class="metric-sub">all shifts</div></div>
+    <div class="metric"><div class="metric-label">My rate</div>
+      <div class="metric-value" style="font-size:22px">£${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr</div><div class="metric-sub">hourly</div></div>
+    <div class="metric"><div class="metric-label">Season earnings</div>
+      <div class="metric-value">£${totalPay.toFixed(2)}</div><div class="metric-sub">excl. tips</div></div>
+    <div class="metric"><div class="metric-label">Shifts worked</div>
+      <div class="metric-value">${shifts.length}</div><div class="metric-sub">this season</div></div>
+  </div>
+  <div class="card"><div class="card-title">Shift History</div>`;
+
+  if (!shifts.length) {
+    html += `<div class="empty"><div class="empty-icon">🕐</div>No shifts yet</div>`;
+  } else {
+    html += `<table class="data-table"><thead><tr>
+      <th>Date</th><th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th><th class="r">Pay</th><th>Status</th>
+    </tr></thead><tbody>`;
+    shifts.forEach(s => {
+      const hrs = parseFloat(s.total_hours||0);
+      const pay = hrs * (ME.hourly_rate||0);
+      const adj = s.adjusted_by ? '<span class="badge pending">Adjusted</span>' : '<span class="badge ok">Verified</span>';
+      html += `<tr>
+        <td>${fmtDate(s.clock_in)}</td>
+        <td>${fmtTime(s.clock_in)}</td>
+        <td>${fmtTime(s.clock_out)}</td>
+        <td>${s.break_minutes||0}m</td>
+        <td class="r">${hrs.toFixed(2)}h</td>
+        <td class="r">£${pay.toFixed(2)}</td>
+        <td>${adj}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  return html + `</div>`;
+}
+
+/* ══════════════════════════════════════
+   ROTA
+   ══════════════════════════════════════ */
+function getWeekDates(offset = 0) {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
+  return Array.from({length:7}, (_,i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().slice(0,10);
+  });
+}
+
+async function renderRota() {
+  const dates = getWeekDates(rotaWeekOffset);
+  const weekLabel = `${fmtDateShort(dates[0])} – ${fmtDateShort(dates[6])}`;
+
+  const rota = await dbGet('rota',
+    `date=gte.${dates[0]}&date=lte.${dates[6]}&order=start_time.asc`
+  );
+
+  const staffToShow = isManager() ? ALL_STAFF : ALL_STAFF.filter(s => s.id === ME.id);
+
+  let html = `
+    <div class="rota-nav">
+      <button onclick="rotaWeekOffset--;setTab('rota')">← Prev</button>
+      <div class="rota-week-label">Week of ${weekLabel}</div>
+      <button onclick="rotaWeekOffset++;setTab('rota')">Next →</button>
+      ${rotaWeekOffset !== 0 ? `<button onclick="rotaWeekOffset=0;setTab('rota')" style="margin-left:auto">Today</button>` : ''}
+    </div>
+    <div class="rota-wrap"><table class="rota-table">
+      <thead><tr><th>Staff</th>
+        ${dates.map((d,i) => `<th>${DAYS[i]}<br><small>${d.slice(8)}</small></th>`).join('')}
+      </tr></thead><tbody>`;
+
+  staffToShow.forEach(st => {
+    html += `<tr><td>${st.name.split(' ')[0]}</td>`;
+    dates.forEach(date => {
+      const dayShifts = rota.filter(r => r.staff_id === st.id && r.date === date);
+      html += `<td ${isManager()?`onclick="addRotaShift('${st.id}','${date}')"`:''}">`;
+      if (dayShifts.length) {
+        dayShifts.forEach(r => {
+          html += `<div class="rota-shift">
+            <span>${r.start_time.slice(0,5)}–${r.end_time.slice(0,5)}</span>
+            ${isManager()?`<button class="del" onclick="delRotaShift('${r.id}',event)">×</button>`:''}
+          </div>`;
+        });
+      } else {
+        if (isManager()) html += `<div class="rota-empty">+ Add</div>`;
+      }
+      html += `</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+
+  if (isManager()) {
+    html += `<p style="font-size:11px;color:var(--muted);margin-top:8px">Click any cell to add a shift for that staff member and day.</p>`;
+  }
+
+  return html;
+}
+
+async function addRotaShift(staffId, date) {
+  const st = ALL_STAFF.find(s => s.id === staffId);
+  const start = prompt(`${st.name} on ${date}\nShift start time (HH:MM):`, '10:00');
+  if (!start) return;
+  const end = prompt(`Shift end time (HH:MM):`, '18:00');
+  if (!end) return;
+  try {
+    await dbPost('rota', {staff_id: staffId, date, start_time: start, end_time: end, created_by: ME.id});
+    setTab('rota');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function delRotaShift(id, e) {
+  e.stopPropagation();
+  if (!confirm('Remove this shift from the rota?')) return;
+  await dbDelete('rota', id);
+  setTab('rota');
+}
+
+/* ══════════════════════════════════════
+   TIMESHEETS (admin/manager)
+   ══════════════════════════════════════ */
+async function renderTimesheets() {
+  const monthStart = new Date().toISOString().slice(0,8) + '01';
+  const shifts = await dbGet('shifts',
+    `clock_in=gte.${monthStart}T00:00:00Z&order=clock_in.desc`
+  );
+
+  const grouped = {};
+  shifts.forEach(s => {
+    if (!grouped[s.staff_id]) grouped[s.staff_id] = [];
+    grouped[s.staff_id].push(s);
+  });
+
+  let totalCost = 0;
+  let totalHrs = 0;
+
+  let html = `<div class="card"><div class="card-title">Timesheets — This Month</div>`;
+
+  ALL_STAFF.forEach(st => {
+    const stShifts = grouped[st.id] || [];
+    const hrs = stShifts.reduce((s,x)=>s+(parseFloat(x.total_hours)||0),0);
+    const cost = hrs * (st.hourly_rate||0);
+    totalCost += cost;
+    totalHrs += hrs;
+
+    if (!stShifts.length) return;
+
+    html += `<div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:2px solid var(--teal-l)">
+        <strong>${st.name}</strong>
+        <span style="font-size:12px;color:var(--muted)">${hrs.toFixed(1)}h · <span style="color:var(--teal);font-weight:700">£${cost.toFixed(2)}</span></span>
+      </div>
+      <table class="data-table"><thead><tr>
+        <th>Date</th><th>In</th><th>Out</th><th>Break</th><th class="r">Hrs</th><th class="r">Pay</th>
+        ${isSuperAdmin()?'<th>Edit</th>':''}
+      </tr></thead><tbody>`;
+
+    stShifts.forEach(s => {
+      const h = parseFloat(s.total_hours||0);
+      const p = h * (st.hourly_rate||0);
+      const statusBadge = s.status === 'clocked_in'
+        ? '<span class="badge pending">On shift</span>'
+        : '<span class="badge ok">✓</span>';
+      html += `<tr>
+        <td>${fmtDate(s.clock_in)}</td>
+        <td>${fmtTime(s.clock_in)}</td>
+        <td>${s.clock_out ? fmtTime(s.clock_out) : statusBadge}</td>
+        <td>${s.break_minutes||0}m</td>
+        <td class="r">${h.toFixed(2)}</td>
+        <td class="r">£${p.toFixed(2)}</td>
+        ${isSuperAdmin()?`<td><button class="btn-sm" onclick="editShift('${s.id}','${st.id}')">Edit</button></td>`:''}
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  });
+
+  html += `<div style="padding:12px;background:var(--teal-l);border-radius:8px;display:flex;justify-content:space-between">
+    <strong>Month total</strong>
+    <span><strong>${totalHrs.toFixed(1)}h · £${totalCost.toFixed(2)}</strong></span>
+  </div></div>`;
+
+  return html;
+}
+
+async function editShift(shiftId, staffId) {
+  const shift = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
+  const st = ALL_STAFF.find(s => s.id === staffId);
+  const newIn = prompt(`Edit clock-in time for ${st.name}\nCurrent: ${fmtTime(shift.clock_in)}\n\nEnter new time (HH:MM) or leave blank to keep:`, shift.clock_in ? new Date(shift.clock_in).toTimeString().slice(0,5) : '');
+  if (newIn === null) return;
+
+  const newOut = prompt(`Edit clock-out time:\nCurrent: ${fmtTime(shift.clock_out)}\n\nEnter new time (HH:MM) or leave blank to keep:`, shift.clock_out ? new Date(shift.clock_out).toTimeString().slice(0,5) : '');
+  if (newOut === null) return;
+
+  const newBreak = prompt(`Break minutes:\nCurrent: ${shift.break_minutes||0}`, shift.break_minutes||0);
+  if (newBreak === null) return;
+
+  const date = shift.clock_in.slice(0,10);
+  const clockIn = newIn ? new Date(`${date}T${newIn}:00`).toISOString() : shift.clock_in;
+  const clockOut = newOut ? new Date(`${date}T${newOut}:00`).toISOString() : shift.clock_out;
+  const breakMins = parseInt(newBreak)||0;
+  const totalMins = clockOut ? (new Date(clockOut) - new Date(clockIn)) / 60000 - breakMins : 0;
+  const totalHours = Math.max(0, totalMins/60);
+
+  try {
+    await dbPatch('shifts', shiftId, {
+      clock_in: clockIn,
+      clock_out: clockOut || null,
+      break_minutes: breakMins,
+      total_hours: totalHours.toFixed(2),
+      adjusted_by: ME.id,
+      status: clockOut ? 'completed' : 'clocked_in'
+    });
+    setTab('timesheets');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+/* ══════════════════════════════════════
+   PAY PERIODS
+   ══════════════════════════════════════ */
+async function renderPayPeriods() {
+  const periods = await dbGet('pay_periods', 'order=start_date.desc');
+
+  let html = ``;
+
+  if (isSuperAdmin()) {
+    html += `<div class="card"><div class="card-title">Create Pay Period</div>
+      <div class="form-grid cols2">
+        <div class="form-group"><label>Period Start</label><input type="date" id="pp-start"></div>
+        <div class="form-group"><label>Period End</label><input type="date" id="pp-end"></div>
+      </div>
+      <button class="btn-teal" onclick="createPayPeriod()" style="margin-top:10px">Create Period</button>
+    </div>`;
+  }
+
+  if (!periods.length) {
+    html += `<div class="empty"><div class="empty-icon">💰</div>No pay periods yet</div>`;
+    return html;
+  }
+
+  for (const p of periods) {
+    const shifts = await dbGet('shifts',
+      `clock_in=gte.${p.start_date}T00:00:00Z&clock_in=lte.${p.end_date}T23:59:59Z&status=eq.completed`
+    );
+
+    const staffWorked = new Set(shifts.map(s=>s.staff_id));
+    const tipShare = staffWorked.size > 0 ? (parseFloat(p.tips_total)||0) / staffWorked.size : 0;
+
+    let totalPay = 0;
+    shifts.forEach(s => {
+      const st = ALL_STAFF.find(m=>m.id===s.staff_id);
+      totalPay += (parseFloat(s.total_hours)||0) * (st?st.hourly_rate:0);
+    });
+
+    const myShifts = shifts.filter(s=>s.staff_id===ME.id);
+    const myHrs = myShifts.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
+    const myPay = myHrs * (ME.hourly_rate||0);
+    const myTips = staffWorked.has(ME.id) ? tipShare : 0;
+
+    html += `<div class="pay-card">
+      <div class="pay-card-period">${fmtDateShort(p.start_date)} – ${fmtDateShort(p.end_date)}</div>
+      <div class="pay-card-amount">£${(myPay + myTips).toFixed(2)}</div>
+      <div class="pay-card-detail">${myHrs.toFixed(1)} hrs × £${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr = £${myPay.toFixed(2)} wages</div>
+      ${myTips > 0 ? `<div class="tips-badge">+ £${myTips.toFixed(2)} tips</div>` : ''}
+    </div>`;
+
+    if (isManager()) {
+      html += `<div class="card" style="margin-top:-8px;border-radius:0 0 var(--radius) var(--radius)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px">Total wages: <strong>£${totalPay.toFixed(2)}</strong> · Tips pot: 
+            ${isSuperAdmin()
+              ? `£<input type="number" step="0.01" value="${p.tips_total||0}" style="width:80px;border:1px solid var(--border);border-radius:5px;padding:3px 6px" onchange="updateTips('${p.id}',+this.value)">`
+              : `<strong>£${parseFloat(p.tips_total||0).toFixed(2)}</strong>`
+            } split ${staffWorked.size} ways = £${tipShare.toFixed(2)} each
+          </div>
+        </div>
+        <table class="data-table" style="font-size:12px"><thead><tr>
+          <th>Staff</th><th class="r">Hours</th><th class="r">Wages</th><th class="r">Tips</th><th class="r">Total</th>
+        </tr></thead><tbody>`;
+
+      ALL_STAFF.forEach(st => {
+        const stShifts = shifts.filter(s=>s.staff_id===st.id);
+        if (!stShifts.length) return;
+        const hrs = stShifts.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
+        const wages = hrs * (st.hourly_rate||0);
+        const tips = staffWorked.has(st.id) ? tipShare : 0;
+        html += `<tr>
+          <td>${st.name}</td>
+          <td class="r">${hrs.toFixed(1)}</td>
+          <td class="r">£${wages.toFixed(2)}</td>
+          <td class="r">£${tips.toFixed(2)}</td>
+          <td class="r"><strong>£${(wages+tips).toFixed(2)}</strong></td>
+        </tr>`;
+      });
+
+      html += `</tbody></table></div>`;
+    }
+  }
+
+  return html;
+}
+
+async function createPayPeriod() {
+  const start = document.getElementById('pp-start').value;
+  const end = document.getElementById('pp-end').value;
+  if (!start || !end) { alert('Please set start and end dates.'); return; }
+  if (end < start) { alert('End date must be after start date.'); return; }
+  try {
+    await dbPost('pay_periods', {start_date: start, end_date: end, tips_total: 0, status: 'open'});
+    setTab('pay');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function updateTips(id, val) {
+  try {
+    await dbPatch('pay_periods', id, {tips_total: val});
+  } catch(e) { alert('Error saving tips: ' + e.message); }
+}
+
+/* ══════════════════════════════════════
+   MENU (staff view - no GP data)
+   ══════════════════════════════════════ */
+function renderMenu() {
+  const dryItems = [
+    {cat:'Starters', items:[
+      {name:'Mixed Olives', price:'£4.50'},
+      {name:'Garlic Pizette', price:'£5.00'},
+      {name:'Padron Peppers', price:'£6.50'}
+    ]},
+    {cat:'Pizzas', items:[
+      {name:'Marinara', price:'£10.00'},
+      {name:'Margherita', price:'£12.00'},
+      {name:'Broccoli Ricotta', price:'£14.50'},
+      {name:'Pepperoni & Nduja', price:'£14.50'},
+      {name:'Anchovie', price:'£14.50'}
+    ]},
+    {cat:'Desserts', items:[
+      {name:'Affogato', price:'£6.50'},
+      {name:'Dough Ring', price:'£7.50'}
+    ]}
+  ];
+  const wetItems = [
+    {cat:'Cocktails', items:[
+      {name:'Aperol Spritz (glass)', price:'£9.20'},
+      {name:'Aperol Spritz (jug)', price:'£31.00'},
+      {name:"Pimm's (glass)", price:'£8.25'},
+      {name:"Pimm's (jug)", price:'£31.00'},
+      {name:'Limoncello Spritz', price:'£8.50'},
+      {name:'G&T Single', price:'£6.76'},
+      {name:'G&T Double', price:'£10.00'}
+    ]},
+    {cat:'Beer', items:[
+      {name:'Medley Lager', price:'£6.75'},
+      {name:'IPA', price:'£6.75'},
+      {name:'Yabba Dabba Doo', price:'£6.90'},
+      {name:'Stowford Press', price:'£6.50'},
+      {name:'0% Heineken', price:'£4.20'},
+      {name:'0% Craft', price:'£5.45'}
+    ]},
+    {cat:'Soft Drinks', items:[
+      {name:'Coke / Diet Coke / Lemonade', price:'£3.10'},
+      {name:'Cordial & Soda', price:'£1.60'},
+      {name:'Juice', price:'£2.90'}
+    ]},
+    {cat:'Canned Cocktails', items:[
+      {name:'Margarita Can', price:'£6.50'},
+      {name:'Paloma Can', price:'£6.50'}
+    ]}
+  ];
+
+  let html = `<div class="two-col">
+    <div>
+      <div class="card-title" style="margin-bottom:12px">🍕 Food Menu</div>`;
+  dryItems.forEach(g => {
+    html += `<div class="card"><div class="card-title">${g.cat}</div>
+      <table class="data-table"><tbody>`;
+    g.items.forEach(i => html += `<tr><td>${i.name}</td><td class="r"><strong>${i.price}</strong></td></tr>`);
+    html += `</tbody></table></div>`;
+  });
+  html += `</div><div>
+    <div class="card-title" style="margin-bottom:12px">🍸 Drinks Menu</div>`;
+  wetItems.forEach(g => {
+    html += `<div class="card"><div class="card-title">${g.cat}</div>
+      <table class="data-table"><tbody>`;
+    g.items.forEach(i => html += `<tr><td>${i.name}</td><td class="r"><strong>${i.price}</strong></td></tr>`);
+    html += `</tbody></table></div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+/* ══════════════════════════════════════
+   PROFILE
+   ══════════════════════════════════════ */
+function renderProfile() {
+  return `<div class="card">
+    <div class="card-title">My Profile</div>
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar" id="profile-avatar-preview">
+        ${ME.avatar_url ? `<img src="${ME.avatar_url}">` : ME.name.split(' ').map(w=>w[0]).join('').slice(0,2)}
+      </div>
+      <label class="avatar-upload">
+        📷 Change photo
+        <input type="file" accept="image/*" onchange="uploadAvatar(this)">
+      </label>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Full Name</label><input id="p-name" value="${ME.name}"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="p-email" value="${ME.email||''}"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="p-phone" value="${ME.phone||''}"></div>
+      <div class="form-group"><label>Address</label><input id="p-address" value="${ME.address||''}"></div>
+    </div>
+    <button class="btn-teal" onclick="saveProfile()" style="margin-top:12px">Save Profile</button>
+    <hr class="divider">
+    <div class="card-title">Change PIN</div>
+    <div class="form-grid cols2">
+      <div class="form-group"><label>New PIN (4 digits)</label><input type="password" id="new-pin" maxlength="4" pattern="[0-9]{4}" placeholder="••••"></div>
+      <div class="form-group"><label>Confirm PIN</label><input type="password" id="confirm-pin" maxlength="4" placeholder="••••"></div>
+    </div>
+    <button class="btn-teal" onclick="changePIN()" style="margin-top:10px">Update PIN</button>
+    <div id="profile-msg" style="margin-top:10px"></div>
+    <hr class="divider">
+    <div style="font-size:13px;color:var(--muted)">
+      <div>Hourly rate: <strong>£${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr</strong></div>
+      <div style="margin-top:4px">Role: <strong>${ROLES[ME.role]||ME.role}</strong></div>
+      <div style="margin-top:4px;font-size:11px">To change your rate or role, contact your admin.</div>
+    </div>
+  </div>`;
+}
+
+async function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { alert('Photo must be under 2MB'); return; }
+  try {
+    const ext = file.name.split('.').pop();
+    const path = `${ME.id}.${ext}`;
+    const r = await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`, {
+      method: 'POST',
+      headers: {'apikey': SB.key, 'Authorization': `Bearer ${SB.key}`, 'Content-Type': file.type, 'x-upsert': 'true'},
+      body: file
+    });
+    if (!r.ok) throw new Error('Upload failed');
+    const url = `${SB.url}/storage/v1/object/public/profile-pics/${path}?t=${Date.now()}`;
+    await dbPatch('staff', ME.id, {avatar_url: url});
+    ME.avatar_url = url;
+    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    document.getElementById('tb-avatar').innerHTML = avatarHtml(ME, 30);
+    document.getElementById('profile-avatar-preview').innerHTML = `<img src="${url}">`;
+    // Refresh staff list cache
+    const idx = ALL_STAFF.findIndex(s=>s.id===ME.id);
+    if (idx>=0) ALL_STAFF[idx].avatar_url = url;
+  } catch(e) { alert('Error uploading photo: ' + e.message); }
+}
+
+async function saveProfile() {
+  const name = document.getElementById('p-name').value.trim();
+  const email = document.getElementById('p-email').value.trim();
+  const phone = document.getElementById('p-phone').value.trim();
+  const address = document.getElementById('p-address').value.trim();
+  if (!name) { alert('Name cannot be empty.'); return; }
+  try {
+    await dbPatch('staff', ME.id, {name, email, phone, address});
+    ME = {...ME, name, email, phone, address};
+    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    document.getElementById('tb-name').textContent = ME.name.split(' ')[0];
+    const idx = ALL_STAFF.findIndex(s=>s.id===ME.id);
+    if (idx>=0) ALL_STAFF[idx] = {...ALL_STAFF[idx], name, email, phone, address};
+    showMsg('profile-msg', 'Profile saved!', 'ok');
+  } catch(e) { showMsg('profile-msg', 'Error: ' + e.message, 'err'); }
+}
+
+async function changePIN() {
+  const np = document.getElementById('new-pin').value;
+  const cp = document.getElementById('confirm-pin').value;
+  if (!/^\d{4}$/.test(np)) { showMsg('profile-msg', 'PIN must be exactly 4 digits.', 'err'); return; }
+  if (np !== cp) { showMsg('profile-msg', 'PINs do not match.', 'err'); return; }
+  if (np === '0000') { showMsg('profile-msg', 'Choose a unique PIN — 0000 is the default.', 'err'); return; }
+  try {
+    await dbPatch('staff', ME.id, {pin_hash: np});
+    ME.pin_hash = np;
+    sessionStorage.setItem('medley-staff-session', JSON.stringify(ME));
+    showMsg('profile-msg', '✓ PIN updated successfully!', 'ok');
+    document.getElementById('new-pin').value = '';
+    document.getElementById('confirm-pin').value = '';
+  } catch(e) { showMsg('profile-msg', 'Error: ' + e.message, 'err'); }
+}
+
+/* ══════════════════════════════════════
+   STAFF ADMIN (super_admin only)
+   ══════════════════════════════════════ */
+async function renderStaffAdmin() {
+  let html = `<div class="card">
+    <div class="card-title">Add New Staff Member</div>
+    <div class="form-grid cols2">
+      <div class="form-group"><label>Full Name *</label><input id="ns-name" placeholder="First Last"></div>
+      <div class="form-group"><label>Role</label>
+        <select id="ns-role">
+          <option value="staff">Staff</option>
+          <option value="manager">Manager</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="ns-email"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="ns-phone"></div>
+      <div class="form-group"><label>Hourly Rate £</label><input type="number" step="0.01" id="ns-rate" placeholder="12.21"></div>
+    </div>
+    <button class="btn-teal" onclick="addStaff()" style="margin-top:10px">Add Staff Member</button>
+    <div id="add-staff-msg" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card"><div class="card-title">All Staff (${ALL_STAFF.length})</div>
+    <table class="data-table"><thead><tr>
+      <th>Name</th><th>Role</th><th>Email</th><th class="r">Rate £/hr</th><th>PIN</th><th>Active</th><th></th>
+    </tr></thead><tbody>`;
+
+  ALL_STAFF.forEach(st => {
+    html += `<tr>
+      <td><strong>${st.name}</strong></td>
+      <td><span class="badge ${st.role}">${ROLES[st.role]||st.role}</span></td>
+      <td class="muted" style="font-size:12px">${st.email||'—'}</td>
+      <td class="r">
+        £<input type="number" step="0.01" value="${parseFloat(st.hourly_rate||0).toFixed(2)}"
+          style="width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px"
+          onchange="updateRate('${st.id}',+this.value)">
+      </td>
+      <td>
+        ${st.id === ME.id ? '—' : `<button class="btn-sm" onclick="resetPIN('${st.id}','${st.name}')">Reset to 0000</button>`}
+      </td>
+      <td>
+        <label style="cursor:pointer">
+          <input type="checkbox" ${st.is_active?'checked':''} onchange="toggleActive('${st.id}',this.checked)">
+          ${st.is_active?'Active':'Inactive'}
+        </label>
+      </td>
+      <td>${st.id !== ME.id ? `<button class="del-btn" onclick="removeStaff('${st.id}','${st.name}')">✕</button>` : ''}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+async function addStaff() {
+  const name = document.getElementById('ns-name').value.trim();
+  const role = document.getElementById('ns-role').value;
+  const email = document.getElementById('ns-email').value.trim();
+  const phone = document.getElementById('ns-phone').value.trim();
+  const rate = parseFloat(document.getElementById('ns-rate').value)||0;
+  if (!name) { showMsg('add-staff-msg', 'Name is required.', 'err'); return; }
+  try {
+    const [newStaff] = await dbPost('staff', {name, role, email, phone, hourly_rate: rate, pin_hash: '0000', is_active: true});
+    ALL_STAFF.push(newStaff);
+    ALL_STAFF.sort((a,b)=>a.name.localeCompare(b.name));
+    showMsg('add-staff-msg', `✓ ${name} added. Default PIN is 0000.`, 'ok');
+    document.getElementById('ns-name').value = '';
+    document.getElementById('ns-email').value = '';
+    document.getElementById('ns-phone').value = '';
+    document.getElementById('ns-rate').value = '';
+    setTab('staff-admin');
+  } catch(e) { showMsg('add-staff-msg', 'Error: ' + e.message, 'err'); }
+}
+
+async function updateRate(id, val) {
+  try {
+    await dbPatch('staff', id, {hourly_rate: val});
+    const st = ALL_STAFF.find(s=>s.id===id);
+    if (st) st.hourly_rate = val;
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function resetPIN(id, name) {
+  if (!confirm(`Reset ${name}'s PIN to 0000?`)) return;
+  try {
+    await dbPatch('staff', id, {pin_hash: '0000'});
+    alert(`${name}'s PIN has been reset to 0000. They must change it on next login.`);
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function toggleActive(id, active) {
+  try {
+    await dbPatch('staff', id, {is_active: active});
+    const st = ALL_STAFF.find(s=>s.id===id);
+    if (st) st.is_active = active;
+    if (!active) ALL_STAFF = ALL_STAFF.filter(s=>s.id!==id||s.id===ME.id);
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function removeStaff(id, name) {
+  if (!confirm(`Remove ${name} from the system? Their shift history will be kept.`)) return;
+  try {
+    await dbPatch('staff', id, {is_active: false});
+    ALL_STAFF = ALL_STAFF.filter(s=>s.id!==id);
+    setTab('staff-admin');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+/* ══════════════════════════════════════
+   UTILS
+   ══════════════════════════════════════ */
+function fmtHHMM(d) {
+  return d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+}
+function fmtTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+}
+function fmtDateShort(str) {
+  if (!str) return '—';
+  return new Date(str + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+}
+function fmtElapsed(from) {
+  const mins = Math.floor((Date.now() - from) / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+function showMsg(id, msg, type) {
+  const el = document.getElementById(id);
+  if (el) { el.innerHTML = `<div class="alert ${type}">${msg}</div>`; }
+}
+
+/* ══════════════════════════════════════
+   SESSION SECURITY
+   ══════════════════════════════════════ */
+
+// Clear session whenever user leaves the page
+// so returning to the URL always requires login
+window.addEventListener('pagehide', () => {
+  sessionStorage.removeItem('medley-staff-session');
+});
+
+// Also clear if page becomes hidden (tab switch, screen lock on phone)
+// Uses a 2-hour grace period — still requires re-login after 2hrs inactivity
+let lastActivity = Date.now();
+let inactivityTimer = null;
+const INACTIVITY_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+function resetInactivity() {
+  lastActivity = Date.now();
+}
+
+function startInactivityWatch() {
+  ['click','touchstart','keydown','scroll'].forEach(e =>
+    document.addEventListener(e, resetInactivity, {passive:true})
+  );
+  inactivityTimer = setInterval(() => {
+    if (ME && Date.now() - lastActivity > INACTIVITY_MS) {
+      alert('You have been signed out due to inactivity.');
+      logout();
+    }
+  }, 60000); // check every minute
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && ME) {
+    // Page hidden — clear session so returning requires login
+    sessionStorage.removeItem('medley-staff-session');
+  }
+});
+
+/* ══════════════════════════════════════
+   INIT
+   ══════════════════════════════════════ */
+async function init() {
+  // Always start at login screen — don't restore session
+  // This ensures every visit to the page requires login
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  sessionStorage.removeItem('medley-staff-session');
+  loadStaffList();
+}
+
+init();
+</script>
+</body>
+</html>
