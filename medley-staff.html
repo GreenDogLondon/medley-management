@@ -223,36 +223,59 @@ nav::-webkit-scrollbar{display:none}
    SUPABASE CONFIG
    ══════════════════════════════════════ */
 const SB = {
-  url: 'https://aborbyeavyyuqfevnjwh.supabase.co',
-  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFib3JidmVhdnl5dXFmZXZuandoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MzMsImV4cCI6MjA5MDgwNDYzM30.kf-dkJko3WCcubIeIT-sa2UOss-_Ol_77amDw9u4CqI'
+  url: 'https://aborbveavyyuqfevnjwh.supabase.co',
+  // Using publishable key (new Supabase format)
+  key: 'sb_publishable_lXU329EeGST_bzwJVZqOQw_Uo-7ofqA',
+  // Legacy JWT anon key (fallback)
+  jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFib3JidmVhdnl5dXFmZXZuandoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MzMsImV4cCI6MjA5MDgwNDYzM30.kf-dkJko3WCcubIeIT-sa2UOss-_Ol_77amDw9u4CqI'
 };
 
-const H = () => ({
-  'apikey': SB.key,
-  'Authorization': `Bearer ${SB.key}`,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
-});
+// Separate headers for reads vs writes
+function hGet(key) {
+  return {'apikey': key, 'Authorization': `Bearer ${key}`};
+}
+function hWrite(key) {
+  return {
+    'apikey': key,
+    'Authorization': `Bearer ${key}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+}
 
-async function dbGet(table, query = '') {
-  const r = await fetch(`${SB.url}/rest/v1/${table}${query ? '?' + query : ''}`, {headers: H()});
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
+// Try publishable key first, fall back to JWT
+async function sbFetch(method, table, opts = {}) {
+  const {query = '', data} = opts;
+  const url = `${SB.url}/rest/v1/${table}${query ? '?' + query : ''}`;
+
+  for (const key of [SB.key, SB.jwt]) {
+    try {
+      const headers = (method === 'GET' || method === 'DELETE') ? hGet(key) : hWrite(key);
+      const r = await fetch(url, {
+        method,
+        headers,
+        body: data ? JSON.stringify(data) : undefined
+      });
+      if (r.status === 401 || r.status === 403) continue; // try next key
+      if (!r.ok) {
+        const txt = await r.text();
+        throw new Error(`HTTP ${r.status}: ${txt.slice(0,200)}`);
+      }
+      const txt = await r.text();
+      return txt ? JSON.parse(txt) : null;
+    } catch(e) {
+      if (e.message.startsWith('HTTP')) throw e;
+      // Network error — try next key
+      if (key === SB.jwt) throw new Error(`Network error: ${e.message}`);
+    }
+  }
+  throw new Error('Auth failed with both keys');
 }
-async function dbPost(table, data) {
-  const r = await fetch(`${SB.url}/rest/v1/${table}`, {method:'POST', headers:H(), body:JSON.stringify(data)});
-  if (!r.ok) throw new Error(await r.text());
-  const t = await r.text(); return t ? JSON.parse(t) : null;
-}
-async function dbPatch(table, id, data) {
-  const r = await fetch(`${SB.url}/rest/v1/${table}?id=eq.${id}`, {method:'PATCH', headers:H(), body:JSON.stringify(data)});
-  if (!r.ok) throw new Error(await r.text());
-  const t = await r.text(); return t ? JSON.parse(t) : null;
-}
-async function dbDelete(table, id) {
-  const r = await fetch(`${SB.url}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:H()});
-  if (!r.ok) throw new Error(await r.text());
-}
+
+async function dbGet(table, query = '') { return sbFetch('GET', table, {query}); }
+async function dbPost(table, data) { return sbFetch('POST', table, {data}); }
+async function dbPatch(table, id, data) { return sbFetch('PATCH', table, {query: `id=eq.${id}`, data}); }
+async function dbDelete(table, id) { return sbFetch('DELETE', table, {query: `id=eq.${id}`}); }
 
 /* ══════════════════════════════════════
    STATE
@@ -284,11 +307,19 @@ function avatarHtml(person, size = 40) {
 }
 
 async function loadStaffList() {
+  const grid = document.getElementById('staff-grid');
+  grid.innerHTML = '<div style="color:rgba(255,255,255,.6);text-align:center;width:100%;padding:20px">Connecting to server…</div>';
   try {
     ALL_STAFF = await dbGet('staff', 'is_active=eq.true&order=name.asc');
     renderStaffGrid();
   } catch(e) {
-    document.getElementById('staff-grid').innerHTML = `<div style="color:rgba(255,255,255,.7);text-align:center;padding:20px">Connection error. Please refresh.</div>`;
+    grid.innerHTML = `
+      <div style="color:#fff;text-align:center;width:100%;padding:20px;max-width:400px;margin:0 auto">
+        <div style="font-size:18px;margin-bottom:10px">⚠️</div>
+        <div style="font-weight:700;margin-bottom:6px">Connection failed</div>
+        <div style="background:rgba(0,0,0,.25);border-radius:8px;padding:10px;font-size:11px;text-align:left;word-break:break-all;margin-bottom:12px;font-family:monospace">${e.message}</div>
+        <button onclick="loadStaffList()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:13px">↻ Retry</button>
+      </div>`;
   }
 }
 
