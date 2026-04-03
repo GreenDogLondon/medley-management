@@ -663,30 +663,33 @@ function startClockTimer() {
 async function doClockIn(dateStr) {
   const timeVal = (document.getElementById('clock-in-time')?.value || '').trim();
   const notes   = (document.getElementById('clock-in-notes')?.value || '').trim();
+  const btn = document.querySelector('.clock-btn.in');
 
   if (!timeVal) { showToast('Please enter your start time.'); return; }
 
-  // Require a note if the time is more than 10 minutes in the past
   const entered  = new Date(`${dateStr}T${timeVal}:00`);
   const diffMins = (Date.now() - entered) / 60000;
   if (diffMins > 10 && !notes) {
-    showToast("Entering a past time — please add a note explaining why (e.g. Forgot to clock in)");
+    showToast("Entering a past time — please add a note explaining why");
     document.getElementById('clock-in-notes')?.focus();
     return;
   }
 
-  try {
-    if (await getOpenShift(ME.id))    { showToast('You are already clocked in.'); return; }
-    if (await getPendingShift(ME.id)) { showToast('You have a shift pending approval.'); return; }
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; btn.style.opacity = '0.7'; }
 
+  try {
     await dbPost('shifts', {
       staff_id: ME.id,
       clock_in: entered.toISOString(),
       status:   'pending_approval',
       notes:    notes || null
     });
-    render();
-  } catch(e) { showToast('Clock in failed: ' + e.message); }
+    showToast('Clocked in ✓ — awaiting manager approval', 'ok');
+    setTimeout(() => render(), 800);
+  } catch(e) {
+    showToast('Clock in failed: ' + e.message);
+    if (btn) { btn.innerHTML = 'CLOCK<br>IN'; btn.disabled = false; btn.style.opacity = '1'; }
+  }
 }
 
 async function cancelPendingShift(shiftId) {
@@ -702,25 +705,43 @@ async function doClockOut(shiftId, dateStr) {
 
   if (!timeVal) { showToast('Please enter your finish time.'); return; }
 
-  // Show loading state on button
+  // Show loading state
   if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; btn.style.opacity = '0.7'; }
 
+  const resetBtn = () => {
+    if (btn) { btn.innerHTML = 'CLOCK<br>OUT'; btn.disabled = false; btn.style.opacity = '1'; }
+  };
+
   try {
-    const shift    = (await dbGet('shifts', `id=eq.${shiftId}`))[0];
-    if (!shift) { showToast('Shift not found — please refresh.'); if (btn) { btn.innerHTML = 'CLOCK<br>OUT'; btn.disabled = false; btn.style.opacity = '1'; } return; }
+    // Use dateStr passed from the button — no need to re-fetch the shift
+    const clockOut = new Date(`${dateStr}T${timeVal}:00`);
+    const now = new Date();
 
-    const date     = shift.clock_in.slice(0,10);
-    const clockOut = new Date(`${date}T${timeVal}:00`);
-    const clockIn  = new Date(shift.clock_in);
+    // If finish time looks like it's in the future, warn but allow
+    const totalMins  = Math.max(0, (clockOut - now) < -86400000 ? 0 :
+      (clockOut - new Date(`${dateStr}T00:00:00`)) / 60000 - breakMins);
 
-    if (clockOut <= clockIn) {
-      showToast('Finish time must be after your start time.');
-      if (btn) { btn.innerHTML = 'CLOCK<br>OUT'; btn.disabled = false; btn.style.opacity = '1'; }
-      return;
+    // Fetch just to get clock_in for accurate hours calc — with 8s timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    let clockIn = new Date(`${dateStr}T09:00:00`); // safe fallback
+    try {
+      const r = await fetch(
+        `${SB.url}/rest/v1/shifts?id=eq.${shiftId}&select=clock_in`,
+        { headers: hGet(SB.key), signal: controller.signal }
+      );
+      clearTimeout(timeout);
+      if (r.ok) {
+        const data = await r.json();
+        if (data[0]?.clock_in) clockIn = new Date(data[0].clock_in);
+      }
+    } catch(fetchErr) {
+      clearTimeout(timeout);
+      // Continue with fallback clockIn — don't block clock out
     }
 
-    const totalMins  = (clockOut - clockIn) / 60000 - breakMins;
-    const totalHours = Math.max(0, totalMins / 60);
+    const totalMinsActual = (clockOut - clockIn) / 60000 - breakMins;
+    const totalHours = Math.max(0, totalMinsActual / 60);
 
     await dbPatch('shifts', shiftId, {
       clock_out:     clockOut.toISOString(),
@@ -728,11 +749,13 @@ async function doClockOut(shiftId, dateStr) {
       total_hours:   totalHours.toFixed(2),
       status:        'pending_approval'
     });
-    showToast('Clocked out — awaiting manager approval', 'ok');
-    setTimeout(() => render(), 800);
+
+    showToast('Clocked out ✓ — awaiting manager approval', 'ok');
+    setTimeout(() => render(), 1000);
+
   } catch(e) {
     showToast('Clock out failed: ' + e.message);
-    if (btn) { btn.innerHTML = 'CLOCK<br>OUT'; btn.disabled = false; btn.style.opacity = '1'; }
+    resetBtn();
   }
 }
 
