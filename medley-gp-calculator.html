@@ -413,11 +413,11 @@ let MASTERS = [
   {id:'DM63',type:'D',name:'Cucumber (whole)',sup:'Booker',cat:'Garnishes',pack:'Each · £1.25',cost:1.25,size:1,unit:'each'},
   {id:'DM64',type:'D',name:'Mint pot',sup:'Arthur David',cat:'Garnishes',pack:'Per pot ≈40 sprigs · £2.38',cost:2.38,size:40,unit:'sprig'},
   // Garnishes (per-serve derived — 1 unit = 1 slice/wedge/sprig)
-  {id:'DM65',type:'D',name:'Lemon slice (1/8 lemon)',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £0.42 ÷ 8',cost:0.053,size:1,unit:'each'},
-  {id:'DM66',type:'D',name:'Lime wedge (1/6 lime)',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £0.28 ÷ 6',cost:0.047,size:1,unit:'each'},
-  {id:'DM67',type:'D',name:'Orange slice (1/8 orange)',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £0.58 ÷ 8',cost:0.073,size:1,unit:'each'},
-  {id:'DM68',type:'D',name:'Cucumber slice (1/15 cucumber)',sup:'Booker',cat:'Garnishes',pack:'Derived: £1.25 ÷ 15',cost:0.083,size:1,unit:'each'},
-  {id:'DM69',type:'D',name:'Mint sprig',sup:'Arthur David',cat:'Garnishes',pack:'Derived: £2.38 ÷ 40',cost:0.060,size:1,unit:'each'},
+  {id:'DM65',type:'D',name:'Lemon slice',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Lemon (whole)',cost:0,size:1,unit:'each',parentId:'DM60',portions:8},
+  {id:'DM66',type:'D',name:'Lime wedge',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Lime (whole)',cost:0,size:1,unit:'each',parentId:'DM61',portions:6},
+  {id:'DM67',type:'D',name:'Orange slice',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Orange (whole)',cost:0,size:1,unit:'each',parentId:'DM62',portions:8},
+  {id:'DM68',type:'D',name:'Cucumber slice',sup:'Booker',cat:'Garnishes',pack:'Derived from Cucumber (whole)',cost:0,size:1,unit:'each',parentId:'DM63',portions:15},
+  {id:'DM69',type:'D',name:'Mint sprig',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Mint (100g bag ~40 sprigs)',cost:0,size:1,unit:'each',parentId:'DM64',portions:40},
 
   // Drink consumables
   {id:'DM70',type:'D',name:'Paper Straw (black 210mm)',sup:'Booker',cat:'Consumables',pack:'250 per pack · £2.49',cost:2.49,size:250,unit:'each'},
@@ -771,8 +771,15 @@ let syncTimer = null;
    ════════════════════════════════════════════ */
 function getMaster(id){ return MASTERS.find(m=>m.id===id) }
 
+// Returns the effective cost per unit for a master ingredient
+// If the ingredient is derived (has parentId + portions), calculates from parent
 function cpu(m){
-  if(!m||!m.size) return 0;
+  if(!m) return 0;
+  if(m.parentId && m.portions){
+    const parent=getMaster(m.parentId);
+    if(parent) return cpu(parent)/m.portions;
+  }
+  if(!m.size) return 0;
   return m.cost/m.size;
 }
 
@@ -818,6 +825,14 @@ function fmtCpu(m){
 }
 
 function fmtCpuDisplay(m){
+  // Derived items — calculate from parent
+  if(m.parentId && m.portions){
+    const parent=getMaster(m.parentId);
+    if(parent){
+      const c=cpu(parent)/m.portions;
+      return `£${c.toFixed(3)} each`;
+    }
+  }
   // More human-readable for table display
   const c=cpu(m);
   if(m.unit==='ml'){
@@ -865,13 +880,41 @@ function renderMaster(type){
   filtered.forEach(m=>{
     const isEd=editingMId===m.id;
     if(isEd){
+      const isDerived=!!(m.parentId && m.portions);
+      const parentOptions=MASTERS.filter(x=>x.id!==m.id).map(x=>`<option value="${x.id}"${m.parentId===x.id?' selected':''}>[${x.id}] ${x.name}</option>`).join('');
       h+=`<tr class="editing-row">
         <td><input id="e-n" value="${esc(m.name)}" style="width:100%"></td>
         <td><input id="e-s" value="${esc(m.sup)}" style="width:100%"></td>
         <td><input id="e-c" value="${esc(m.cat)}" style="width:100%"></td>
-        <td><input id="e-p" value="${esc(m.pack)}" style="width:100%"></td>
-        <td class="num"><input id="e-co" type="number" step="0.01" value="${m.cost}" style="width:70px;text-align:right"></td>
-        <td class="num"><input id="e-si" type="number" step="0.001" value="${m.size}" style="width:70px;text-align:right"></td>
+        <td>
+          <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em">Derived from parent?</div>
+          <select id="e-par" onchange="toggleDerivedFields()" style="width:100%;height:28px;border:1px solid var(--border);border-radius:5px;font-size:11px;margin-bottom:4px">
+            <option value="">— Not derived (own pack price) —</option>
+            ${parentOptions}
+          </select>
+          <div id="e-derived-row" style="display:${isDerived?'flex':'none'};gap:6px;align-items:center;margin-bottom:4px">
+            <span style="font-size:11px;color:var(--muted)">Portions per parent unit:</span>
+            <input id="e-por" type="number" step="1" min="1" value="${m.portions||1}"
+              style="width:60px;border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:13px;font-weight:700"
+              onchange="updateDerivedPreview()">
+            <span id="e-derived-preview" style="font-size:11px;color:var(--teal);font-weight:700"></span>
+          </div>
+          <div id="e-pack-row" style="display:${isDerived?'none':'block'}">
+            <input id="e-p" value="${esc(m.pack)}" style="width:100%;font-size:11px" placeholder="e.g. 1kg bag · Arthur David">
+          </div>
+        </td>
+        <td class="num">
+          ${isDerived
+            ? `<span style="color:var(--muted);font-size:11px">Auto</span><input id="e-co" type="hidden" value="${m.cost}">`
+            : `<input id="e-co" type="number" step="0.01" value="${m.cost}" style="width:70px;text-align:right">`
+          }
+        </td>
+        <td class="num">
+          ${isDerived
+            ? `<span style="color:var(--muted);font-size:11px">1</span><input id="e-si" type="hidden" value="1">`
+            : `<input id="e-si" type="number" step="0.001" value="${m.size}" style="width:70px;text-align:right">`
+          }
+        </td>
         <td class="num"><input id="e-u" value="${m.unit}" style="width:50px"></td>
         <td class="num teal-bold">${fmtCpuDisplay(m)}</td>
         <td class="actions">
@@ -879,13 +922,17 @@ function renderMaster(type){
           <button class="btn-sm" onclick="editingMId=null;render()">✕</button>
         </td></tr>`;
     } else {
+      const isDerived=!!(m.parentId && m.portions);
+      const packDisplay=isDerived
+        ? `<span style="color:var(--teal);font-size:10px;font-weight:700">⬡ Derived</span> <span class="muted small">from ${getMaster(m.parentId)?.name||m.parentId} ÷ ${m.portions}</span>`
+        : `<span class="muted small">${m.pack}</span>`;
       h+=`<tr>
         <td class="bold">${m.name}</td>
         <td class="muted">${m.sup}</td>
         <td><span class="cat-badge${m.type==='O'?' ops':''}">${m.cat}</span></td>
-        <td class="muted small">${m.pack}</td>
-        <td class="num">£${m.cost.toFixed(2)}</td>
-        <td class="num">${m.size}</td>
+        <td>${packDisplay}</td>
+        <td class="num">£${isDerived?'auto':m.cost.toFixed(2)}</td>
+        <td class="num">${isDerived?'—':m.size}</td>
         <td class="num muted">${m.unit}</td>
         <td class="num teal-bold">${fmtCpuDisplay(m)}</td>
         <td class="actions">
@@ -903,16 +950,50 @@ function renderMaster(type){
 /* ════════════════════════════════════════════
    MASTER CRUD
    ════════════════════════════════════════════ */
+function toggleDerivedFields(){
+  const par=document.getElementById('e-par')?.value;
+  const derivedRow=document.getElementById('e-derived-row');
+  const packRow=document.getElementById('e-pack-row');
+  if(derivedRow) derivedRow.style.display=par?'flex':'none';
+  if(packRow) packRow.style.display=par?'none':'block';
+  updateDerivedPreview();
+}
+function updateDerivedPreview(){
+  const parId=document.getElementById('e-par')?.value;
+  const portions=parseInt(document.getElementById('e-por')?.value)||1;
+  const preview=document.getElementById('e-derived-preview');
+  if(!preview||!parId) return;
+  const parent=getMaster(parId);
+  if(parent){
+    const costEach=cpu(parent)/portions;
+    preview.textContent=`= £${costEach.toFixed(4)} each`;
+  }
+}
 function saveMaster(id){
   const m=getMaster(id);
   if(!m)return;
   m.name=document.getElementById('e-n').value.trim()||m.name;
   m.sup=document.getElementById('e-s').value.trim();
   m.cat=document.getElementById('e-c').value.trim();
-  m.pack=document.getElementById('e-p').value.trim();
-  m.cost=parseFloat(document.getElementById('e-co').value)||m.cost;
-  m.size=parseFloat(document.getElementById('e-si').value)||m.size;
   m.unit=document.getElementById('e-u').value.trim()||m.unit;
+
+  const parId=document.getElementById('e-par')?.value;
+  if(parId){
+    // Derived ingredient
+    m.parentId=parId;
+    m.portions=parseInt(document.getElementById('e-por')?.value)||1;
+    m.cost=0;
+    m.size=1;
+    const parent=getMaster(parId);
+    m.pack=`Derived from ${parent?parent.name:'parent'} ÷ ${m.portions}`;
+  } else {
+    // Own pack price
+    delete m.parentId;
+    delete m.portions;
+    m.pack=document.getElementById('e-p')?.value.trim()||m.pack;
+    m.cost=parseFloat(document.getElementById('e-co')?.value)||m.cost;
+    m.size=parseFloat(document.getElementById('e-si')?.value)||m.size;
+  }
   editingMId=null;
   render();
 }
