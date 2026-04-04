@@ -149,9 +149,111 @@ nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0
 .tb-btn:hover{background:rgba(255,255,255,.28)}
 .tb-import{position:relative;overflow:hidden}
 .tb-import input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;background:#aaa}
+.sync-dot.ok{background:#4ade80}.sync-dot.busy{background:#fbbf24;animation:pulse .8s infinite}
+.sync-dot.err{background:#f87171}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Cloud sync modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8000;display:flex;align-items:center;justify-content:center}
+.modal-box{background:#fff;border-radius:14px;padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-title{font-size:16px;font-weight:800;color:var(--teal);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.modal-section{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.modal-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.modal-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px}
+.modal-input{width:100%;height:36px;border:1.5px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;outline:none;transition:.2s;font-family:monospace}
+.modal-input:focus{border-color:var(--teal)}
+.modal-row{display:flex;gap:8px;margin-top:8px}
+.share-code-box{background:var(--teal-l);border:1px solid var(--teal);border-radius:7px;padding:10px 14px;font-family:monospace;font-size:12px;color:var(--teal);word-break:break-all;margin-top:8px;cursor:pointer;position:relative}
+.share-code-box:after{content:'Click to copy';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);font-family:sans-serif}
+.sync-status-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:10px 14px;background:var(--bg);border-radius:8px}
+.step-num{background:var(--teal);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+
+/* ── Labour tab ── */
+.labour-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.labour-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px}
+.panel-title{font-size:12px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.shift-form{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.shift-form label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px}
+.shift-form input,.shift-form select{height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;color:var(--text)}
+.shift-preview{font-size:13px;font-weight:700;color:var(--teal);padding:5px 0;min-width:120px}
+.labour-table{width:100%;border-collapse:collapse;font-size:12px}
+.labour-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;padding:5px 8px;border-bottom:1px solid var(--border);text-align:left}
+.labour-table th.num,.labour-table td.num{text-align:right}
+.labour-table td{padding:6px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.labour-table tbody tr:hover{background:var(--teal-l)}
+.subtab-bar{display:flex;gap:2px;margin-bottom:14px;background:var(--bg);border-radius:8px;padding:3px}
+.subtab{border:none;background:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:.15s}
+.subtab.active{background:#fff;color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.week-badge{background:var(--teal-l);color:var(--teal);font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700}
 </style>
 </head>
 <body>
+
+<!-- ── Cloud Sync Modal ── -->
+<div class="modal-overlay" id="sync-modal" style="display:none" onclick="if(event.target===this)closeSyncModal()">
+  <div class="modal-box">
+    <div class="modal-title">☁️ Cloud Sync Setup</div>
+    <div class="modal-sub">Sync data live between all three of you — owner, GM, head chef</div>
+
+    <div class="modal-section" id="sync-status-section" style="display:none">
+      <div class="sync-status-row">
+        <span class="sync-dot ok" id="sync-dot"></span>
+        <span id="sync-status-text">Connected — last synced just now</span>
+        <button class="btn-sm btn-teal" onclick="forceSyncFromCloud()" style="margin-left:auto">↻ Sync now</button>
+      </div>
+      <div style="margin-top:12px">
+        <div class="modal-label">Your Share Code — send this to Charlie &amp; the head chef</div>
+        <div class="share-code-box" id="share-code-display" onclick="copyShareCode()"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">They paste this in their app under ☁️ → "Join existing sync" to connect to your data.</div>
+      </div>
+      <div class="modal-row" style="margin-top:12px">
+        <button class="btn-sm del" onclick="disconnectCloud()">Disconnect cloud sync</button>
+        <button class="btn-sm" onclick="closeSyncModal()" style="margin-left:auto">Close</button>
+      </div>
+    </div>
+
+    <div id="sync-setup-section">
+      <div class="modal-section">
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <span class="step-num">1</span>
+          <span style="font-size:13px">Go to <a href="https://jsonbin.io/signup" target="_blank" style="color:var(--teal)">jsonbin.io/signup</a> and create a free account</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <span class="step-num">2</span>
+          <span style="font-size:13px">In the JSONBin dashboard, click <strong>API Keys</strong> → copy your <strong>Master Key</strong></span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <span class="step-num">3</span>
+          <span style="font-size:13px">Paste it below — takes about 10 seconds to set up</span>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-label">Option A — New setup (first person to configure)</div>
+        <label class="modal-label" style="margin-top:10px">JSONBin Master Key</label>
+        <input class="modal-input" type="password" id="new-api-key" placeholder="$2a$10$...">
+        <div class="modal-row">
+          <button class="btn-sm btn-teal" onclick="setupNewCloud()">Create cloud storage →</button>
+        </div>
+        <div id="setup-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-label">Option B — Join existing (Charlie / head chef joining GM's setup)</div>
+        <label class="modal-label" style="margin-top:10px">Share Code (from the person who set it up)</label>
+        <input class="modal-input" type="text" id="join-code" placeholder="Paste share code here...">
+        <div class="modal-row">
+          <button class="btn-sm btn-teal" onclick="joinCloud()">Connect →</button>
+        </div>
+        <div id="join-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
+      </div>
+      <div style="text-align:right">
+        <button class="btn-sm" onclick="closeSyncModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ── Login Screen ── -->
 <div id="login-screen" style="display:none">
@@ -171,6 +273,9 @@ nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0
   <div class="brand">THE MEDLEY <em>GP & Cost Calculator</em></div>
   <div class="topbar-right">
     <span class="save-status" id="save-status">Not saved yet</span>
+    <button class="tb-btn" onclick="document.getElementById('sync-modal').style.display='flex'" title="Cloud sync settings">
+      <span class="sync-dot" id="sync-dot-tb"></span>☁️ Sync
+    </button>
     <button class="tb-btn" onclick="exportData()" title="Download your data as a JSON backup file">↓ Export</button>
     <div class="tb-btn tb-import" title="Import a previously exported JSON file">
       ↑ Import
@@ -185,6 +290,7 @@ nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0
   <button class="navtab" id="t-ops"   onclick="setTab('ops')">📦 Ops & Misc</button>
   <button class="navtab active" id="t-wet"  onclick="setTab('wet')">🍸 Wet GP</button>
   <button class="navtab" id="t-dry"   onclick="setTab('dry')">🍕 Dry GP</button>
+  <button class="navtab" id="t-labour" onclick="setTab('labour')">👷 Labour</button>
 </nav>
 
 <div id="content"></div>
@@ -595,6 +701,18 @@ let nextIds = {D:80, F:90, O:20};
 let nextWet = 40;
 let nextDry = 20;
 
+/* ── Labour state ── */
+let STAFF = [];
+let SHIFTS = [];
+let nextStaffId = 1;
+let nextShiftId = 1;
+let labourSubTab = 'shifts'; // 'roster' | 'shifts' | 'summary'
+let seasonStart = '2026-04-01';
+
+/* ── Cloud sync state ── */
+let CLOUD = null; // {apiKey, binId} when configured
+let syncTimer = null;
+
 /* ════════════════════════════════════════════
    HELPERS
    ════════════════════════════════════════════ */
@@ -670,8 +788,12 @@ function renderMaster(type){
   const cats=[...new Set(all.map(m=>m.cat))].sort();
 
   let h=`<div class="master-bar">
-    <input type="text" placeholder="Search name, category, supplier…" value="${mFilter}"
-      oninput="mFilter=this.value;render()" style="width:240px">
+    <input type="text" placeholder="Search name, category, supplier… (press Enter)" value="${mFilter}"
+      id="master-search-input"
+      onkeydown="if(event.key==='Enter'){mFilter=this.value;render();}"
+      style="width:280px">
+    <button class="btn-sm" onclick="mFilter=document.getElementById('master-search-input').value;render()" style="height:36px;padding:0 12px">Search</button>
+    <button class="btn-sm" onclick="mFilter='';document.getElementById('master-search-input').value='';render()" style="height:36px;padding:0 10px;color:var(--muted)" title="Clear search">✕</button>
     <select onchange="mFilter=this.value;render()">
       <option value="">All categories (${all.length})</option>
       ${cats.map(c=>`<option${mFilter===c?' selected':''}>${c}</option>`).join('')}
@@ -1053,20 +1175,480 @@ function setTab(t){
   render();
 }
 
+/* ════════════════════════════════════════════
+   LABOUR HELPERS
+   ════════════════════════════════════════════ */
+function shiftHours(s){
+  if(!s.start||!s.end)return 0;
+  const [sh,sm]=s.start.split(':').map(Number);
+  const [eh,em]=s.end.split(':').map(Number);
+  return Math.max(0,((eh*60+em)-(sh*60+sm))/60);
+}
+function shiftCost(s){
+  const st=STAFF.find(x=>x.id===s.staffId);
+  return st?shiftHours(s)*st.rate:0;
+}
+function weekOf(dateStr){
+  const d=new Date(dateStr), base=new Date(seasonStart);
+  return Math.max(1,Math.floor((d-base)/(7*864e5))+1);
+}
+function weekLabel(w){
+  const d=new Date(seasonStart);
+  d.setDate(d.getDate()+(w-1)*7);
+  const e=new Date(d); e.setDate(e.getDate()+6);
+  const fmt=x=>x.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  return fmt(d)+' – '+fmt(e);
+}
+function fmtDate(s){
+  if(!s)return'—';
+  return new Date(s).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+function totalLabourCost(shifts){
+  return shifts.reduce((t,s)=>t+shiftCost(s),0);
+}
+function totalLabourHours(shifts){
+  return shifts.reduce((t,s)=>t+shiftHours(s),0);
+}
+
+/* ════════════════════════════════════════════
+   LABOUR RENDER
+   ════════════════════════════════════════════ */
+function renderLabour(){
+  const totalCostSeason=totalLabourCost(SHIFTS);
+  const totalHrsSeason=totalLabourHours(SHIFTS);
+
+  // This week
+  const today=new Date().toISOString().slice(0,10);
+  const thisWeek=weekOf(today);
+  const thisWeekShifts=SHIFTS.filter(s=>weekOf(s.date)===thisWeek);
+  const thisWeekCost=totalLabourCost(thisWeekShifts);
+  const thisWeekHrs=totalLabourHours(thisWeekShifts);
+
+  // Weekly average
+  const weeks=[...new Set(SHIFTS.map(s=>weekOf(s.date)))];
+  const avgWeeklyCost=weeks.length?totalCostSeason/weeks.length:0;
+
+  let h=`
+  <div class="labour-metrics">
+    <div class="metric"><div class="ml">Season labour cost</div>
+      <div class="mv">£${totalCostSeason.toFixed(2)}</div>
+      <div class="ms">${totalLabourHours(SHIFTS).toFixed(1)} total hours</div></div>
+    <div class="metric"><div class="ml">This week (Wk ${thisWeek})</div>
+      <div class="mv">£${thisWeekCost.toFixed(2)}</div>
+      <div class="ms">${thisWeekHrs.toFixed(1)} hrs · ${thisWeekShifts.length} shifts</div></div>
+    <div class="metric"><div class="ml">Weekly average</div>
+      <div class="mv">£${avgWeeklyCost.toFixed(2)}</div>
+      <div class="ms">over ${weeks.length} week${weeks.length!==1?'s':''} logged</div></div>
+    <div class="metric"><div class="ml">Staff on roster</div>
+      <div class="mv">${STAFF.length}</div>
+      <div class="ms">${STAFF.filter(s=>s.rate>0).length} paid · ${STAFF.filter(s=>s.rate===0).length} unpaid</div></div>
+  </div>
+
+  <div class="subtab-bar">
+    <button class="subtab${labourSubTab==='shifts'?' active':''}" onclick="labourSubTab='shifts';render()">📅 Shift Log</button>
+    <button class="subtab${labourSubTab==='roster'?' active':''}" onclick="labourSubTab='roster';render()">👥 Staff Roster</button>
+    <button class="subtab${labourSubTab==='summary'?' active':''}" onclick="labourSubTab='summary';render()">📊 Weekly Summary</button>
+  </div>`;
+
+  if(labourSubTab==='roster') h+=renderRoster();
+  else if(labourSubTab==='shifts') h+=renderShifts();
+  else h+=renderLabourSummary();
+
+  return h;
+}
+
+function renderRoster(){
+  let h=`<div class="panel">
+  <div class="panel-title">Staff Roster
+    <button class="btn-teal" onclick="addStaffMember()">+ Add staff</button>
+  </div>
+  <table class="labour-table">
+    <thead><tr>
+      <th>Name</th><th>Role</th><th class="num">Rate £/hr</th>
+      <th class="num">Min wage ref</th><th class="num">Shifts logged</th><th class="num">Hours</th><th class="num">Season cost</th><th></th>
+    </tr></thead><tbody>`;
+
+  if(!STAFF.length){
+    h+=`<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">No staff added yet — click "+ Add staff" to begin</td></tr>`;
+  }
+
+  STAFF.forEach(st=>{
+    const stShifts=SHIFTS.filter(s=>s.staffId===st.id);
+    const hrs=totalLabourHours(stShifts);
+    const cost=totalLabourCost(stShifts);
+    h+=`<tr>
+      <td class="bold">${st.name}</td>
+      <td><span class="cat-badge">${st.role}</span></td>
+      <td class="num">
+        £<input style="width:60px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px"
+          type="number" step="0.01" value="${st.rate.toFixed(2)}"
+          onchange="updateStaffRate(${st.id},+this.value)">
+      </td>
+      <td class="num muted" style="font-size:11px">21+ £12.21<br>18-20 £10.18</td>
+      <td class="num">${stShifts.length}</td>
+      <td class="num">${hrs.toFixed(1)}h</td>
+      <td class="num teal-bold">£${cost.toFixed(2)}</td>
+      <td><button class="del-btn" onclick="deleteStaff(${st.id})">✕</button></td>
+    </tr>`;
+  });
+
+  h+=`</tbody></table></div>`;
+  return h;
+}
+
+function renderShifts(){
+  // Sort shifts newest first
+  const sorted=[...SHIFTS].sort((a,b)=>b.date.localeCompare(a.date));
+
+  let h=`<div class="panel">
+  <div class="panel-title">Log a Shift</div>
+  <div class="shift-form">
+    <div>
+      <label>Staff member</label>
+      <select id="sf-staff" style="min-width:160px" onchange="updateShiftPreview()">
+        <option value="">— select —</option>
+        ${STAFF.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
+    </div>
+    <div><label>Date</label>
+      <input type="date" id="sf-date" value="${new Date().toISOString().slice(0,10)}" onchange="updateShiftPreview()">
+    </div>
+    <div><label>Start</label>
+      <input type="time" id="sf-start" value="10:00" onchange="updateShiftPreview()">
+    </div>
+    <div><label>End</label>
+      <input type="time" id="sf-end" value="18:00" onchange="updateShiftPreview()">
+    </div>
+    <div><label>Notes</label>
+      <input type="text" id="sf-notes" placeholder="Optional" style="width:140px">
+    </div>
+    <div>
+      <label style="opacity:0">Add</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="shift-preview" id="shift-preview"></span>
+        <button class="btn-teal" onclick="logShift()">Log shift</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="labour-table">
+    <thead><tr>
+      <th>Date</th><th>Week</th><th>Staff</th><th>Start</th><th>End</th>
+      <th class="num">Hours</th><th class="num">Cost £</th><th>Notes</th><th></th>
+    </tr></thead><tbody>`;
+
+  if(!sorted.length){
+    h+=`<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No shifts logged yet</td></tr>`;
+  }
+
+  sorted.forEach(s=>{
+    const st=STAFF.find(x=>x.id===s.staffId);
+    const hrs=shiftHours(s);
+    const cost=shiftCost(s);
+    h+=`<tr>
+      <td>${fmtDate(s.date)}</td>
+      <td><span class="week-badge">Wk ${weekOf(s.date)}</span></td>
+      <td class="bold">${st?st.name:'Unknown'}</td>
+      <td>${s.start}</td><td>${s.end}</td>
+      <td class="num">${hrs.toFixed(2)}h</td>
+      <td class="num teal-bold">£${cost.toFixed(2)}</td>
+      <td class="muted small">${s.notes||''}</td>
+      <td><button class="del-btn" onclick="deleteShift(${s.id})">✕</button></td>
+    </tr>`;
+  });
+
+  h+=`</tbody></table></div>`;
+  return h;
+}
+
+function renderLabourSummary(){
+  if(!SHIFTS.length){
+    return `<div class="panel" style="text-align:center;padding:40px;color:var(--muted)">Log some shifts first to see the weekly summary.</div>`;
+  }
+
+  const weeks=[...new Set(SHIFTS.map(s=>weekOf(s.date)))].sort((a,b)=>a-b);
+
+  let h=`<div class="panel"><div class="panel-title">Weekly Breakdown — 2026 Season</div>
+  <table class="labour-table">
+    <thead><tr>
+      <th>Week</th><th>Period</th><th class="num">Shifts</th>
+      <th class="num">Hours</th><th class="num">Labour cost</th><th>Staff worked</th>
+    </tr></thead><tbody>`;
+
+  weeks.forEach(w=>{
+    const wShifts=SHIFTS.filter(s=>weekOf(s.date)===w);
+    const hrs=totalLabourHours(wShifts);
+    const cost=totalLabourCost(wShifts);
+    const staffNames=[...new Set(wShifts.map(s=>{
+      const st=STAFF.find(x=>x.id===s.staffId);
+      return st?st.name.split(' ')[0]:'?';
+    }))].join(', ');
+    h+=`<tr>
+      <td><span class="week-badge">Wk ${w}</span></td>
+      <td class="muted small">${weekLabel(w)}</td>
+      <td class="num">${wShifts.length}</td>
+      <td class="num">${hrs.toFixed(1)}h</td>
+      <td class="num teal-bold">£${cost.toFixed(2)}</td>
+      <td class="muted small">${staffNames}</td>
+    </tr>`;
+  });
+
+  // Totals row
+  h+=`<tr style="background:var(--teal-l);font-weight:700">
+    <td colspan="2">Season total (${weeks.length} weeks)</td>
+    <td class="num">${SHIFTS.length}</td>
+    <td class="num">${totalLabourHours(SHIFTS).toFixed(1)}h</td>
+    <td class="num teal-bold">£${totalLabourCost(SHIFTS).toFixed(2)}</td>
+    <td></td>
+  </tr>`;
+
+  h+=`</tbody></table>
+
+  <div style="margin-top:20px"><div class="panel-title" style="margin-bottom:12px">By Staff Member</div>
+  <table class="labour-table"><thead><tr>
+    <th>Name</th><th>Role</th><th class="num">Rate</th>
+    <th class="num">Shifts</th><th class="num">Hours</th><th class="num">Earnings</th>
+  </tr></thead><tbody>`;
+
+  STAFF.forEach(st=>{
+    const stShifts=SHIFTS.filter(s=>s.staffId===st.id);
+    if(!stShifts.length)return;
+    const hrs=totalLabourHours(stShifts);
+    const cost=totalLabourCost(stShifts);
+    h+=`<tr>
+      <td class="bold">${st.name}</td>
+      <td><span class="cat-badge">${st.role}</span></td>
+      <td class="num muted">£${st.rate.toFixed(2)}/hr</td>
+      <td class="num">${stShifts.length}</td>
+      <td class="num">${hrs.toFixed(1)}h</td>
+      <td class="num teal-bold">£${cost.toFixed(2)}</td>
+    </tr>`;
+  });
+
+  h+=`</tbody></table></div></div>`;
+  return h;
+}
+
+/* ── Labour event handlers ── */
+function addStaffMember(){
+  const name=prompt('Staff member name:');
+  if(!name||!name.trim())return;
+  const role=prompt('Role (e.g. Bar Staff, Kitchen, GM):') || 'Bar Staff';
+  const rate=parseFloat(prompt('Hourly rate £ (enter 0 if unpaid/owner):')) || 0;
+  STAFF.push({id:nextStaffId++, name:name.trim(), role:role.trim(), rate});
+  saveState();
+  render();
+}
+function updateStaffRate(id,val){
+  const st=STAFF.find(s=>s.id===id);
+  if(st){st.rate=val;saveState();}
+}
+function deleteStaff(id){
+  if(!confirm('Remove this staff member? Their shifts will remain but show as unknown.'))return;
+  STAFF=STAFF.filter(s=>s.id!==id);
+  saveState(); render();
+}
+function updateShiftPreview(){
+  const staffId=parseInt(document.getElementById('sf-staff').value);
+  const start=document.getElementById('sf-start').value;
+  const end=document.getElementById('sf-end').value;
+  const preview=document.getElementById('shift-preview');
+  if(!preview)return;
+  const st=STAFF.find(s=>s.id===staffId);
+  const tmp={staffId,start,end};
+  const hrs=shiftHours(tmp);
+  const cost=st?hrs*st.rate:0;
+  preview.textContent=hrs>0?(hrs.toFixed(1)+'h = £'+cost.toFixed(2)):'';
+}
+function logShift(){
+  const staffId=parseInt(document.getElementById('sf-staff').value);
+  const date=document.getElementById('sf-date').value;
+  const start=document.getElementById('sf-start').value;
+  const end=document.getElementById('sf-end').value;
+  const notes=document.getElementById('sf-notes').value.trim();
+  if(!staffId){alert('Please select a staff member.');return;}
+  if(!date){alert('Please select a date.');return;}
+  if(!start||!end){alert('Please enter start and end times.');return;}
+  if(shiftHours({start,end})<=0){alert('End time must be after start time.');return;}
+  SHIFTS.push({id:nextShiftId++,staffId,date,start,end,notes});
+  saveState(); render();
+}
+function deleteShift(id){
+  if(!confirm('Delete this shift?'))return;
+  SHIFTS=SHIFTS.filter(s=>s.id!==id);
+  saveState(); render();
+}
+
+/* ════════════════════════════════════════════
+   CLOUD SYNC — JSONBin.io
+   ════════════════════════════════════════════ */
+const CLOUD_KEY='medley-cloud-v1';
+const BIN_API='https://api.jsonbin.io/v3/b';
+
+function loadCloudConfig(){
+  try{
+    const raw=localStorage.getItem(CLOUD_KEY);
+    if(raw) CLOUD=JSON.parse(raw);
+  }catch(e){}
+}
+
+function saveCloudConfig(){
+  if(CLOUD) localStorage.setItem(CLOUD_KEY, JSON.stringify(CLOUD));
+}
+
+function setDot(status){
+  ['sync-dot-tb','sync-dot'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.className='sync-dot '+status;}
+  });
+}
+
+async function pushToCloud(state){
+  if(!CLOUD)return;
+  try{
+    setDot('busy');
+    const r=await fetch(`${BIN_API}/${CLOUD.binId}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':CLOUD.apiKey},
+      body:JSON.stringify(state)
+    });
+    setDot(r.ok?'ok':'err');
+    if(r.ok){
+      const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      const el=document.getElementById('sync-status-text');
+      if(el) el.textContent='Connected — last pushed '+t;
+    }
+  }catch(e){setDot('err');}
+}
+
+async function forceSyncFromCloud(){
+  if(!CLOUD){alert('Cloud sync not configured.');return;}
+  try{
+    setDot('busy');
+    const r=await fetch(`${BIN_API}/${CLOUD.binId}/latest`,{
+      headers:{'X-Master-Key':CLOUD.apiKey}
+    });
+    if(!r.ok){setDot('err');return;}
+    const data=await r.json();
+    const s=data.record;
+    if(!s||!s.MASTERS){setDot('err');return;}
+    MASTERS=s.MASTERS; WET_GP=s.WET_GP; DRY_GP=s.DRY_GP;
+    STAFF=s.STAFF||[]; SHIFTS=s.SHIFTS||[];
+    nextIds=s.nextIds||nextIds; nextWet=s.nextWet||nextWet;
+    nextDry=s.nextDry||nextDry; target=s.target||70;
+    nextStaffId=s.nextStaffId||nextStaffId;
+    nextShiftId=s.nextShiftId||nextShiftId;
+    saveState(); setDot('ok'); render();
+    const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const el=document.getElementById('sync-status-text');
+    if(el) el.textContent='Synced from cloud at '+t;
+  }catch(e){setDot('err');}
+}
+
+async function setupNewCloud(){
+  const apiKey=(document.getElementById('new-api-key').value||'').trim();
+  const errEl=document.getElementById('setup-error');
+  if(!apiKey){errEl.textContent='Please enter your JSONBin Master Key.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  try{
+    setDot('busy');
+    const state=buildState();
+    const r=await fetch(BIN_API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Master-Key':apiKey,'X-Bin-Name':'medley-gp-data','X-Bin-Private':'true'},
+      body:JSON.stringify(state)
+    });
+    if(!r.ok){
+      const txt=await r.text();
+      errEl.textContent='Error: '+txt;errEl.style.display='block';setDot('err');return;
+    }
+    const data=await r.json();
+    CLOUD={apiKey,binId:data.metadata.id};
+    saveCloudConfig();
+    setDot('ok');
+    showSyncConnected();
+  }catch(e){
+    errEl.textContent='Connection failed: '+e.message;errEl.style.display='block';setDot('err');
+  }
+}
+
+async function joinCloud(){
+  const code=(document.getElementById('join-code').value||'').trim();
+  const errEl=document.getElementById('join-error');
+  if(!code){errEl.textContent='Please paste the share code.';errEl.style.display='block';return;}
+  try{
+    const parsed=JSON.parse(atob(code));
+    if(!parsed.ak||!parsed.bi)throw new Error('Invalid code');
+    CLOUD={apiKey:parsed.ak,binId:parsed.bi};
+    saveCloudConfig();
+    errEl.style.display='none';
+    await forceSyncFromCloud();
+    showSyncConnected();
+  }catch(e){
+    errEl.textContent='Invalid share code. Ask the person who set it up to resend it.';
+    errEl.style.display='block';
+  }
+}
+
+function showSyncConnected(){
+  document.getElementById('sync-setup-section').style.display='none';
+  document.getElementById('sync-status-section').style.display='block';
+  const code=CLOUD?btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId})):'';
+  const el=document.getElementById('share-code-display');
+  if(el) el.textContent=code;
+}
+
+function copyShareCode(){
+  const code=CLOUD?btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId})):'';
+  navigator.clipboard.writeText(code).then(()=>{
+    alert('Share code copied! Send it to Charlie and the head chef — they paste it in ☁️ → "Join existing sync".');
+  });
+}
+
+function disconnectCloud(){
+  if(!confirm('Disconnect cloud sync? Your local data stays, but changes won\'t sync to others.'))return;
+  CLOUD=null;
+  localStorage.removeItem(CLOUD_KEY);
+  setDot('');
+  closeSyncModal();
+}
+
+function closeSyncModal(){
+  document.getElementById('sync-modal').style.display='none';
+  // Refresh sync status display
+  if(CLOUD){
+    document.getElementById('sync-setup-section').style.display='none';
+    document.getElementById('sync-status-section').style.display='block';
+    const code=btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId}));
+    const el=document.getElementById('share-code-display');
+    if(el) el.textContent=code;
+  }
+}
+
+function buildState(){
+  return {
+    v:1, savedAt:new Date().toISOString(),
+    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,
+    nextIds,nextWet,nextDry,nextStaffId,nextShiftId,target
+  };
+}
+
 function render(){
   const labels={
     drink:'Drink Ingredients Master',
     food:'Food Ingredients Master',
     ops:'Ops & Miscellaneous',
     wet:'Wet GP — Drinks Menu',
-    dry:'Dry GP — Food Menu'
+    dry:'Dry GP — Food Menu',
+    labour:'Labour — Staff & Shifts'
   };
   const subs={
     drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',
     food:'Prices from Arthur David & Carnevale · 03/04/26 · Compound items (green badge) are house-made batch preparations',
     ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',
     wet:'Click any item to expand its recipe · Select from master to link ingredients — cost auto-calculates from purchase price',
-    dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included'
+    dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included',
+    labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync'
   };
 
   let html=`<div class="tab-header">
@@ -1079,6 +1661,7 @@ function render(){
   else if(activeTab==='ops') html+=renderMaster('O');
   else if(activeTab==='wet') html+=renderGP('wet');
   else if(activeTab==='dry') html+=renderGP('dry');
+  else if(activeTab==='labour') html+=renderLabour();
 
   document.getElementById('content').innerHTML=html;
 
@@ -1101,14 +1684,12 @@ const ACCESS_PASSWORD = 'medley2025';
 
 function saveState() {
   try {
-    const state = {
-      v: 1,
-      savedAt: new Date().toISOString(),
-      MASTERS, WET_GP, DRY_GP,
-      nextIds, nextWet, nextDry, target
-    };
+    const state = buildState();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     updateSaveStatus(state.savedAt);
+    // Debounced cloud push — waits 2.5s after last change before pushing
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(()=>pushToCloud(state), 2500);
   } catch(e) { console.warn('Save failed:', e); }
 }
 
@@ -1121,9 +1702,13 @@ function loadState() {
     MASTERS  = s.MASTERS;
     WET_GP   = s.WET_GP;
     DRY_GP   = s.DRY_GP;
+    STAFF    = s.STAFF    || [];
+    SHIFTS   = s.SHIFTS   || [];
     nextIds  = s.nextIds  || nextIds;
     nextWet  = s.nextWet  || nextWet;
     nextDry  = s.nextDry  || nextDry;
+    nextStaffId = s.nextStaffId || nextStaffId;
+    nextShiftId = s.nextShiftId || nextShiftId;
     target   = s.target   || 70;
     return s.savedAt;
   } catch(e) { return null; }
@@ -1234,14 +1819,17 @@ addItem       = withSave(addItem);
    ════════════════════════════════════════════ */
 
 function init() {
+  loadCloudConfig();
+  if(CLOUD) { setDot('ok'); showSyncConnected(); }
+
   if (checkAuth()) {
-    // Returning within same browser session (e.g. refresh)
     document.getElementById('login-screen').style.display = 'none';
     const savedAt = loadState();
     if (savedAt) updateSaveStatus(savedAt);
     render();
+    // Auto-sync from cloud on load so all users get latest data
+    if(CLOUD) forceSyncFromCloud();
   } else {
-    // New session — show login
     document.getElementById('login-screen').style.display = 'flex';
   }
 }
