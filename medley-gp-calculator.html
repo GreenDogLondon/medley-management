@@ -24,7 +24,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .inv-badge{background:rgba(255,255,255,.15);font-size:11px;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
 
 /* ── Nav tabs ── */
-nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 16px;position:sticky;top:45px;z-index:99}
+nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 16px;position:sticky;top:45px;z-index:99;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
 .navtab{border:none;background:none;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.15s}
 .navtab:hover{color:var(--teal)}
 .navtab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
@@ -122,9 +123,61 @@ nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0
 
 /* ── Responsive ── */
 @media(max-width:768px){
-  .metrics{grid-template-columns:repeat(2,1fr)}
-  .master-table td:nth-child(2),.master-table th:nth-child(2),
+  /* Topbar — stack brand and buttons */
+  .topbar{padding:8px 12px;flex-wrap:wrap;gap:6px}
+  .brand{font-size:14px}
+  .brand em{display:none} /* hide subtitle on mobile */
+  .topbar-right{gap:5px;flex-wrap:wrap}
+  .topbar-right button,.topbar-right .tb-import{font-size:10px;padding:4px 8px;height:28px}
+  .inv-badge{font-size:10px;padding:2px 7px}
+
+  /* Nav tabs — scrollable, no overflow */
+  nav{padding:0 4px;top:50px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  nav::-webkit-scrollbar{display:none}
+  .navtab{padding:9px 10px;font-size:11px}
+
+  /* Content padding */
+  #content{padding:10px 10px}
+
+  /* Master bar — stack vertically */
+  .master-bar{flex-direction:column;align-items:stretch;gap:6px}
+  .master-bar input{width:100%;height:38px;font-size:14px}
+  .master-bar select{width:100%;height:38px;font-size:14px}
+  .master-bar button{width:100%;height:38px;font-size:13px}
+
+  /* Master table — hide less important columns, make readable */
+  .master-table{font-size:12px}
+  .master-table thead th{padding:6px 6px;font-size:10px}
+  .master-table td{padding:8px 6px}
+  /* Hide Pack Size column on mobile — it's in the cost/unit anyway */
+  .master-table td:nth-child(3),.master-table th:nth-child(3),
   .master-table td:nth-child(4),.master-table th:nth-child(4){display:none}
+  /* Keep: Name, Category, Pack£, Unit, Cost/unit, Actions */
+
+  /* Make Edit/Delete buttons bigger for touch */
+  .master-table .btn-edit{padding:5px 10px;font-size:12px}
+  .master-table .del-btn{width:28px;height:28px;font-size:14px}
+
+  /* GP tables */
+  .gp-table{font-size:11px}
+  .gp-table thead th{padding:5px 4px;font-size:9px}
+  .gp-table td{padding:6px 4px}
+
+  /* Metrics grid — 2 cols on mobile */
+  .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
+  .metric-val{font-size:20px}
+
+  /* Subtab bar */
+  .subtab-bar{flex-wrap:nowrap;overflow-x:auto;gap:2px}
+  .subtab-bar::-webkit-scrollbar{display:none}
+  .subtab-btn{font-size:11px;padding:5px 10px;white-space:nowrap}
+
+  /* Tab header */
+  .tab-title{font-size:14px}
+
+  /* Forms in edit rows — stack on mobile */
+  .editing-row td{display:block;width:100%;border:none;padding:4px 8px}
+  .editing-row td input,.editing-row td select{width:100%;margin-bottom:4px}
 }
 
 /* ── Login screen ── */
@@ -791,14 +844,14 @@ function renderMaster(type){
     <input type="text" placeholder="Search name, category, supplier… (press Enter)" value="${mFilter}"
       id="master-search-input"
       onkeydown="if(event.key==='Enter'){mFilter=this.value;render();}"
-      style="width:280px">
+      style="flex:1;min-width:160px">
     <button class="btn-sm" onclick="mFilter=document.getElementById('master-search-input').value;render()" style="height:36px;padding:0 12px">Search</button>
     <button class="btn-sm" onclick="mFilter='';document.getElementById('master-search-input').value='';render()" style="height:36px;padding:0 10px;color:var(--muted)" title="Clear search">✕</button>
-    <select onchange="mFilter=this.value;render()">
+    <select onchange="mFilter=this.value;render()" style="flex:1;min-width:140px">
       <option value="">All categories (${all.length})</option>
       ${cats.map(c=>`<option${mFilter===c?' selected':''}>${c}</option>`).join('')}
     </select>
-    <button class="btn-teal" onclick="addMaster('${type}')">+ Add ingredient</button>
+    <button class="btn-teal" onclick="addMaster('${type}')" style="white-space:nowrap">+ Add ingredient</button>
   </div>
   <table class="master-table">
     <thead><tr>
