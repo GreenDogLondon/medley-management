@@ -1246,7 +1246,10 @@ function shiftHours(s){
   if(!s.start||!s.end)return 0;
   const [sh,sm]=s.start.split(':').map(Number);
   const [eh,em]=s.end.split(':').map(Number);
-  return Math.max(0,((eh*60+em)-(sh*60+sm))/60);
+  let mins=(eh*60+em)-(sh*60+sm);
+  if(mins<0)mins+=24*60; // midnight crossover
+  const breakMins=s.break||0;
+  return Math.max(0,(mins-breakMins)/60);
 }
 function shiftCost(s){
   const st=STAFF.find(x=>x.id===s.staffId);
@@ -1383,8 +1386,18 @@ function renderShifts(){
     <div><label>End</label>
       <input type="time" id="sf-end" value="18:00" onchange="updateShiftPreview()">
     </div>
+    <div><label>Unpaid break</label>
+      <select id="sf-break" onchange="updateShiftPreview()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px">
+        <option value="0">No break</option>
+        <option value="15">15 min</option>
+        <option value="20">20 min</option>
+        <option value="30">30 min</option>
+        <option value="45">45 min</option>
+        <option value="60">1 hour</option>
+      </select>
+    </div>
     <div><label>Notes</label>
-      <input type="text" id="sf-notes" placeholder="Optional" style="width:140px">
+      <input type="text" id="sf-notes" placeholder="Optional" style="width:120px">
     </div>
     <div>
       <label style="opacity:0">Add</label>
@@ -1397,23 +1410,25 @@ function renderShifts(){
 
   <table class="labour-table">
     <thead><tr>
-      <th>Date</th><th>Week</th><th>Staff</th><th>Start</th><th>End</th>
+      <th>Date</th><th>Week</th><th>Staff</th><th>Start</th><th>End</th><th>Break</th>
       <th class="num">Hours</th><th class="num">Cost £</th><th>Notes</th><th></th>
     </tr></thead><tbody>`;
 
   if(!sorted.length){
-    h+=`<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No shifts logged yet</td></tr>`;
+    h+=`<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">No shifts logged yet</td></tr>`;
   }
 
   sorted.forEach(s=>{
     const st=STAFF.find(x=>x.id===s.staffId);
     const hrs=shiftHours(s);
     const cost=shiftCost(s);
+    const brk=s.break||0;
     h+=`<tr>
       <td>${fmtDate(s.date)}</td>
       <td><span class="week-badge">Wk ${weekOf(s.date)}</span></td>
       <td class="bold">${st?st.name:'Unknown'}</td>
       <td>${s.start}</td><td>${s.end}</td>
+      <td class="muted small">${brk>0?brk+'m':'—'}</td>
       <td class="num">${hrs.toFixed(2)}h</td>
       <td class="num teal-bold">£${cost.toFixed(2)}</td>
       <td class="muted small">${s.notes||''}</td>
@@ -1516,25 +1531,27 @@ function updateShiftPreview(){
   const staffId=parseInt(document.getElementById('sf-staff').value);
   const start=document.getElementById('sf-start').value;
   const end=document.getElementById('sf-end').value;
+  const brk=parseInt(document.getElementById('sf-break')?.value||0);
   const preview=document.getElementById('shift-preview');
   if(!preview)return;
   const st=STAFF.find(s=>s.id===staffId);
-  const tmp={staffId,start,end};
+  const tmp={staffId,start,end,break:brk};
   const hrs=shiftHours(tmp);
   const cost=st?hrs*st.rate:0;
-  preview.textContent=hrs>0?(hrs.toFixed(1)+'h = £'+cost.toFixed(2)):'';
+  preview.textContent=hrs>0?(hrs.toFixed(1)+'h'+(brk>0?' (−'+brk+'m break)':'')+(st&&cost>0?' = £'+cost.toFixed(2):'')):'';
 }
 function logShift(){
   const staffId=parseInt(document.getElementById('sf-staff').value);
   const date=document.getElementById('sf-date').value;
   const start=document.getElementById('sf-start').value;
   const end=document.getElementById('sf-end').value;
+  const brk=parseInt(document.getElementById('sf-break')?.value||0);
   const notes=document.getElementById('sf-notes').value.trim();
   if(!staffId){alert('Please select a staff member.');return;}
   if(!date){alert('Please select a date.');return;}
   if(!start||!end){alert('Please enter start and end times.');return;}
-  if(shiftHours({start,end})<=0){alert('End time must be after start time.');return;}
-  SHIFTS.push({id:nextShiftId++,staffId,date,start,end,notes});
+  if(shiftHours({start,end,break:brk})<=0){alert('End time must be after start time.');return;}
+  SHIFTS.push({id:nextShiftId++,staffId,date,start,end,break:brk,notes});
   saveState(); render();
 }
 function deleteShift(id){
