@@ -796,7 +796,8 @@ function totalCost(item){ return item.recipe.reduce((s,r)=>s+ingCost(r),0) }
 
 function gpPct(item){
   const c=totalCost(item);
-  return item.sell>0 ? ((item.sell-c)/item.sell*100) : 0;
+  const exVat=item.sell/1.2;  // GP calculated on ex-VAT price
+  return exVat>0 ? ((exVat-c)/exVat*100) : 0;
 }
 
 function gpPill(pct){
@@ -937,8 +938,9 @@ function addMaster(type){
 function renderGP(gpType){
   const items=getGP(gpType);
   const avgGP=items.length ? items.reduce((s,i)=>s+gpPct(i),0)/items.length : 0;
-  const totalSell=items.reduce((s,i)=>s+i.sell,0);
-  const totalGPVal=items.reduce((s,i)=>s+(i.sell-totalCost(i)),0);
+  const totalSellInc=items.reduce((s,i)=>s+i.sell,0);
+  const totalSellEx=totalSellInc/1.2;
+  const totalGPVal=items.reduce((s,i)=>s+(i.sell/1.2-totalCost(i)),0);
   const onTarget=items.filter(i=>gpPct(i)>=target).length;
   const best=items.length?items.reduce((a,b)=>gpPct(a)>gpPct(b)?a:b):null;
   const col=avgGP>=target?'var(--good)':avgGP>=target-10?'var(--mid)':'var(--bad)';
@@ -947,10 +949,10 @@ function renderGP(gpType){
   <div class="metrics">
     <div class="metric"><div class="ml">Average GP%</div>
       <div class="mv" style="color:${col}">${avgGP.toFixed(1)}%</div>
-      <div class="ms">Target ${target}%</div></div>
-    <div class="metric"><div class="ml">Menu sell value</div>
-      <div class="mv">£${totalSell.toFixed(2)}</div>
-      <div class="ms">GP pot £${totalGPVal.toFixed(2)}</div></div>
+      <div class="ms">Target ${target}% · ex VAT</div></div>
+    <div class="metric"><div class="ml">Menu sell (inc VAT)</div>
+      <div class="mv">£${totalSellInc.toFixed(2)}</div>
+      <div class="ms">Ex VAT: £${totalSellEx.toFixed(2)}</div></div>
     <div class="metric"><div class="ml">At / above target</div>
       <div class="mv">${onTarget} / ${items.length}</div>
       <div class="ms">${items.length?Math.round(onTarget/items.length*100):0}% of items</div></div>
@@ -966,17 +968,25 @@ function renderGP(gpType){
   </div>
   <table class="gp-table">
     <colgroup>
-      <col style="width:26%"><col style="width:16%"><col style="width:12%">
-      <col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:5%">
+      <col style="width:22%"><col style="width:12%">
+      <col style="width:10%"><col style="width:10%">
+      <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:5%">
     </colgroup>
     <thead><tr>
-      <th>Item</th><th>Category</th><th class="num">Sell £</th>
-      <th class="num">Cost £</th><th class="num">GP £</th><th class="num">GP%</th><th></th>
+      <th>Item</th><th>Category</th>
+      <th class="num">Sell (inc VAT)</th>
+      <th class="num">Sell (ex VAT)</th>
+      <th class="num">Cost £</th>
+      <th class="num">GP £</th>
+      <th class="num">GP%</th>
+      <th></th>
     </tr></thead>
     <tbody>`;
 
   items.forEach(item=>{
     const cost=totalCost(item);
+    const exVat=item.sell/1.2;
+    const gpVal=exVat-cost;
     const pct=gpPct(item);
     const isExp=expandedId===item.id && expandedType===gpType;
 
@@ -989,14 +999,15 @@ function renderGP(gpType){
           onchange="setSell(${item.id},'${gpType}',+this.value)"
           onclick="event.stopPropagation()">
       </td>
+      <td class="num" style="color:var(--muted)">£${exVat.toFixed(2)}</td>
       <td class="num">£${cost.toFixed(2)}</td>
-      <td class="num">£${(item.sell-cost).toFixed(2)}</td>
+      <td class="num" style="color:${gpVal>=0?'var(--teal)':'var(--bad)'}">£${gpVal.toFixed(2)}</td>
       <td class="num">${gpPill(pct)}</td>
       <td><button class="del-btn" onclick="delItem(${item.id},'${gpType}',event)">✕</button></td>
     </tr>`;
 
     if(isExp){
-      h+=`<tr class="expand-row"><td colspan="7"><div class="recipe-panel">
+      h+=`<tr class="expand-row"><td colspan="8"><div class="recipe-panel">
         <div class="recipe-header">Recipe — ${item.name}</div>
         <table class="recipe-table">
           <thead><tr>
