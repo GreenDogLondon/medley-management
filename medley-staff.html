@@ -672,15 +672,34 @@ async function doClockIn(){
     document.getElementById('content').innerHTML=`
       <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
         <div style="font-size:64px;margin-bottom:16px">${isToday?'🟢':'📋'}</div>
-        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">${isToday?"You're Clocked In!":'Shift Submitted!'}</div>
+        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">
+          ${isToday?"You're Clocked In!":'Shift Logged!'}
+        </div>
         <div style="font-size:15px;color:var(--muted);margin-bottom:24px">
           ${isToday?'Started at':'Shift logged for'} <strong>${isToday?tv:fmtDateShort(date)+' at '+tv}</strong><br>
           ${notes?`Note: <em>${notes}</em><br>`:''}
           <span style="color:var(--warn);font-weight:600">Awaiting manager approval</span>
         </div>
-        <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
-          ${isToday?'View Clock In/Out':'Log another shift'}
-        </button>
+        ${isToday?`
+          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">
+            Remember to clock out at the end of your shift.
+          </div>
+          <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
+            Go to Clock Out →
+          </button>
+        `:`
+          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">
+            If you've also finished this shift, go back and log your clock-out time too.
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn-teal" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">
+              Log clock-out for this shift
+            </button>
+            <button class="btn-sm" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">
+              Log another past shift
+            </button>
+          </div>
+        `}
       </div>`;
   }catch(e){
     showToast('Clock in failed: '+e.message);
