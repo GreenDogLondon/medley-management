@@ -289,6 +289,74 @@ async function dbPost(t,d){return sbFetch('POST',t,{data:d});}
 async function dbPatch(t,id,d){return sbFetch('PATCH',t,{query:'id=eq.'+id,data:d});}
 async function dbDel(t,id){return sbFetch('DELETE',t,{query:'id=eq.'+id});}
 
+/* ── GP ACCESS SETTINGS (stored in app_data table) ── */
+async function loadGPSettings(){
+  try{
+    const rows=await dbGet('app_data','key=in.(gp_password,gp_access_ids,gp_sync_code)');
+    (rows||[]).forEach(r=>{
+      if(r.key==='gp_password'&&r.value)GP_SETTINGS.password=r.value;
+      if(r.key==='gp_sync_code'&&r.value)GP_SETTINGS.syncCode=r.value;
+      if(r.key==='gp_access_ids'){try{GP_SETTINGS.accessIds=JSON.parse(r.value);}catch(e){}}
+    });
+  }catch(e){/* use defaults — app_data may be empty */}
+}
+async function saveAppData(key,value){
+  try{
+    const existing=await dbGet('app_data',`key=eq.${key}`);
+    if(existing&&existing.length>0){
+      await sbFetch('PATCH','app_data',{query:`key=eq.${key}`,data:{value}});
+    }else{
+      await dbPost('app_data',{key,value});
+    }
+  }catch(e){showToast('Failed to save setting: '+e.message);}
+}
+function hasGPAccess(staffId){
+  return isManager()||GP_SETTINGS.accessIds.includes(staffId);
+}
+async function toggleGPAccess(staffId,grant){
+  let ids=[...GP_SETTINGS.accessIds];
+  if(grant){if(!ids.includes(staffId))ids.push(staffId);}
+  else{ids=ids.filter(id=>id!==staffId);}
+  GP_SETTINGS.accessIds=ids;
+  await saveAppData('gp_access_ids',JSON.stringify(ids));
+  showToast(grant?'GP access granted ✓':'GP access removed','ok');
+  setTab('staff-admin');
+}
+async function saveGPPassword(){
+  const pwd=(document.getElementById('gp-pwd-input')?.value||'').trim();
+  if(!pwd){showToast('Password cannot be empty.');return;}
+  GP_SETTINGS.password=pwd;
+  await saveAppData('gp_password',pwd);
+  showToast('GP password updated ✓','ok');
+}
+async function saveGPSyncCode(){
+  const code=(document.getElementById('gp-sync-input')?.value||'').trim();
+  if(!code){showToast('Share code cannot be empty.');return;}
+  GP_SETTINGS.syncCode=code;
+  await saveAppData('gp_sync_code',code);
+  showToast('Sync code updated ✓','ok');
+}
+function copySyncCode(){
+  navigator.clipboard.writeText(GP_SETTINGS.syncCode)
+    .then(()=>showToast('Share code copied ✓','ok'))
+    .catch(()=>showToast('Copy failed — see code on screen','warn'));
+}
+function toggleGPPwdReveal(){
+  const el=document.getElementById('gp-pwd-display');
+  const btn=document.getElementById('gp-reveal-btn');
+  if(!el||!btn)return;
+  if(el.dataset.revealed==='1'){
+    el.textContent='••••••••••';el.dataset.revealed='0';btn.textContent='👁 Show';
+  }else{
+    el.textContent=GP_SETTINGS.password;el.dataset.revealed='1';btn.textContent='🙈 Hide';
+  }
+}
+function copyGPPassword(){
+  navigator.clipboard.writeText(GP_SETTINGS.password)
+    .then(()=>showToast('Password copied ✓','ok'))
+    .catch(()=>showToast('Password: '+GP_SETTINGS.password,'warn'));
+}
+
 /* ── TOAST ── */
 function showToast(msg,type='err'){
   document.querySelectorAll('.toast').forEach(x=>x.remove());
@@ -322,6 +390,11 @@ function twoTapDelete(btn,action){
 /* ── STATE ── */
 let ME=null,ALL_STAFF=[],activeTab='',pinEntry='',pinTarget=null,clockTimer=null,rotaWeekOffset=0,refreshInterval=null,editingShiftId=null,rotaAddTarget=null;
 let _posting=false;
+let GP_SETTINGS={
+  password:'medley2025',
+  accessIds:[],
+  syncCode:'eyJhayI6IiQyYSQxMCQzb2NZejZvRXRoQ1RVQy5iM3ROYmplOVZBSDdLdTBBUktmMUpkd3JUc0t4L3NYQWd4MmdacSIsImJpIjoiNjlkMGUxYTFhYWJhODgyMTk3YzM2ZmQ3In0='
+}; // loaded from app_data on launch
 const ROLES={super_admin:'Super Admin',manager:'Manager',staff:'Staff'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -425,8 +498,9 @@ function logout(){
 }
 
 /* ── APP LAUNCH ── */
-function launchApp(){
+async function launchApp(){
   startInactivityWatch();
+  await loadGPSettings(); // fetch before building nav so GP tab appears if needed
   document.getElementById('app').style.display='flex';
   document.getElementById('tb-avatar').innerHTML=avatarHtml(ME,30);
   document.getElementById('tb-name').textContent=ME.name.split(' ')[0];
@@ -446,6 +520,7 @@ function launchApp(){
     {id:'clock',label:'🕐 Clock In/Out'},
     {id:'my-shifts',label:'📊 My Shifts'},
     {id:'rota',label:'📅 My Rota'},
+    ...(hasGPAccess(ME.id)?[{id:'gp-access',label:'📊 GP'}]:[]),
     {id:'menu',label:'🍕 Menu'},
     {id:'profile',label:'👤 My Profile'},
   ];
@@ -476,6 +551,7 @@ async function render(){
         break;
       case 'timesheets': c.innerHTML=await renderTimesheets();break;
       case 'pay':        c.innerHTML=await renderPayPeriods();break;
+      case 'gp-access':   c.innerHTML=renderGPAccess();break;
       case 'menu':       c.innerHTML=renderMenu();break;
       case 'profile':    c.innerHTML=renderProfile();break;
       case 'staff-admin':c.innerHTML=await renderStaffAdmin();break;
@@ -508,6 +584,19 @@ async function renderHome(){
           <option value="urgent">🚨 Urgent</option>
         </select>
         <button class="btn-teal" id="ann-post-btn" onclick="postAnnouncement()">Post to all staff</button>
+      </div>
+    </div>`;
+  }
+  h+=`<div class="card"><div class="card-title">📢 Announcements</div>`;
+  // GP access banner — shown for non-manager staff who have been granted access
+  if(!isManager()&&hasGPAccess(ME.id)){
+    h+=`<div class="card" style="border-left:4px solid var(--teal);cursor:pointer;margin-bottom:10px" onclick="setTab('gp-access')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:800;color:var(--teal);font-size:15px">📊 GP Calculator Access</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">Tap to view your password and open the calculator</div>
+        </div>
+        <div style="font-size:22px;color:var(--teal)">→</div>
       </div>
     </div>`;
   }
@@ -1482,6 +1571,118 @@ async function createPayPeriod(){
 }
 async function updateTips(id,val){try{await dbPatch('pay_periods',id,{tips_total:val});}catch(e){showToast('Error: '+e.message);}}
 
+/* ── GP ACCESS (for staff granted access by admin) ── */
+function renderGPAccess(){
+  if(!hasGPAccess(ME.id)){
+    return`<div class="empty"><div class="empty-icon">🔒</div>You don't have GP Calculator access yet.<br><span style="font-size:13px">Ask a manager to grant you access.</span></div>`;
+  }
+
+  // Check if sync already set up (stored in localStorage by the GP calculator itself)
+  const alreadySynced=!!localStorage.getItem('medley-cloud-v1');
+
+  return`
+  <!-- Password card -->
+  <div class="card">
+    <div class="card-title">📊 GP Calculator</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
+      You've been given access to the Medley GP & Cost Calculator.
+    </p>
+
+    <div style="background:var(--teal-l);border:1.5px solid var(--teal);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Login password</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div id="gp-pwd-display" data-revealed="0"
+          style="font-size:24px;font-weight:900;color:var(--teal);letter-spacing:.15em;font-family:monospace;min-width:140px">
+          ••••••••••
+        </div>
+        <div style="display:flex;gap:6px">
+          <button id="gp-reveal-btn" class="btn-sm" onclick="toggleGPPwdReveal()" style="padding:6px 14px">👁 Show</button>
+          <button class="btn-sm" onclick="copyGPPassword()" style="padding:6px 14px">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Open button -->
+    <a href="https://greendoglondon.github.io/medley-management/medley-gp-calculator.html"
+      target="_blank"
+      style="display:flex;align-items:center;justify-content:space-between;background:var(--teal);color:#fff;border-radius:10px;padding:14px 18px;text-decoration:none;margin-bottom:6px">
+      <div>
+        <div style="font-weight:800;font-size:15px">Open GP Calculator</div>
+        <div style="font-size:11px;opacity:.75;margin-top:2px">Opens in new tab — use password above to log in</div>
+      </div>
+      <div style="font-size:22px">↗</div>
+    </a>
+  </div>
+
+  <!-- Cloud sync setup -->
+  <div class="card" style="border-left:4px solid ${alreadySynced?'var(--good)':'var(--orange)'}">
+    <div class="card-title" style="color:${alreadySynced?'var(--good)':'var(--orange)'}">
+      ${alreadySynced?'☁️ Cloud Sync — Connected ✓':'☁️ Cloud Sync — Setup Required'}
+    </div>
+
+    ${alreadySynced?`
+    <div style="font-size:13px;color:var(--muted);line-height:1.5">
+      Your GP Calculator is connected to the shared Medley data — prices and recipes stay in sync with Charlie and the team automatically.
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:var(--good-bg);border-radius:8px;font-size:12px;color:var(--good);font-weight:600">
+      ✓ Sync active — data updates automatically when you open the app
+    </div>
+    `:`
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
+      Do this <strong>once</strong> to connect your GP Calculator to the shared Medley data. 
+      After setup, prices, recipes and costs stay in sync with the rest of the team automatically.
+    </p>
+
+    <!-- Step by step -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">1</div>
+        <div style="font-size:13px;line-height:1.5;padding-top:4px">
+          Open the GP Calculator using the button above and <strong>log in</strong> with the password.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">2</div>
+        <div style="font-size:13px;line-height:1.5;padding-top:4px">
+          Tap the <strong>☁️ Sync</strong> button in the top right of the GP Calculator.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">3</div>
+        <div style="font-size:13px;line-height:1.5;padding-top:4px">
+          Scroll to <strong>Option B — Join existing sync</strong> and paste the share code below.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">4</div>
+        <div style="font-size:13px;line-height:1.5;padding-top:4px">
+          Tap <strong>Connect →</strong> — your calculator will pull in the latest Medley data.
+        </div>
+      </div>
+    </div>
+
+    <!-- Share code -->
+    <div style="background:#fff8f0;border:1.5px solid var(--orange);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Share code — paste into Option B</div>
+      <div style="font-family:monospace;font-size:11px;word-break:break-all;color:var(--text);background:rgba(0,0,0,.04);padding:10px;border-radius:6px;line-height:1.6;margin-bottom:10px;user-select:all">
+        ${GP_SETTINGS.syncCode}
+      </div>
+      <button class="btn-teal" onclick="copySyncCode()" style="background:var(--orange);width:100%;padding:10px;font-size:13px">
+        📋 Copy share code
+      </button>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;padding:8px 12px;background:var(--bg);border-radius:8px">
+      ℹ️ This code gives read/write access to Medley's shared ingredient prices and recipes. Keep it within the team.
+    </div>
+    `}
+  </div>`;
+}
+
 /* ── MENU ── */
 function renderMenu(){
   const food=[{cat:'Starters',items:[{n:'Mixed Olives',p:'£4.50'},{n:'Garlic Pizette',p:'£5.00'},{n:'Padron Peppers',p:'£6.50'}]},{cat:'Pizzas',items:[{n:'Marinara',p:'£10.00'},{n:'Margherita',p:'£12.00'},{n:'Broccoli Ricotta',p:'£14.50'},{n:'Pepperoni & Nduja',p:'£14.50'},{n:'Anchovie',p:'£14.50'}]},{cat:'Desserts',items:[{n:'Affogato',p:'£6.50'},{n:'Dough Ring',p:'£7.50'}]}];
@@ -1571,7 +1772,55 @@ async function changePIN(){
 
 /* ── STAFF ADMIN ── */
 async function renderStaffAdmin(){
-  let h=`<div class="card"><div class="card-title">Add New Staff Member</div>
+  let h=`<div class="card">
+    <div class="card-title">📊 GP Calculator Access</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+      Set the password staff will use to log in to the GP Calculator, then toggle access for individual team members. 
+      They'll see their password in the app immediately.
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div class="form-group" style="flex:1;min-width:200px;margin:0">
+        <label>GP Calculator password</label>
+        <input id="gp-pwd-input" value="${GP_SETTINGS.password}"
+          style="font-family:monospace;font-size:16px;font-weight:700;letter-spacing:.1em">
+      </div>
+      <button class="btn-teal" onclick="saveGPPassword()" style="height:42px;white-space:nowrap">Save password</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px">
+      <div class="form-group" style="flex:1;min-width:200px;margin:0">
+        <label>Cloud sync share code <span style="font-weight:400;text-transform:none;font-size:10px">(staff paste this into GP Calculator → ☁️ → Option B)</span></label>
+        <input id="gp-sync-input" value="${GP_SETTINGS.syncCode}"
+          style="font-family:monospace;font-size:10px;letter-spacing:0">
+      </div>
+      <button class="btn-teal" onclick="saveGPSyncCode()" style="height:42px;white-space:nowrap">Save code</button>
+    </div>
+    <div class="tbl-scroll"><table class="data-table">
+      <thead><tr><th>Staff member</th><th>Team</th><th>Role</th><th>GP Access</th></tr></thead>
+      <tbody>
+      ${ALL_STAFF.map(st=>{
+        const isMgr=st.role==='manager'||st.role==='super_admin';
+        const hasAccess=isMgr||GP_SETTINGS.accessIds.includes(st.id);
+        return`<tr>
+          <td><strong>${st.name}</strong></td>
+          <td><span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;background:${st.team==='boh'?'var(--orange-l)':'var(--teal-l)'};color:${st.team==='boh'?'var(--orange)':'var(--teal)'}">${st.team==='boh'?'🍕 BOH':'🍸 FOH'}</span></td>
+          <td><span class="badge ${st.role}">${ROLES[st.role]||st.role}</span></td>
+          <td>${isMgr
+            ?`<span class="badge ok">Full access</span>`
+            :`<label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" ${GP_SETTINGS.accessIds.includes(st.id)?'checked':''}
+                  onchange="toggleGPAccess('${st.id}',this.checked)"
+                  style="width:18px;height:18px;accent-color:var(--teal);cursor:pointer">
+                <span style="font-size:13px;color:${GP_SETTINGS.accessIds.includes(st.id)?'var(--teal)':'var(--muted)'};font-weight:${GP_SETTINGS.accessIds.includes(st.id)?'700':'400'}">
+                  ${GP_SETTINGS.accessIds.includes(st.id)?'Granted':'No access'}
+                </span>
+              </label>`
+          }</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card"><div class="card-title">Add New Staff Member</div>
     <div class="form-grid cols2">
       <div class="form-group"><label>Full Name *</label><input id="ns-name" placeholder="First Last"></div>
       <div class="form-group"><label>Role</label><select id="ns-role"><option value="staff">Staff</option><option value="manager">Manager</option><option value="super_admin">Super Admin</option></select></div>
