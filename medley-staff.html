@@ -301,26 +301,69 @@ async function loadGPSettings(){
   }catch(e){/* use defaults — app_data may be empty */}
 }
 async function saveAppData(key,value){
-  try{
-    const existing=await dbGet('app_data',`key=eq.${key}`);
-    if(existing&&existing.length>0){
-      await sbFetch('PATCH','app_data',{query:`key=eq.${key}`,data:{value}});
-    }else{
-      await dbPost('app_data',{key,value});
+  // Use PostgREST upsert — requires key to have a unique/primary constraint
+  const url=`${SB.url}/rest/v1/app_data`;
+  let lastErr=null;
+  for(const authKey of [SB.jwt,SB.key]){
+    try{
+      const r=await fetch(url,{
+        method:'POST',
+        headers:{
+          'apikey':authKey,
+          'Authorization':'Bearer '+authKey,
+          'Content-Type':'application/json',
+          'Prefer':'resolution=merge-duplicates,return=minimal'
+        },
+        body:JSON.stringify({key,value})
+      });
+      if(r.status===401||r.status===403){lastErr=new Error(`Auth error (${r.status})`);continue;}
+      if(r.ok)return true;
+      // Upsert failed — try explicit PATCH as fallback
+      const patchR=await fetch(`${url}?key=eq.${encodeURIComponent(key)}`,{
+        method:'PATCH',
+        headers:{
+          'apikey':authKey,
+          'Authorization':'Bearer '+authKey,
+          'Content-Type':'application/json',
+          'Prefer':'return=minimal'
+        },
+        body:JSON.stringify({value})
+      });
+      if(patchR.ok)return true;
+      const tx=await r.text();
+      lastErr=new Error(`${r.status}: ${tx.slice(0,180)}`);
+    }catch(e){
+      lastErr=e;
+      if(authKey===SB.key)throw lastErr;
     }
-  }catch(e){showToast('Failed to save setting: '+e.message);}
+  }
+  throw lastErr||new Error('Save failed — check app_data table permissions');
+}
+async function toggleGPAccess(staffId,grant){
+  const chk=document.getElementById(`gp-chk-${staffId}`);
+  const lbl=document.getElementById(`gp-lbl-${staffId}`);
+  // Optimistic UI update
+  if(lbl){lbl.textContent=grant?'Saving…':'Saving…';lbl.style.color='var(--muted)';}
+  if(chk)chk.disabled=true;
+  try{
+    let ids=[...GP_SETTINGS.accessIds];
+    if(grant){if(!ids.includes(staffId))ids.push(staffId);}
+    else{ids=ids.filter(id=>id!==staffId);}
+    await saveAppData('gp_access_ids',JSON.stringify(ids));
+    GP_SETTINGS.accessIds=ids; // only update memory AFTER confirmed save
+    if(lbl){lbl.textContent=grant?'Granted':'No access';lbl.style.color=grant?'var(--teal)':'var(--muted)';lbl.style.fontWeight=grant?'700':'400';}
+    showToast(grant?`GP access granted ✓`:`GP access removed`,'ok');
+  }catch(e){
+    // Revert checkbox on failure
+    if(chk){chk.checked=!grant;chk.disabled=false;}
+    if(lbl){lbl.textContent=GP_SETTINGS.accessIds.includes(staffId)?'Granted':'No access';lbl.style.color=GP_SETTINGS.accessIds.includes(staffId)?'var(--teal)':'var(--muted)';}
+    showToast('Save failed: '+e.message);
+  }finally{
+    if(chk)chk.disabled=false;
+  }
 }
 function hasGPAccess(staffId){
   return isManager()||GP_SETTINGS.accessIds.includes(staffId);
-}
-async function toggleGPAccess(staffId,grant){
-  let ids=[...GP_SETTINGS.accessIds];
-  if(grant){if(!ids.includes(staffId))ids.push(staffId);}
-  else{ids=ids.filter(id=>id!==staffId);}
-  GP_SETTINGS.accessIds=ids;
-  await saveAppData('gp_access_ids',JSON.stringify(ids));
-  showToast(grant?'GP access granted ✓':'GP access removed','ok');
-  setTab('staff-admin');
 }
 async function saveGPPassword(){
   const pwd=(document.getElementById('gp-pwd-input')?.value||'').trim();
@@ -1807,10 +1850,10 @@ async function renderStaffAdmin(){
           <td>${isMgr
             ?`<span class="badge ok">Full access</span>`
             :`<label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                <input type="checkbox" ${GP_SETTINGS.accessIds.includes(st.id)?'checked':''}
+                <input type="checkbox" id="gp-chk-${st.id}" ${GP_SETTINGS.accessIds.includes(st.id)?'checked':''}
                   onchange="toggleGPAccess('${st.id}',this.checked)"
                   style="width:18px;height:18px;accent-color:var(--teal);cursor:pointer">
-                <span style="font-size:13px;color:${GP_SETTINGS.accessIds.includes(st.id)?'var(--teal)':'var(--muted)'};font-weight:${GP_SETTINGS.accessIds.includes(st.id)?'700':'400'}">
+                <span id="gp-lbl-${st.id}" style="font-size:13px;color:${GP_SETTINGS.accessIds.includes(st.id)?'var(--teal)':'var(--muted)'};font-weight:${GP_SETTINGS.accessIds.includes(st.id)?'700':'400'}">
                   ${GP_SETTINGS.accessIds.includes(st.id)?'Granted':'No access'}
                 </span>
               </label>`
