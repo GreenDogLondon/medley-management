@@ -2109,67 +2109,53 @@ function renderWastage(){
     </div>
 
     <!-- Ingredient selector -->
-    <div id="w-ingredient-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px">
-      <div>
-        <label class="form-label">Ingredient</label>
-        <select id="w-mid" style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px" onchange="updateWastagePreview()">
-          <option value="">— select ingredient —</option>
-          <optgroup label="Drink Master">${MASTERS.filter(m=>m.type==='D').map(m=>`<option value="${m.id}">[${m.id}] ${m.name}</option>`).join('')}</optgroup>
-          <optgroup label="Food Master">${MASTERS.filter(m=>m.type==='F').map(m=>`<option value="${m.id}">[${m.id}] ${m.name}</option>`).join('')}</optgroup>
-          <optgroup label="Ops & Misc">${MASTERS.filter(m=>m.type==='O').map(m=>`<option value="${m.id}">[${m.id}] ${m.name}</option>`).join('')}</optgroup>
-        </select>
+    <!-- Unified searchable item picker — covers ingredients, menu items, derivatives -->
+    <div style="margin-bottom:10px">
+      <label class="form-label">Item <span style="text-transform:none;font-weight:400;font-size:10px">(search ingredients, menu items, or derivatives — e.g. "lemon slice", "margherita", "mint")</span></label>
+      <div style="position:relative">
+        <input type="text" id="w-item-search" placeholder="Type to search all ingredients and menu items…"
+          autocomplete="off"
+          style="width:100%;height:36px;border:1.5px solid #7f1d1d;border-radius:6px;padding:0 12px;font-size:14px"
+          oninput="filterWastageSearch()"
+          onfocus="filterWastageSearch(true)"
+          onkeydown="navWastageDrop(event)">
+        <input type="hidden" id="w-item-type" value="">
+        <input type="hidden" id="w-mid" value="">
+        <input type="hidden" id="w-gptype" value="">
+        <input type="hidden" id="w-gpid" value="">
+        <div id="w-item-drop"
+          style="display:none;position:fixed;background:#fff;border:2px solid #7f1d1d;border-radius:8px;max-height:280px;overflow-y:auto;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.2)">
+        </div>
       </div>
-      <div>
-        <label class="form-label">Quantity</label>
+      <div id="w-item-selected" style="margin-top:6px;min-height:20px"></div>
+    </div>
+
+    <!-- Qty / portions row — shown after item selected -->
+    <div id="w-qty-row" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div id="w-qty-wrap">
+        <label class="form-label" id="w-qty-label">Quantity</label>
         <input type="number" id="w-qty" placeholder="e.g. 350" step="any" min="0"
           style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px"
           oninput="updateWastagePreview()">
       </div>
-      <div>
+      <div id="w-unit-wrap">
         <label class="form-label">Unit</label>
-        <input type="text" id="w-unit" placeholder="g / ml / each" readonly
+        <input type="text" id="w-unit" readonly
           style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px;background:#f9f9f9">
-      </div>
-    </div>
-
-    <!-- Menu item selector -->
-    <div id="w-menu-row" style="display:none;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px">
-      <div>
-        <label class="form-label">Menu item</label>
-        <select id="w-gptype" style="height:28px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;margin-bottom:4px" onchange="updateMenuItemOpts()">
-          <option value="wet">🍸 Drinks (Wet GP)</option>
-          <option value="dry">🍕 Food (Dry GP)</option>
-        </select>
-        <select id="w-gpid" style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px" onchange="updateWastagePreview()">
-          <option value="">— select item —</option>
-          ${WET_GP.map(i=>`<option value="${i.id}">${i.name} — recipe cost £${totalCost(i).toFixed(2)}</option>`).join('')}
-        </select>
-      </div>
-      <div>
-        <label class="form-label">Portions wasted</label>
-        <input type="number" id="w-portions" value="1" min="1" step="1"
-          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px"
-          oninput="updateWastagePreview()">
       </div>
       <div>
         <label class="form-label">Cost preview</label>
-        <div id="w-menu-preview" style="height:32px;display:flex;align-items:center;font-weight:700;color:#7f1d1d;font-size:14px">—</div>
+        <div id="w-cost-preview" style="height:32px;display:flex;align-items:center;font-weight:700;color:#7f1d1d;font-size:15px">£0.00</div>
       </div>
     </div>
-
-    <!-- Reason + log -->
     <datalist id="w-reasons-list">${reasonsList}</datalist>
-    <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end">
-      <div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:4px">
+      <div style="flex:2;min-width:200px">
         <label class="form-label">Reason <span style="font-weight:400;text-transform:none;font-size:10px">(type or pick — new reasons auto-save)</span></label>
         <input type="text" id="w-reason" list="w-reasons-list" placeholder="e.g. Out of date"
-          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
+          style="width:100%;height:36px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
       </div>
-      <div>
-        <label class="form-label">Cost</label>
-        <div id="w-cost-preview" style="height:32px;display:flex;align-items:center;font-weight:700;color:#7f1d1d;font-size:14px">£0.00</div>
-      </div>
-      <button class="btn-teal" style="height:32px;background:#7f1d1d;white-space:nowrap" onclick="logWastage('${ws}')">+ Log wastage</button>
+      <button class="btn-teal" style="height:36px;background:#7f1d1d;white-space:nowrap;padding:0 20px;flex-shrink:0" onclick="logWastage('${ws}')">+ Log wastage</button>
     </div>
   </div>
 
@@ -2252,77 +2238,195 @@ function renderWastage(){
   return h;
 }
 
-function toggleWastageType(type){
-  const ingRow=document.getElementById('w-ingredient-row');
-  const menuRow=document.getElementById('w-menu-row');
-  if(!ingRow||!menuRow)return;
-  ingRow.style.display=type==='ingredient'?'grid':'none';
-  menuRow.style.display=type==='menu'?'grid':'none';
-  updateWastagePreview();
+function showToastGP(msg,type){alert(msg);}
+function filterWastageSearch(showAll=false){
+  const inp=document.getElementById('w-item-search');
+  const drop=document.getElementById('w-item-drop');
+  if(!inp||!drop)return;
+  const q=(inp.value||'').toLowerCase().trim();
+
+  // Position drop below input
+  const r=inp.getBoundingClientRect();
+  drop.style.left=r.left+'px';
+  drop.style.top=(r.bottom+2)+'px';
+  drop.style.width=Math.max(r.width,400)+'px';
+
+  // Build combined list: all masters + all GP items
+  let results=[];
+
+  // Ingredients (masters)
+  const mLabel={D:'🍸 Drink Ingredient',F:'🍕 Food Ingredient',O:'📦 Ops'};
+  MASTERS.forEach(m=>{
+    if(showAll&&!q||m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||m.cat.toLowerCase().includes(q)){
+      results.push({
+        key:`m:${m.id}`,label:`[${m.id}] ${m.name}`,
+        sub:`${mLabel[m.type]||''} · ${m.cat} · ${fmtCpuDisplay(m)}`,
+        type:'ingredient',mid:m.id,unit:m.unit,cost:cpu(m),
+        badge:mLabel[m.type]||'',badgeColor:m.type==='D'?'var(--teal)':m.type==='F'?'#c44414':'var(--muted)'
+      });
+    }
+  });
+
+  // Menu items — wet GP
+  WET_GP.forEach(i=>{
+    if(showAll&&!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)){
+      results.push({
+        key:`w:${i.id}`,label:`🍸 ${i.name}`,
+        sub:`Drinks menu · ${i.cat} · Recipe cost £${totalCost(i).toFixed(2)} per portion`,
+        type:'menu',gpType:'wet',gpId:i.id,cost:totalCost(i),
+        badge:'Menu item',badgeColor:'var(--teal)'
+      });
+    }
+  });
+
+  // Menu items — dry GP
+  DRY_GP.forEach(i=>{
+    if(showAll&&!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)){
+      results.push({
+        key:`d:${i.id}`,label:`🍕 ${i.name}`,
+        sub:`Food menu · ${i.cat} · Recipe cost £${totalCost(i).toFixed(2)} per portion`,
+        type:'menu',gpType:'dry',gpId:i.id,cost:totalCost(i),
+        badge:'Menu item',badgeColor:'#c44414'
+      });
+    }
+  });
+
+  if(!results.length){
+    drop.innerHTML=`<div style="padding:10px 14px;color:var(--muted);font-size:13px">No results for "${q}"</div>`;
+    drop.style.display='block';return;
+  }
+
+  const hi=(txt)=>q?txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<strong style="color:#7f1d1d">$1</strong>'):txt;
+
+  drop.innerHTML=results.map(r=>`
+    <div class="ms-drop-item" onmousedown="selectWastageItem(${JSON.stringify(r).replace(/"/g,'&quot;')})"
+      style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div>
+        <div style="font-size:13px">${hi(r.label)}</div>
+        <div style="font-size:11px;color:var(--muted)">${r.sub}</div>
+      </div>
+      <span style="font-size:10px;font-weight:700;color:${r.badgeColor};white-space:nowrap;background:#f5f5f5;padding:2px 7px;border-radius:10px">${r.badge}</span>
+    </div>`).join('');
+
+  drop.style.display='block';
+  drop.querySelectorAll('.ms-drop-item').forEach(el=>{
+    el.onmouseenter=()=>el.style.background='#fff5f5';
+    el.onmouseleave=()=>el.style.background='';
+  });
 }
 
-function updateMenuItemOpts(){
-  const gptype=document.getElementById('w-gptype')?.value||'wet';
-  const sel=document.getElementById('w-gpid');
-  if(!sel)return;
-  const arr=gptype==='wet'?WET_GP:DRY_GP;
-  sel.innerHTML='<option value="">— select item —</option>'+
-    arr.map(i=>`<option value="${i.id}">${i.name} — recipe cost £${totalCost(i).toFixed(2)}</option>`).join('');
+function selectWastageItem(r){
+  // r is the result object from filterWastageSearch
+  const inp=document.getElementById('w-item-search');
+  const drop=document.getElementById('w-item-drop');
+  const selEl=document.getElementById('w-item-selected');
+  const qtyRow=document.getElementById('w-qty-row');
+  const qtyLbl=document.getElementById('w-qty-label');
+  const unitEl=document.getElementById('w-unit');
+
+  if(inp)inp.value=r.label;
+  if(drop)drop.style.display='none';
+
+  // Store hidden values
+  document.getElementById('w-item-type').value=r.type;
+  document.getElementById('w-mid').value=r.mid||'';
+  document.getElementById('w-gptype').value=r.gpType||'';
+  document.getElementById('w-gpid').value=r.gpId||'';
+
+  // Show selection confirmation
+  if(selEl){
+    const costPer=r.type==='ingredient'?`${fmtCpuDisplay(getMaster(r.mid))}`:`£${r.cost.toFixed(2)} per portion`;
+    selEl.innerHTML=`<span style="color:#7f1d1d;font-size:12px;font-weight:600">✓ Selected: <strong>${r.label}</strong> · ${costPer}</span>`;
+  }
+
+  // Show qty row and configure labels
+  if(qtyRow)qtyRow.style.display='grid';
+  if(r.type==='ingredient'){
+    if(qtyLbl)qtyLbl.textContent='Quantity';
+    if(unitEl)unitEl.value=r.unit||'';
+  } else {
+    if(qtyLbl)qtyLbl.textContent='Portions wasted';
+    if(unitEl)unitEl.value='portions';
+    const qtyIn=document.getElementById('w-qty');
+    if(qtyIn&&!qtyIn.value)qtyIn.value='1';
+  }
+
   updateWastagePreview();
+  document.getElementById('w-qty')?.focus();
 }
+
+function navWastageDrop(e){
+  const drop=document.getElementById('w-item-drop');
+  if(!drop||drop.style.display==='none')return;
+  const items=[...drop.querySelectorAll('.ms-drop-item')];
+  const cur=drop.querySelector('.ms-drop-item[data-focused]');
+  let idx=items.indexOf(cur);
+  if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(idx+1,items.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(idx-1,0);}
+  else if(e.key==='Enter'&&cur){e.preventDefault();cur.onmousedown();return;}
+  else if(e.key==='Escape'){drop.style.display='none';return;}
+  else return;
+  items.forEach(i=>{delete i.dataset.focused;i.style.background='';});
+  if(items[idx]){items[idx].dataset.focused='1';items[idx].style.background='#fff5f5';items[idx].scrollIntoView({block:'nearest'});}
+}
+
+// Close wastage drop when clicking elsewhere
+document.addEventListener('click',e=>{
+  const drop=document.getElementById('w-item-drop');
+  if(drop&&!e.target.closest('#w-item-search')&&!e.target.closest('#w-item-drop'))
+    drop.style.display='none';
+});
+
+function toggleWastageType(type){} // legacy — no longer needed
+function updateMenuItemOpts(){} // legacy — no longer needed
 
 function updateWastagePreview(){
-  const type=document.querySelector('input[name="w-type"]:checked')?.value||'ingredient';
+  const type=document.getElementById('w-item-type')?.value;
   const costEl=document.getElementById('w-cost-preview');
-  const menuPrev=document.getElementById('w-menu-preview');
   let cost=0;
   if(type==='ingredient'){
     const mid=document.getElementById('w-mid')?.value;
     const qty=parseFloat(document.getElementById('w-qty')?.value)||0;
-    const unitEl=document.getElementById('w-unit');
     const m=getMaster(mid);
-    if(m&&unitEl)unitEl.value=m.unit;
     cost=m?qty*cpu(m):0;
-  } else {
+  } else if(type==='menu'){
     const gptype=document.getElementById('w-gptype')?.value||'wet';
     const gpid=parseInt(document.getElementById('w-gpid')?.value);
-    const portions=parseFloat(document.getElementById('w-portions')?.value)||1;
+    const portions=parseFloat(document.getElementById('w-qty')?.value)||1;
     const arr=gptype==='wet'?WET_GP:DRY_GP;
     const item=arr.find(i=>i.id===gpid);
     cost=item?totalCost(item)*portions:0;
-    if(menuPrev)menuPrev.textContent=cost>0?`£${cost.toFixed(2)}`:'—';
   }
   if(costEl)costEl.textContent=`£${cost.toFixed(2)}`;
 }
 
 function logWastage(weekStart){
-  const type=document.querySelector('input[name="w-type"]:checked')?.value||'ingredient';
+  const type=document.getElementById('w-item-type')?.value;
   const date=document.getElementById('w-date')?.value||weekStart;
   const reason=(document.getElementById('w-reason')?.value||'').trim();
   const teamSel=document.getElementById('w-team')?.value||'auto';
-  if(!reason){alert('Please add a reason.');return;}
+  const qty=parseFloat(document.getElementById('w-qty')?.value)||0;
+
+  if(!type){showToastGP('Please search and select an item first.','warn');return;}
+  if(!reason){showToastGP('Please add a reason.','warn');return;}
+  if(qty<=0){showToastGP('Please enter a quantity or number of portions.','warn');return;}
 
   let entry={id:nextWastageId++,week:weekStart,date,reason,team:teamSel==='auto'?null:teamSel};
 
   if(type==='ingredient'){
     const mid=document.getElementById('w-mid')?.value;
-    const qty=parseFloat(document.getElementById('w-qty')?.value)||0;
     const m=getMaster(mid);
-    if(!mid){alert('Please select an ingredient.');return;}
-    if(qty<=0){alert('Please enter a quantity.');return;}
-    entry.type='ingredient';entry.mid=mid;entry.qty=qty;entry.unit=m?.unit||'';
+    if(!mid||!m){showToastGP('Ingredient not found.','warn');return;}
+    entry.type='ingredient';entry.mid=mid;entry.qty=qty;entry.unit=m.unit||'';
   } else {
     const gptype=document.getElementById('w-gptype')?.value||'wet';
     const gpid=parseInt(document.getElementById('w-gpid')?.value);
-    const portions=parseFloat(document.getElementById('w-portions')?.value)||1;
-    if(!gpid){alert('Please select a menu item.');return;}
-    entry.type='menu';entry.gpType=gptype;entry.itemId=gpid;entry.portions=portions;
+    if(!gpid){showToastGP('Menu item not found.','warn');return;}
+    entry.type='menu';entry.gpType=gptype;entry.itemId=gpid;entry.portions=qty;
   }
 
   // Auto-save new reasons
-  if(reason&&!WASTAGE_REASONS.includes(reason)){
-    WASTAGE_REASONS.push(reason);
-  }
+  if(reason&&!WASTAGE_REASONS.includes(reason))WASTAGE_REASONS.push(reason);
 
   WASTAGE.push(entry);
   saveState();render();
