@@ -556,6 +556,7 @@ let MASTERS = [
   /* ── COMPOUND / BATCH ITEMS ────────────────────
      These are house-made preparations. Cost = batch cost ÷ batch yield.
      Update the batch cost here and all GP recipes auto-recalculate.  */
+  {id:'FM80',type:'F',name:'Extra Thick Mayonnaise',sup:'Various',cat:'Condiments',pack:'Per kg · approx £3.00',cost:3.00,size:1000,unit:'g'},
   {id:'FM70',type:'F',name:'Pizza Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'15kg flour batch · £22.43 total · ≈93 balls',cost:22.43,size:93,unit:'each'},
   {id:'FM71',type:'F',name:'GF Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'3.6kg batch · £18.60 · 12 balls',cost:18.60,size:12,unit:'each'},
   {id:'FM72',type:'F',name:'Tomato Sauce (1 ladle = 70g)',sup:'House',cat:'Compound — Batch',pack:'2.5kg tin batch · £3.59 · 36 ladles',cost:3.59,size:36,unit:'each'},
@@ -2132,7 +2133,10 @@ function renderBatches(){
 
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
     <div style="font-size:12px;color:var(--muted)">Each batch registers as a <strong>[BM…]</strong> master ingredient — link it directly in any GP recipe.</div>
-    <button class="btn-teal" style="background:#7c3aed" onclick="newBatch()">+ New batch recipe</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${!BATCHES.length?`<button class="btn-sm" style="background:#f3f0ff;color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="importBibleBatches()">📖 Import from Food Bible</button>`:''}
+      <button class="btn-teal" style="background:#7c3aed" onclick="newBatch()">+ New batch recipe</button>
+    </div>
   </div>`;
 
   if(!BATCHES.length){
@@ -2325,6 +2329,140 @@ function renderBatchEdit(b){
 }
 
 /* ── Batch CRUD ── */
+function importBibleBatches(){
+  if(BATCHES.length&&!confirm('This will add Food Bible batches to your existing list. Continue?'))return;
+
+  const bibleBatches=[
+    {
+      name:'Pizza Dough',team:'boh',
+      notes:'~97 balls · ball at 250–160g · prove overnight · label with yeast & time',
+      yieldQty:97,yieldUnit:'each',portions:null,
+      ingredients:[
+        {mid:'FM02',qty:15000}, // Caputo Flour 15kg bag
+        {mid:'FM04',qty:5},     // Fresh Yeast ~5g avg
+        {mid:'FM05',qty:375},   // Salt 375g
+        {mid:'FM06',qty:50},    // Olive Oil squeeze
+      ]
+    },
+    {
+      name:'Tomato Sauce (batch)',team:'boh',
+      notes:'12 tins · 15g salt per tin · blend until smooth · yield ~36 ladles',
+      yieldQty:36,yieldUnit:'each',portions:null,
+      ingredients:[
+        {mid:'FM21',qty:12},    // 12 tins (each tin = 1 unit)
+        {mid:'FM05',qty:180},   // 15g salt × 12 tins
+      ]
+    },
+    {
+      name:'Garlic Dip',team:'boh',
+      notes:'Blend all in 10L tub · yields 303 × 2oz dip pots',
+      yieldQty:11770,yieldUnit:'g',
+      portions:{count:303,label:'dip pot',containerMid:'OM00'},
+      ingredients:[
+        {mid:'FM25',qty:350},   // Garlic cloves 350g
+        {mid:'FM06',qty:120},   // Extra Virgin Olive Oil 120g
+        {mid:'FM80',qty:10000}, // Extra Thick Mayo 10kg
+        {mid:'FM53',qty:800},   // White Wine Vinegar 800g
+        {mid:'FM23',qty:50},    // Fresh Parsley 1 bunch ~50g
+      ]
+    },
+    {
+      name:'Genovese Pesto',team:'boh',
+      notes:'2kg batch · add 200ml cold water when using fresh batch · thin layer of olive oil to stop oxidation',
+      yieldQty:1880,yieldUnit:'g',portions:null,
+      ingredients:[
+        {mid:'FM22',qty:600},   // Fresh Basil 600g
+        {mid:'FM25',qty:60},    // Garlic cloves 60g
+        {mid:'FM12',qty:400},   // Parmesan 400g
+        {mid:'FM13',qty:200},   // Pecorino 200g
+        {mid:'FM06',qty:500},   // Extra Virgin Olive Oil 500g
+        {mid:'FM05',qty:20},    // Salt 20g
+      ]
+    },
+    {
+      name:'Chilli Dip & Dressing',team:'boh',
+      notes:'Large batch · pot half into 2oz dips · rest into squeezy tubes for service · blend well or tubes will block',
+      yieldQty:7080,yieldUnit:'g',
+      portions:{count:150,label:'dip pot',containerMid:'OM00'},
+      ingredients:[
+        {mid:'FM29',qty:4000},  // Fresh Red Chilies 4kg
+        {mid:'FM25',qty:400},   // Garlic cloves 400g
+        {mid:'FM54',qty:1000},  // Fresh Lemon Juice 1L
+        {mid:'FM53',qty:240},   // White Wine Vinegar 240ml
+        {mid:'FM06',qty:1000},  // Extra Virgin Olive Oil 1L
+        {mid:'FM05',qty:100},   // Sea Salt 100g
+        {mid:'FM55',qty:40},    // White Castor Sugar 40g
+      ]
+    },
+    {
+      name:'Parsley & Garlic Dressing',team:'boh',
+      notes:'Pulse until combined but not over-blended · thin layer of olive oil on top to stop oxidation · fridge 10 days',
+      yieldQty:500,yieldUnit:'g',portions:null,
+      ingredients:[
+        {mid:'FM23',qty:100},   // Flat-leaf Parsley 2 large bunches ~100g
+        {mid:'FM25',qty:30},    // Garlic cloves 6 cloves ~30g
+        {mid:'FM53',qty:60},    // White Wine Vinegar 4 tbsp ~60ml
+        {mid:'FM54',qty:30},    // Fresh Lemon Juice 2 tbsp ~30ml
+        {mid:'FM06',qty:90},    // Extra Virgin Olive Oil 6 tbsp ~90ml
+        {mid:'FM05',qty:5},     // Sea Salt 1 tsp
+      ]
+    },
+    {
+      name:'Tiramisu',team:'boh',
+      notes:'Set 12h+ overnight · serve from 150mm clear 1/1 gastro · 18 portions per batch',
+      yieldQty:18,yieldUnit:'each',portions:null,
+      ingredients:[
+        {mid:'FM60',qty:8},     // Lady Fingers (8 packs)
+        {mid:'FM61',qty:250},   // Egg Yolk 250g
+        {mid:'FM55',qty:495},   // Sugar 375g + 120g
+        {mid:'FM62',qty:400},   // Egg White 400g
+        {mid:'FM16',qty:2000},  // Mascarpone 2kg
+        {mid:'FM63',qty:100},   // Espresso Coffee (10 double shots)
+      ]
+    },
+    {
+      name:'Chocolate Mousse',team:'boh',
+      notes:'Blast chill in ice bath · set 12h+ overnight · 54% and 70% chocolate blend',
+      yieldQty:20,yieldUnit:'each',portions:null,
+      ingredients:[
+        {mid:'FM06',qty:420},   // Olive Oil 420g
+        {mid:'FM61',qty:460},   // Egg Yolk 460g
+        {mid:'FM55',qty:300},   // Sugar 180g + 120g
+        {mid:'FM62',qty:720},   // Egg White 720g
+      ]
+    },
+    {
+      name:'Aubergine Topping (roasted)',team:'boh',
+      notes:'Diced 20mm · roast until golden · one box yield ~3.28kg prepped',
+      yieldQty:3280,yieldUnit:'g',portions:null,
+      ingredients:[
+        {mid:'FM28',qty:4000},  // Aubergine raw ~1 box
+        {mid:'FM06',qty:100},   // Extra Virgin Olive Oil
+        {mid:'FM05',qty:10},    // Salt
+        {mid:'FM57',qty:5},     // Ground Black Pepper
+      ]
+    },
+    {
+      name:'Cavolo Nero (wilted & prepped)',team:'boh',
+      notes:'Blanch 20 sec max · ice bath · chop 3–4cm slices · toast in wood oven until golden · one box yield ~2.05kg',
+      yieldQty:2050,yieldUnit:'g',portions:null,
+      ingredients:[
+        {mid:'FM30',qty:3000},  // Cavolo Nero raw ~1 box
+        {mid:'FM06',qty:60},    // Extra Virgin Olive Oil
+        {mid:'FM05',qty:10},    // Sea Salt
+      ]
+    },
+  ];
+
+  bibleBatches.forEach(b=>{
+    BATCHES.push({id:nextBatchId++,...b});
+  });
+
+  syncAllBatchMasters();
+  saveState();render();
+  alert(`✅ Imported ${bibleBatches.length} batch recipes from the Food Bible. Review each batch and update any ingredient quantities or prices as needed.`);
+}
+
 function newBatch(){
   const id=nextBatchId++;
   BATCHES.push({id,name:'New batch',team:'boh',ingredients:[],yieldQty:0,yieldUnit:'g',portions:null,notes:''});
