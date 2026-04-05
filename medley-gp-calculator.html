@@ -1817,18 +1817,83 @@ async function pushToCloud(state){
   if(!CLOUD)return;
   try{
     setDot('busy');
+    // Before pushing, fetch cloud state and merge WASTAGE + SHIFTS
+    // so we don't overwrite other users' entries
+    const merged=await mergeWithCloud(state);
     const r=await fetch(`${BIN_API}/${CLOUD.binId}`,{
       method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':CLOUD.apiKey},
-      body:JSON.stringify(state)
+      body:JSON.stringify(merged)
     });
     setDot(r.ok?'ok':'err');
     if(r.ok){
       const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       const el=document.getElementById('sync-status-text');
       if(el) el.textContent='Connected — last pushed '+t;
+      // Update local with merged state so we immediately see others' entries
+      if(merged.WASTAGE) WASTAGE=merged.WASTAGE;
+      if(merged.SHIFTS)  SHIFTS=merged.SHIFTS;
+      if(merged.nextWastageId) nextWastageId=merged.nextWastageId;
+      saveState();
     }
   }catch(e){setDot('err');}
+}
+
+async function mergeWithCloud(localState){
+  // Fetch current cloud state
+  try{
+    const r=await fetch(`${BIN_API}/${CLOUD.binId}/latest`,{
+      headers:{'X-Master-Key':CLOUD.apiKey}
+    });
+    if(!r.ok)return localState; // can't reach cloud — push as-is
+    const data=await r.json();
+    const cloud=data.record;
+    if(!cloud||!cloud.MASTERS)return localState;
+
+    // Merge WASTAGE: combine both arrays, dedupe by id
+    const cloudWastage=cloud.WASTAGE||[];
+    const localWastage=localState.WASTAGE||[];
+    const wasteMap=new Map();
+    // Cloud entries first, then local overwrites (local is source of truth for edits)
+    cloudWastage.forEach(e=>wasteMap.set(e.id,e));
+    localWastage.forEach(e=>wasteMap.set(e.id,e));
+    const mergedWastage=[...wasteMap.values()].sort((a,b)=>a.id-b.id);
+
+    // Merge SHIFTS similarly
+    const cloudShifts=cloud.SHIFTS||[];
+    const localShifts=localState.SHIFTS||[];
+    const shiftMap=new Map();
+    cloudShifts.forEach(s=>shiftMap.set(s.id,s));
+    localShifts.forEach(s=>shiftMap.set(s.id,s));
+    const mergedShifts=[...shiftMap.values()].sort((a,b)=>a.id-b.id);
+
+    // Merge WASTAGE_REASONS — union of both lists
+    const cloudReasons=cloud.WASTAGE_REASONS||[];
+    const localReasons=localState.WASTAGE_REASONS||[];
+    const mergedReasons=[...new Set([...cloudReasons,...localReasons])];
+
+    // Keep highest nextWastageId to avoid ID collisions
+    const mergedNextWastageId=Math.max(
+      localState.nextWastageId||1,
+      cloud.nextWastageId||1,
+      mergedWastage.length?Math.max(...mergedWastage.map(e=>e.id))+1:1
+    );
+    const mergedNextShiftId=Math.max(
+      localState.nextShiftId||1,
+      cloud.nextShiftId||1
+    );
+
+    return {
+      ...localState,       // prices, recipes, GP data — local is authoritative
+      WASTAGE:mergedWastage,
+      SHIFTS:mergedShifts,
+      WASTAGE_REASONS:mergedReasons,
+      nextWastageId:mergedNextWastageId,
+      nextShiftId:mergedNextShiftId
+    };
+  }catch(e){
+    return localState; // network error — push local as-is
+  }
 }
 
 async function forceSyncFromCloud(){
@@ -1842,16 +1907,26 @@ async function forceSyncFromCloud(){
     const data=await r.json();
     const s=data.record;
     if(!s||!s.MASTERS){setDot('err');return;}
+
+    // Merge before applying — don't lose local-only entries
+    const localState=buildState();
+    const merged=await mergeWithCloud(localState);
+
     MASTERS=s.MASTERS; WET_GP=s.WET_GP; DRY_GP=s.DRY_GP;
-    STAFF=s.STAFF||[]; SHIFTS=s.SHIFTS||[];
+    STAFF=s.STAFF||[]; target=s.target||70;
     nextIds=s.nextIds||nextIds; nextWet=s.nextWet||nextWet;
-    nextDry=s.nextDry||nextDry; target=s.target||70;
-    nextStaffId=s.nextStaffId||nextStaffId;
-    nextShiftId=s.nextShiftId||nextShiftId;
+    nextDry=s.nextDry||nextDry; nextStaffId=s.nextStaffId||nextStaffId;
+    // Use merged arrays for collaborative data
+    SHIFTS=merged.SHIFTS||s.SHIFTS||[];
+    WASTAGE=merged.WASTAGE||s.WASTAGE||[];
+    WASTAGE_REASONS=merged.WASTAGE_REASONS||s.WASTAGE_REASONS||WASTAGE_REASONS;
+    nextWastageId=merged.nextWastageId||s.nextWastageId||nextWastageId;
+    nextShiftId=merged.nextShiftId||s.nextShiftId||nextShiftId;
+
     saveState(); setDot('ok'); render();
     const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     const el=document.getElementById('sync-status-text');
-    if(el) el.textContent='Synced from cloud at '+t;
+    if(el) el.textContent='Synced from cloud at '+t+' (entries merged)';
   }catch(e){setDot('err');}
 }
 
