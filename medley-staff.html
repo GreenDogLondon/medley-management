@@ -7,7 +7,7 @@
 <style>
 :root{--teal:#1a6b5a;--teal-d:#134f43;--teal-l:#e8f4f1;--orange:#e8571a;--orange-l:#fdf0ea;--bg:#f5f7f6;--white:#ffffff;--border:#dde5e2;--text:#1a2620;--muted:#7a8f89;--good:#1a6b5a;--good-bg:#e8f4f1;--warn:#8a5200;--warn-bg:#fef3e2;--bad:#a32d2d;--bad-bg:#fdeaea;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.1)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;overflow-x:hidden;max-width:100vw}
 button{cursor:pointer;font-family:inherit}
 input,select,textarea{font-family:inherit}
 #login-screen{position:fixed;inset:0;background:var(--teal);z-index:9000;display:flex;flex-direction:column;align-items:center;overflow-y:auto}
@@ -46,7 +46,25 @@ nav{background:#fff;border-bottom:2px solid var(--border);display:flex;overflow-
 nav::-webkit-scrollbar{display:none}
 .navtab{border:none;background:none;padding:11px 14px;font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;cursor:pointer;transition:.15s}
 .navtab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
-#content{padding:16px;max-width:1100px;margin:0 auto;width:100%}
+#content{padding:16px;max-width:1100px;margin:0 auto;width:100%;overflow-x:hidden}
+
+/* ── Scrollable table container (internal scroll, not page scroll) ── */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;border-radius:4px}
+.tbl-scroll::-webkit-scrollbar{height:3px}
+.tbl-scroll::-webkit-scrollbar-thumb{background:var(--teal);border-radius:2px}
+
+/* ── Mobile-hidden columns ── */
+@media(max-width:600px){
+  .m-hide{display:none!important}
+  #content{padding:8px}
+  .card{padding:12px}
+  .data-table{font-size:12px}
+  .data-table th{padding:5px 5px;font-size:9px}
+  .data-table td{padding:6px 5px}
+  .metric-value{font-size:20px}
+  .clock-display{font-size:32px}
+  .clock-btn{width:130px;height:130px;font-size:17px}
+}
 .card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
 .card-title{font-size:13px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
 .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
@@ -102,7 +120,7 @@ nav::-webkit-scrollbar{display:none}
 .rota-table td{border:1px solid var(--border);padding:4px;vertical-align:top;min-width:80px;cursor:pointer}
 .rota-table td:first-child{background:#f9fbfa;font-weight:600;font-size:12px;cursor:default;min-width:120px;padding:6px 10px}
 .rota-table td:hover:not(:first-child){background:var(--teal-l)}
-.rota-shift{background:var(--teal);color:#fff;border-radius:4px;padding:3px 6px;font-size:11px;margin:2px;display:flex;justify-content:space-between;align-items:center}
+.rota-shift{background:var(--teal);color:#fff;border-radius:4px;padding:3px 6px;font-size:11px;margin:2px;display:flex;justify-content:space-between;align-items:center;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .rota-shift .del{background:none;border:none;color:rgba(255,255,255,.7);font-size:12px;padding:0;margin-left:4px;cursor:pointer}
 .rota-empty{color:#ccc;font-size:10px;text-align:center;padding:8px 0}
 .rota-add-form{background:var(--teal-l);border-radius:10px;padding:14px;margin-top:10px}
@@ -125,13 +143,62 @@ nav::-webkit-scrollbar{display:none}
 .alert.err{background:var(--bad-bg);color:var(--bad)}
 .two-col{display:grid;gap:14px}
 @media(min-width:700px){.two-col{grid-template-columns:1fr 1fr}}
-/* Toast — iframe-safe */
+
+/* ── Toast ── */
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:340px;width:90%;text-align:center;animation:toastIn .2s ease}
 .toast.ok{background:var(--teal)}.toast.err{background:var(--bad)}.toast.warn{background:var(--warn)}
 @keyframes toastIn{from{opacity:0;top:0}to{opacity:1;top:16px}}
-/* Two-tap delete button states */
 .btn-danger.confirming{background:#7f1d1d;animation:pulse .6s infinite alternate}
 @keyframes pulse{from{opacity:.8}to{opacity:1}}
+
+/* ── Touch drag-and-drop rota ── */
+/* Source shift dims when dragging starts */
+.rota-shift.touch-drag-source{opacity:0.3;outline:2px dashed rgba(255,255,255,.5)}
+/* Ghost element that follows the finger */
+.rota-ghost{
+  position:fixed;
+  pointer-events:none;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  color:#fff;
+  box-shadow:0 12px 32px rgba(0,0,0,.35);
+  transform:scale(1.1) rotate(-2deg);
+  transition:none;
+  white-space:nowrap;
+  min-width:90px;
+  justify-content:center;
+}
+/* Drop target cell highlight */
+.rota-drop-active{
+  background:var(--teal-l) !important;
+  outline:2px dashed var(--teal) !important;
+  outline-offset:-2px;
+  transition:background .1s;
+}
+/* Mobile-only hint bar */
+.rota-drag-hint{
+  display:none;
+  font-size:11px;
+  color:var(--muted);
+  text-align:center;
+  padding:8px 12px;
+  background:#f0f7f5;
+  border-radius:8px;
+  margin-bottom:10px;
+  border:1px solid var(--border);
+}
+@media(max-width:700px){
+  .rota-drag-hint{display:block}
+  /* Make shift chips slightly taller on mobile for easier touch */
+  .rota-shift{padding:5px 6px;font-size:12px;min-height:28px}
+  .rota-table td{min-width:72px}
+}
 </style>
 </head>
 <body>
@@ -222,7 +289,7 @@ async function dbPost(t,d){return sbFetch('POST',t,{data:d});}
 async function dbPatch(t,id,d){return sbFetch('PATCH',t,{query:'id=eq.'+id,data:d});}
 async function dbDel(t,id){return sbFetch('DELETE',t,{query:'id=eq.'+id});}
 
-/* ── TOAST (iframe-safe, no alert/confirm) ── */
+/* ── TOAST ── */
 function showToast(msg,type='err'){
   document.querySelectorAll('.toast').forEach(x=>x.remove());
   const el=document.createElement('div');
@@ -232,12 +299,8 @@ function showToast(msg,type='err'){
   setTimeout(()=>el.remove(),4000);
 }
 
-/* ── TWO-TAP DELETE (iframe-safe, replaces confirm()) ──
-   First tap: button turns red, shows "Tap again to confirm"
-   Second tap within 3s: executes delete
-   Usage: twoTapDelete(btn, async () => { ... delete logic ... })
-*/
-function twoTapDelete(btn, action){
+/* ── TWO-TAP DELETE ── */
+function twoTapDelete(btn,action){
   if(btn._confirming){
     clearTimeout(btn._confirmTimer);
     btn._confirming=false;
@@ -262,7 +325,6 @@ let _posting=false;
 const ROLES={super_admin:'Super Admin',manager:'Manager',staff:'Staff'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-// Always use LOCAL date string — avoids BST/UTC midnight shift
 function localDate(d=new Date()){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -356,6 +418,7 @@ async function pinSubmit(){
 function logout(){
   ME=null;clearSession();
   clearInterval(refreshInterval);clearInterval(clockTimer);clearInterval(inactivityTimer);
+  cleanupRotaDrag(); // ensure drag state is cleared on logout
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   loadStaffList();
@@ -407,7 +470,10 @@ async function render(){
       case 'dashboard':  c.innerHTML=await renderDashboard();break;
       case 'clock':      c.innerHTML=await renderClock();startClockTimer();break;
       case 'my-shifts':  c.innerHTML=await renderMyShifts();break;
-      case 'rota':       c.innerHTML=await renderRota();break;
+      case 'rota':
+        c.innerHTML=await renderRota();
+        if(isManager()) initRotaTouchDrag();
+        break;
       case 'timesheets': c.innerHTML=await renderTimesheets();break;
       case 'pay':        c.innerHTML=await renderPayPeriods();break;
       case 'menu':       c.innerHTML=renderMenu();break;
@@ -537,9 +603,7 @@ async function renderClock(){
   const active=openShift||pendingShift;
   if(active){
     const isPending=!!pendingShift&&!openShift;
-    // Default clock-out date to the shift's start date (not today) — avoids the 63h bug
     const shiftDate=active.clock_in?active.clock_in.slice(0,10):todayStr;
-    // Clock-out max date = tomorrow (overnight shifts can finish after midnight)
     const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
     const tomorrowStr=localDate(tomorrow);
     const isOldShift=shiftDate!==todayStr;
@@ -575,7 +639,6 @@ async function renderClock(){
     <button class="clock-btn out" id="clock-out-btn" onclick="doClockOut('${active.id}','${shiftDate}')">CLOCK<br>OUT</button>
     ${isPending?`<div style="margin-top:16px"><button class="btn-sm" style="border-color:#fca5a5;color:var(--bad)" onclick="cancelPending('${active.id}')">✕ Cancel this entry</button></div>`:''}`;
   }else{
-    // Show banner if completed shifts are awaiting approval
     if(awaitingCount>0){
       h+=`<div style="background:var(--warn-bg);border:1px solid #d97706;border-radius:10px;padding:12px 16px;margin-bottom:20px;max-width:360px;margin-left:auto;margin-right:auto;text-align:left">
         <div style="font-weight:700;color:var(--warn);margin-bottom:4px">⏳ ${awaitingCount} shift${awaitingCount>1?'s':''} awaiting approval</div>
@@ -621,7 +684,6 @@ async function renderClock(){
   return h;
 }
 function startClockTimer(){clearInterval(clockTimer);clockTimer=setInterval(()=>{const el=document.getElementById('live-clock');if(el)el.textContent=fmtHHMM(new Date());},1000);}
-/* ── Rota match check — runs when date or time changes ── */
 async function checkRotaMatch(){
   const date=document.getElementById('clock-in-date')?.value;
   const time=document.getElementById('clock-in-time')?.value;
@@ -629,18 +691,14 @@ async function checkRotaMatch(){
   const msg=document.getElementById('rota-match-msg');
   const notesInput=document.getElementById('clock-in-notes');
   if(!date||!time||!hint||!msg)return;
-
-  // Check rota for this staff member on this date
   try{
     const rota=await dbGet('rota',`staff_id=eq.${ME.id}&date=eq.${date}`);
     if(!rota||!rota.length){
-      // No rota entry — note required if not today's current time
       const isToday=date===localDate();
       const diffMins=(Date.now()-new Date(`${date}T${time}:00`))/60000;
       if(isToday&&diffMins<15){
         hint.textContent='(optional)';hint.style.color='var(--muted)';
-        msg.innerHTML='';
-        notesInput.required=false;
+        msg.innerHTML='';notesInput.required=false;
       }else{
         hint.textContent='(required — no rota found for this date)';hint.style.color='var(--warn)';
         msg.innerHTML=`<span style="color:var(--warn)">⚠️ No rota shift found for ${fmtDateShort(date)} — please add a note explaining your hours.</span>`;
@@ -648,8 +706,7 @@ async function checkRotaMatch(){
       }
       return;
     }
-    // Has rota — check if entered time matches within 15 mins
-    const rotaStart=rota[0].start_time.slice(0,5); // HH:MM
+    const rotaStart=rota[0].start_time.slice(0,5);
     const [rh,rm]=rotaStart.split(':').map(Number);
     const [th,tm]=time.split(':').map(Number);
     const diffWithRota=Math.abs((th*60+tm)-(rh*60+rm));
@@ -662,44 +719,21 @@ async function checkRotaMatch(){
       msg.innerHTML=`<span style="color:var(--warn)">⚠️ Your rota start is ${rotaStart} — please add a note if your time differs.</span>`;
       notesInput.required=true;
     }
-  }catch(e){
-    // Silently fail — don't block clock in on rota check error
-    hint.textContent='(optional)';hint.style.color='var(--muted)';
-  }
+  }catch(e){hint.textContent='(optional)';hint.style.color='var(--muted)';}
 }
-
 async function doClockIn(){
   const date=document.getElementById('clock-in-date')?.value||localDate();
   const tv=(document.getElementById('clock-in-time')?.value||'').trim();
   const notes=(document.getElementById('clock-in-notes')?.value||'').trim();
   const notesRequired=document.getElementById('clock-in-notes')?.required;
   const btn=document.getElementById('clock-in-btn');
-
   if(!tv){showToast('Please enter your start time.');return;}
-
   const today=localDate();
   const entered=new Date(`${date}T${tv}:00`);
   const now=new Date();
-
-  // Block future dates entirely
-  if(date>today){
-    showToast("You can't clock in to a future shift — please check the date.");
-    return;
-  }
-
-  // Block future times on today's date (allow up to 5 min tolerance for form-filling time)
-  if(date===today && entered.getTime()-now.getTime() > 5*60*1000){
-    showToast("That start time is in the future. Enter your actual start time — you can't clock in before your shift begins.");
-    document.getElementById('clock-in-time')?.focus();
-    return;
-  }
-
-  if(notesRequired&&!notes){
-    showToast('Please add a note explaining your hours for this shift.');
-    document.getElementById('clock-in-notes')?.focus();
-    return;
-  }
-
+  if(date>today){showToast("You can't clock in to a future shift — please check the date.");return;}
+  if(date===today&&entered.getTime()-now.getTime()>5*60*1000){showToast("That start time is in the future. Enter your actual start time.");document.getElementById('clock-in-time')?.focus();return;}
+  if(notesRequired&&!notes){showToast('Please add a note explaining your hours for this shift.');document.getElementById('clock-in-notes')?.focus();return;}
   if(btn){btn.textContent='Saving…';btn.disabled=true;btn.style.opacity='.7';}
   try{
     await dbPost('shifts',{staff_id:ME.id,clock_in:entered.toISOString(),status:'pending_approval',notes:notes||null});
@@ -707,32 +741,20 @@ async function doClockIn(){
     document.getElementById('content').innerHTML=`
       <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
         <div style="font-size:64px;margin-bottom:16px">${isToday?'🟢':'📋'}</div>
-        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">
-          ${isToday?"You're Clocked In!":'Shift Logged!'}
-        </div>
+        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">${isToday?"You're Clocked In!":'Shift Logged!'}</div>
         <div style="font-size:15px;color:var(--muted);margin-bottom:24px">
           ${isToday?'Started at':'Shift logged for'} <strong>${isToday?tv:fmtDateShort(date)+' at '+tv}</strong><br>
           ${notes?`Note: <em>${notes}</em><br>`:''}
           <span style="color:var(--warn);font-weight:600">Awaiting manager approval</span>
         </div>
         ${isToday?`
-          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">
-            Remember to clock out at the end of your shift.
-          </div>
-          <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
-            Go to Clock Out →
-          </button>
+          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">Remember to clock out at the end of your shift.</div>
+          <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">Go to Clock Out →</button>
         `:`
-          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">
-            If you've also finished this shift, go back and log your clock-out time too.
-          </div>
+          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">If you've also finished this shift, go back and log your clock-out time too.</div>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <button class="btn-teal" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">
-              Log clock-out for this shift
-            </button>
-            <button class="btn-sm" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">
-              Log another past shift
-            </button>
+            <button class="btn-teal" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">Log clock-out for this shift</button>
+            <button class="btn-sm" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">Log another past shift</button>
           </div>
         `}
       </div>`;
@@ -741,9 +763,7 @@ async function doClockIn(){
     if(btn){btn.innerHTML='CLOCK<br>IN';btn.disabled=false;btn.style.opacity='1';}
   }
 }
-async function cancelPending(id){
-  try{await dbDel('shifts',id);render();}catch(e){showToast('Error: '+e.message);}
-}
+async function cancelPending(id){try{await dbDel('shifts',id);render();}catch(e){showToast('Error: '+e.message);}}
 async function doClockOut(shiftId,fallbackDateStr){
   const dateStr=(document.getElementById('clock-out-date')?.value||fallbackDateStr||localDate()).trim();
   const tv=(document.getElementById('clock-out-time')?.value||'').trim();
@@ -758,11 +778,9 @@ async function doClockOut(shiftId,fallbackDateStr){
     const clockOut=new Date(`${dateStr}T${tv}:00`);
     let clockIn=new Date(`${dateStr}T09:00:00`);
     try{
-      const ctrl=new AbortController();
-      const t=setTimeout(()=>ctrl.abort(),6000);
+      const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),6000);
       const r=await fetch(`${SB.url}/rest/v1/shifts?id=eq.${shiftId}&select=clock_in`,{headers:{'apikey':SB.jwt,'Authorization':'Bearer '+SB.jwt},signal:ctrl.signal});
-      clearTimeout(t);
-      if(r.ok){const d=await r.json();if(d[0]?.clock_in)clockIn=new Date(d[0].clock_in);}
+      clearTimeout(t);if(r.ok){const d=await r.json();if(d[0]?.clock_in)clockIn=new Date(d[0].clock_in);}
     }catch(fe){}
     let adjustedOut=new Date(clockOut);
     if(adjustedOut<=clockIn)adjustedOut=new Date(adjustedOut.getTime()+86400000);
@@ -776,38 +794,18 @@ async function doClockOut(shiftId,fallbackDateStr){
           Clocked out at <strong>${tv}</strong><br>
           <strong>${totalHours.toFixed(2)} hours</strong> logged — awaiting manager approval
         </div>
-        <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:24px">
-          Your hours appear in your timesheet once a manager confirms them.
-        </div>
-        <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
-          ${isToday?'Back to Home':'Log another shift →'}
-        </button>
+        <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:24px">Your hours appear in your timesheet once a manager confirms them.</div>
+        <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">${isToday?'Back to Home':'Log another shift →'}</button>
       </div>`;
   }catch(e){
     showToast('Clock out failed: '+e.message);
     if(btn){btn.innerHTML='CLOCK<br>OUT';btn.disabled=false;btn.style.opacity='1';}
   }
 }
-async function getOpenShift(sid){
-  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.clocked_in&order=clock_in.desc&limit=1`);
-  return r[0]||null;
-}
-async function getPendingShift(sid){
-  // Order by created_at desc so the most recently submitted shift shows first
-  // clock_out=is.null means only shifts that still need clocking out
-  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=is.null&order=created_at.desc&limit=1`);
-  return r[0]||null;
-}
-async function getAllPendingUnclocked(sid){
-  // Count how many shifts are awaiting a clock-out
-  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=is.null`);
-  return r?r.length:0;
-}
-async function getAwaitingApprovalCount(sid){
-  // Count fully-completed shifts still awaiting approval (has clock_out, status pending)
-  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=not.is.null`);
-  return r?r.length:0;
-}
+async function getOpenShift(sid){const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.clocked_in&order=clock_in.desc&limit=1`);return r[0]||null;}
+async function getPendingShift(sid){const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=is.null&order=created_at.desc&limit=1`);return r[0]||null;}
+async function getAllPendingUnclocked(sid){const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=is.null`);return r?r.length:0;}
+async function getAwaitingApprovalCount(sid){const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=not.is.null`);return r?r.length:0;}
 
 /* ── MY SHIFTS ── */
 async function renderMyShifts(){
@@ -823,27 +821,24 @@ async function renderMyShifts(){
   <div class="card"><div class="card-title">Shift History</div>`;
   if(!shifts.length){h+=`<div class="empty"><div class="empty-icon">🕐</div>No shifts yet</div>`;}
   else{
-    h+=`<table class="data-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th><th class="r">Pay</th><th>Status</th></tr></thead><tbody>`;
+    h+=`<div class="tbl-scroll"><table class="data-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th class="m-hide">Break</th><th class="r">Hours</th><th class="r">Pay</th><th class="m-hide">Status</th></tr></thead><tbody>`;
     shifts.forEach(s=>{
       const hrs=parseFloat(s.total_hours||0),pay=hrs*(ME.hourly_rate||0);
       const adj=s.adjusted_by?'<span class="badge pending">Adjusted</span>':'<span class="badge ok">✓</span>';
-      h+=`<tr><td>${fmtDate(s.clock_in)}</td><td>${fmtTime(s.clock_in)}</td><td>${fmtTime(s.clock_out)}</td><td>${s.break_minutes||0}m</td><td class="r">${hrs.toFixed(2)}h</td><td class="r">£${pay.toFixed(2)}</td><td>${adj}</td></tr>`;
+      h+=`<tr><td>${fmtDate(s.clock_in)}</td><td>${fmtTime(s.clock_in)}</td><td>${fmtTime(s.clock_out)}</td><td class="m-hide">${s.break_minutes||0}m</td><td class="r">${hrs.toFixed(2)}h</td><td class="r">£${pay.toFixed(2)}</td><td class="m-hide">${adj}</td></tr>`;
     });
-    h+=`</tbody></table>`;
+    h+=`</tbody></table></div>`;
   }
   return h+'</div>';
 }
 
 /* ── ROTA ── */
 function getWeekDates(offset=0){
-  // Build today's date string from LOCAL parts first — avoids any UTC/BST slip
   const n=new Date();
   const todayStr=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-  // Parse as local midnight so getDay() is definitely the local weekday
   const today=new Date(todayStr+'T00:00:00');
-  const dow=today.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const dow=today.getDay();
   const daysSinceMonday=dow===0?6:dow-1;
-  // Monday of the target week
   const monday=new Date(today);
   monday.setDate(today.getDate()-daysSinceMonday+(offset*7));
   return Array.from({length:7},(_,i)=>{
@@ -858,24 +853,32 @@ async function renderRota(){
   const weekLabel=`${fmtDateShort(dates[0])} – ${fmtDateShort(dates[6])}`;
   const rota=await dbGet('rota',`date=gte.${dates[0]}&date=lte.${dates[6]}&order=start_time.asc`);
 
-  // Split staff into FOH / BOH based on team field
   const allStaff=isManager()?ALL_STAFF:ALL_STAFF.filter(s=>s.id===ME.id);
   const foh=allStaff.filter(s=>s.team!=='boh');
   const boh=allStaff.filter(s=>s.team==='boh');
 
+  // ── Build team table with data attributes on every cell and shift chip ──
   const makeTeamTable=(teamStaff,teamLabel,color)=>{
     if(!teamStaff.length)return'';
     let t=`<div style="font-weight:800;font-size:13px;color:#fff;background:${color};padding:8px 12px;border-radius:8px 8px 0 0;letter-spacing:.04em;text-transform:uppercase">${teamLabel}</div>
-    <div class="rota-wrap" style="margin-bottom:16px"><table class="rota-table" id="rota-tbl-${teamLabel.replace(/\s/g,'')}">
+    <div class="rota-wrap" style="margin-bottom:16px"><table class="rota-table">
       <thead><tr><th>Name</th>${dates.map((d,i)=>`<th>${DAYS[i]}<br><small>${d.slice(8)}</small></th>`).join('')}</tr></thead>
       <tbody>`;
     teamStaff.forEach(st=>{
       t+=`<tr><td>${st.name.split(' ')[0]}</td>`;
       dates.forEach(date=>{
         const dayShifts=rota.filter(r=>r.staff_id===st.id&&r.date===date);
-        t+=`<td ${isManager()?`onclick="showRotaAdd('${st.id}','${date}')"`:''}">`;
+        // ── data-staff-id and data-date on every cell (used as drop targets) ──
+        t+=`<td data-staff-id="${st.id}" data-date="${date}" ${isManager()?`onclick="showRotaAdd('${st.id}','${date}')"`:''}">`;
         dayShifts.forEach(r=>{
-          t+=`<div class="rota-shift" style="background:${color}"><span>${r.start_time.slice(0,5)}–${r.end_time.slice(0,5)}</span>
+          // ── data-rota-id, data-staff-id, data-date on every shift chip ──
+          t+=`<div class="rota-shift"
+            style="background:${color}"
+            data-rota-id="${r.id}"
+            data-staff-id="${st.id}"
+            data-date="${date}"
+            data-color="${color}">
+            <span>${r.start_time.slice(0,5)}–${r.end_time.slice(0,5)}</span>
             ${isManager()?`<button class="del" onclick="delRota('${r.id}',event)">×</button>`:''}
           </div>`;
         });
@@ -896,6 +899,9 @@ async function renderRota(){
   </div>`;
 
   if(isManager()){
+    // Mobile drag hint — only visible on small screens via CSS
+    h+=`<div class="rota-drag-hint">👆 Long-press any shift to drag it to a new day or person</div>`;
+
     h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
       <button class="btn-teal" onclick="duplicateLastWeek()">📋 Copy last week</button>
       <button class="btn-sm" onclick="exportRotaImage()">🖼️ Download image</button>
@@ -915,7 +921,7 @@ async function renderRota(){
 
   if(isManager()){
     h+=`<div id="rota-add-form"></div>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px">Tap any cell to add a shift · Tap shift × to remove · Staff team (FOH/BOH) set in Staff admin</p>`;
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">Tap any cell to add a shift · Tap × to remove · Long-press a shift to drag it on mobile</p>`;
   }
   return h;
 }
@@ -926,10 +932,8 @@ async function duplicateLastWeek(){
   try{
     const lastRota=await dbGet('rota',`date=gte.${lastDates[0]}&date=lte.${lastDates[6]}`);
     if(!lastRota.length){showToast('No shifts found in last week to copy.','warn');return;}
-    // Check if this week already has shifts
     const thisRota=await dbGet('rota',`date=gte.${thisDates[0]}&date=lte.${thisDates[6]}`);
     if(thisRota.length>0){
-      // Use twoTap-style confirmation via a button — just show toast and require second call
       if(!duplicateLastWeek._confirmed){
         duplicateLastWeek._confirmed=true;
         showToast('This week already has shifts. Tap Copy again to add on top.','warn');
@@ -938,16 +942,11 @@ async function duplicateLastWeek(){
       }
       duplicateLastWeek._confirmed=false;
     }
-    // Map each day offset
     let count=0;
     for(const shift of lastRota){
-      const dayIdx=lastDates.indexOf(shift.date);
-      if(dayIdx<0)continue;
+      const dayIdx=lastDates.indexOf(shift.date);if(dayIdx<0)continue;
       const newDate=thisDates[dayIdx];
-      try{
-        await dbPost('rota',{staff_id:shift.staff_id,date:newDate,start_time:shift.start_time,end_time:shift.end_time,created_by:ME.id});
-        count++;
-      }catch(e){}
+      try{await dbPost('rota',{staff_id:shift.staff_id,date:newDate,start_time:shift.start_time,end_time:shift.end_time,created_by:ME.id});count++;}catch(e){}
     }
     showToast(`✓ Copied ${count} shifts from last week`,'ok');
     setTimeout(()=>setTab('rota'),700);
@@ -957,12 +956,9 @@ async function duplicateLastWeek(){
 async function loadScript(src){
   return new Promise((res,rej)=>{
     if(document.querySelector(`script[src="${src}"]`)){res();return;}
-    const s=document.createElement('script');
-    s.src=src;s.onload=res;s.onerror=rej;
-    document.head.appendChild(s);
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);
   });
 }
-
 async function exportRotaImage(){
   showToast('Generating full rota image…','ok');
   try{
@@ -970,13 +966,10 @@ async function exportRotaImage(){
     const canvas=await captureFullRota();
     const a=document.createElement('a');
     const dates=getWeekDates(rotaWeekOffset);
-    a.download=`medley-rota-${dates[0]}.png`;
-    a.href=canvas.toDataURL('image/png');
-    a.click();
+    a.download=`medley-rota-${dates[0]}.png`;a.href=canvas.toDataURL('image/png');a.click();
     showToast('Image downloaded ✓','ok');
   }catch(e){showToast('Export failed: '+e.message);}
 }
-
 async function exportRotaPDF(){
   showToast('Generating full rota PDF…','ok');
   try{
@@ -985,65 +978,35 @@ async function exportRotaPDF(){
     const canvas=await captureFullRota();
     const imgData=canvas.toDataURL('image/png');
     const {jsPDF}=window.jspdf;
-    // Always landscape A4
     const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    const pdfW=pdf.internal.pageSize.getWidth();   // 297mm
-    const pdfH=pdf.internal.pageSize.getHeight();  // 210mm
+    const pdfW=pdf.internal.pageSize.getWidth(),pdfH=pdf.internal.pageSize.getHeight();
     const ratio=canvas.width/canvas.height;
-    let w=pdfW, h=pdfW/ratio;
-    if(h>pdfH){h=pdfH;w=pdfH*ratio;}
-    // Centre on page
-    const x=(pdfW-w)/2, y=(pdfH-h)/2;
-    pdf.addImage(imgData,'PNG',x,y,w,h);
+    let w=pdfW,h=pdfW/ratio;if(h>pdfH){h=pdfH;w=pdfH*ratio;}
+    pdf.addImage(imgData,'PNG',(pdfW-w)/2,(pdfH-h)/2,w,h);
     const dates=getWeekDates(rotaWeekOffset);
     pdf.save(`medley-rota-${dates[0]}.pdf`);
     showToast('PDF downloaded ✓','ok');
   }catch(e){showToast('Export failed: '+e.message);}
 }
-
 async function captureFullRota(){
   const el=document.getElementById('rota-export-area');
   if(!el)throw new Error('Rota not found — please reload');
-
-  // Clone the rota into a hidden off-screen div at full desktop width
-  // This means mobile viewport doesn't limit what gets captured
   const wrapper=document.createElement('div');
   wrapper.style.cssText='position:fixed;left:-9999px;top:0;width:1100px;background:#f5f7f6;padding:16px;z-index:-1;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
   const clone=el.cloneNode(true);
-  // Remove + Add buttons and × delete buttons from clone — cleaner export
   clone.querySelectorAll('.rota-empty,.rota-shift .del,[onclick*="showRotaAdd"],[onclick*="delRota"]').forEach(b=>{
-    if(b.classList.contains('rota-empty'))b.textContent='';
-    else b.remove();
+    if(b.classList.contains('rota-empty'))b.textContent='';else b.remove();
   });
-  // Remove overflow from rota-wrap in clone
-  clone.querySelectorAll('.rota-wrap').forEach(w=>{
-    w.style.overflow='visible';
-    w.style.width='100%';
-  });
-  clone.querySelectorAll('.rota-table').forEach(t=>{
-    t.style.minWidth='unset';
-    t.style.width='100%';
-  });
-  wrapper.appendChild(clone);
-  document.body.appendChild(wrapper);
-
-  // Wait for layout
+  clone.querySelectorAll('.rota-wrap').forEach(w=>{w.style.overflow='visible';w.style.width='100%';});
+  clone.querySelectorAll('.rota-table').forEach(t=>{t.style.minWidth='unset';t.style.width='100%';});
+  wrapper.appendChild(clone);document.body.appendChild(wrapper);
   await new Promise(r=>setTimeout(r,100));
-
-  const canvas=await html2canvas(wrapper,{
-    backgroundColor:'#f5f7f6',
-    scale:2,
-    useCORS:true,
-    scrollX:0,scrollY:0,
-    width:1100,
-    windowWidth:1200
-  });
-
-  document.body.removeChild(wrapper);
-  return canvas;
+  const canvas=await html2canvas(wrapper,{backgroundColor:'#f5f7f6',scale:2,useCORS:true,scrollX:0,scrollY:0,width:1100,windowWidth:1200});
+  document.body.removeChild(wrapper);return canvas;
 }
-
 function showRotaAdd(staffId,date){
+  // If a drag just ended, don't immediately open add form
+  if(_td._justDropped){_td._justDropped=false;return;}
   const st=ALL_STAFF.find(s=>s.id===staffId);
   const form=document.getElementById('rota-add-form');
   if(!form)return;
@@ -1078,6 +1041,232 @@ async function delRota(id,e){
   });
 }
 
+/* ═══════════════════════════════════════════════════════
+   TOUCH DRAG-AND-DROP FOR ROTA
+   ═══════════════════════════════════════════════════════
+   How it works:
+   1. Manager long-presses a shift chip (250ms) → drag activates
+   2. A ghost element clones the chip and follows the finger (position:fixed)
+   3. elementFromPoint() finds the drop target cell under the finger
+   4. On touchend → moveRotaShift() patches the rota DB record
+   5. Haptic feedback via navigator.vibrate(50) when drag starts
+   6. Scrolling still works normally if finger moves before 250ms timer fires
+   ═══════════════════════════════════════════════════════ */
+
+const TOUCH_DRAG_DELAY = 250; // ms long-press before drag activates
+
+// Touch drag state — all in one object for easy cleanup
+let _td = {
+  active:       false,
+  rotaId:       null,
+  staffId:      null,
+  date:         null,
+  color:        null,
+  label:        null,
+  ghost:        null,
+  sourceEl:     null,
+  targetCell:   null,
+  rotaWrap:     null,   // the rota-wrap container — scroll locked during drag
+  timer:        null,
+  startX:       0,
+  startY:       0,
+  _justDropped: false,
+};
+
+function initRotaTouchDrag() {
+  // Attach listeners to every rota-shift chip in the current render
+  document.querySelectorAll('.rota-shift[data-rota-id]').forEach(el => {
+    el.addEventListener('touchstart', _onRotaTouchStart, { passive: false });
+  });
+}
+
+function _onRotaTouchStart(e) {
+  const el = e.currentTarget;
+  const rotaId = el.dataset.rotaId;
+  if (!rotaId || !isManager()) return;
+
+  const touch = e.touches[0];
+  _td.startX   = touch.clientX;
+  _td.startY   = touch.clientY;
+  _td.sourceEl = el;
+  _td.rotaId   = rotaId;
+  _td.staffId  = el.dataset.staffId;
+  _td.date     = el.dataset.date;
+  _td.color    = el.dataset.color || 'var(--teal)';
+  _td.label    = el.querySelector('span')?.textContent || '';
+
+  // Start long-press timer
+  _td.timer = setTimeout(() => _activateRotaDrag(el, touch), TOUCH_DRAG_DELAY);
+
+  document.addEventListener('touchmove',   _onRotaTouchMove,   { passive: false });
+  document.addEventListener('touchend',    _onRotaTouchEnd,    { passive: false });
+  document.addEventListener('touchcancel', _onRotaTouchCancel, { passive: false });
+}
+
+function _activateRotaDrag(el, touch) {
+  _td.active = true;
+
+  // Lock horizontal scroll on the rota-wrap during drag (restore on cleanup)
+  const wrap = el.closest('.rota-wrap');
+  if (wrap) { wrap.style.overflowX = 'hidden'; wrap.style.touchAction = 'none'; }
+  _td.rotaWrap = wrap || null;
+  // Disable all touch actions on the chip itself so drag move works
+  el.style.touchAction = 'none';
+
+  // Dim the source chip in place
+  el.classList.add('touch-drag-source');
+
+  // Build a ghost that looks like the chip but floats with the finger
+  const rect = el.getBoundingClientRect();
+  const ghost = document.createElement('div');
+  ghost.className = 'rota-ghost';
+  ghost.style.background = _td.color.startsWith('var') ? getComputedStyle(document.documentElement).getPropertyValue('--teal') : _td.color;
+  ghost.textContent = _td.label;
+  ghost.style.left  = (rect.left + rect.width  / 2 - 45) + 'px';
+  ghost.style.top   = (rect.top  - 10) + 'px';
+  ghost.style.width = Math.max(rect.width, 90) + 'px';
+  document.body.appendChild(ghost);
+  _td.ghost = ghost;
+
+  // Haptic pulse on supported devices
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function _onRotaTouchMove(e) {
+  const touch = e.touches[0];
+
+  // Before drag activates: cancel if finger has wandered (allow normal scroll)
+  if (!_td.active) {
+    const dx = Math.abs(touch.clientX - _td.startX);
+    const dy = Math.abs(touch.clientY - _td.startY);
+    if (dx > 10 || dy > 10) {
+      clearTimeout(_td.timer);
+      cleanupRotaDrag(false);
+    }
+    return;
+  }
+
+  // Drag is live — block page scroll
+  e.preventDefault();
+
+  const x = touch.clientX;
+  const y = touch.clientY;
+
+  // Move ghost to follow finger (centred horizontally, slightly above finger)
+  if (_td.ghost) {
+    const gw = parseFloat(_td.ghost.style.width) || 90;
+    _td.ghost.style.left = (x - gw / 2) + 'px';
+    _td.ghost.style.top  = (y - 36)     + 'px';
+  }
+
+  // Find drop target — hide ghost momentarily so it doesn't block elementFromPoint
+  if (_td.ghost) _td.ghost.style.visibility = 'hidden';
+  const elUnder = document.elementFromPoint(x, y);
+  if (_td.ghost) _td.ghost.style.visibility = '';
+
+  const cell = elUnder ? elUnder.closest('td[data-staff-id]') : null;
+
+  // Clear previous highlight
+  if (_td.targetCell && _td.targetCell !== cell) {
+    _td.targetCell.classList.remove('rota-drop-active');
+  }
+
+  // Highlight new target — but skip if it's the exact same cell the shift is already in
+  if (cell) {
+    const sameStaff = cell.dataset.staffId === _td.staffId;
+    const sameDate  = cell.dataset.date     === _td.date;
+    if (!sameStaff || !sameDate) {
+      cell.classList.add('rota-drop-active');
+      _td.targetCell = cell;
+    } else {
+      _td.targetCell = null;
+    }
+  } else {
+    _td.targetCell = null;
+  }
+}
+
+function _onRotaTouchEnd(e) {
+  clearTimeout(_td.timer);
+
+  if (_td.active && _td.targetCell) {
+    const newStaffId = _td.targetCell.dataset.staffId;
+    const newDate    = _td.targetCell.dataset.date;
+
+    // Only move if something actually changed
+    if (newStaffId !== _td.staffId || newDate !== _td.date) {
+      _td._justDropped = true;  // suppress the onclick that follows touchend
+      moveRotaShift(_td.rotaId, newStaffId, newDate);
+    }
+  }
+
+  cleanupRotaDrag(true);
+}
+
+function _onRotaTouchCancel() {
+  clearTimeout(_td.timer);
+  cleanupRotaDrag(false);
+}
+
+function cleanupRotaDrag(preserveJustDropped = false) {
+  // Restore source chip appearance
+  if (_td.sourceEl) {
+    _td.sourceEl.classList.remove('touch-drag-source');
+    _td.sourceEl.style.touchAction = '';
+  }
+
+  // Restore rota-wrap scroll
+  if (_td.rotaWrap) {
+    _td.rotaWrap.style.overflowX = '';
+    _td.rotaWrap.style.touchAction = '';
+  }
+
+  // Remove ghost
+  if (_td.ghost) { _td.ghost.remove(); }
+
+  // Remove drop target highlight
+  if (_td.targetCell) _td.targetCell.classList.remove('rota-drop-active');
+  // Also sweep for any lingering highlights (safety net)
+  document.querySelectorAll('.rota-drop-active').forEach(el => el.classList.remove('rota-drop-active'));
+
+  // Detach document listeners
+  document.removeEventListener('touchmove',   _onRotaTouchMove);
+  document.removeEventListener('touchend',    _onRotaTouchEnd);
+  document.removeEventListener('touchcancel', _onRotaTouchCancel);
+
+  const wasDropped = _td._justDropped;
+
+  // Reset state
+  _td.active       = false;
+  _td.rotaId       = null;
+  _td.staffId      = null;
+  _td.date         = null;
+  _td.color        = null;
+  _td.label        = null;
+  _td.ghost        = null;
+  _td.sourceEl     = null;
+  _td.targetCell   = null;
+  _td.rotaWrap     = null;
+  _td.timer        = null;
+  _td.startX       = 0;
+  _td.startY       = 0;
+
+  // Keep _justDropped alive just long enough to suppress the onclick
+  _td._justDropped = preserveJustDropped && wasDropped;
+  if (_td._justDropped) setTimeout(() => { _td._justDropped = false; }, 300);
+}
+
+async function moveRotaShift(rotaId, newStaffId, newDate) {
+  try {
+    await dbPatch('rota', rotaId, { staff_id: newStaffId, date: newDate });
+    showToast('Shift moved ✓', 'ok');
+    setTimeout(() => setTab('rota'), 350);
+  } catch(e) {
+    showToast('Move failed: ' + e.message);
+    setTimeout(() => setTab('rota'), 500); // reload to restore correct state
+  }
+}
+
 /* ── TIMESHEETS ── */
 async function renderTimesheets(){
   const monthStart=new Date().toISOString().slice(0,8)+'01';
@@ -1089,7 +1278,7 @@ async function renderTimesheets(){
   if(pending.length){
     h+=`<div class="card" style="border-left:4px solid var(--orange)">
       <div class="card-title" style="color:var(--orange)">⏳ Shifts Pending Approval (${pending.length})</div>
-      <table class="data-table"><thead><tr><th>Staff</th><th>Date</th><th>Start</th><th>Finish</th><th>Break</th><th>Hrs</th><th>Reason</th><th>Actions</th></tr></thead><tbody>`;
+      <div class="tbl-scroll"><table class="data-table"><thead><tr><th>Staff</th><th>Date</th><th>Start</th><th>Finish</th><th>Break</th><th>Hrs</th><th>Reason</th><th>Actions</th></tr></thead><tbody>`;
     pending.forEach(s=>{
       const st=ALL_STAFF.find(m=>m.id===s.staff_id);
       const isEd=editingShiftId===s.id;
@@ -1127,7 +1316,7 @@ async function renderTimesheets(){
           </td></tr>`;
       }
     });
-    h+=`</tbody></table><div style="font-size:11px;color:var(--muted);margin-top:8px">Trash: tap once to arm → tap again to confirm delete</div></div>`;
+    h+=`</tbody></table></div><div style="font-size:11px;color:var(--muted);margin-top:8px">Trash: tap once to arm → tap again to confirm delete</div></div>`;
   }
   const grouped={};
   shifts.forEach(s=>{if(!grouped[s.staff_id])grouped[s.staff_id]=[];grouped[s.staff_id].push(s);});
@@ -1144,8 +1333,8 @@ async function renderTimesheets(){
         <strong>${st.name}</strong>
         <span style="font-size:12px;color:var(--muted)">${hrs.toFixed(1)}h · <span style="color:var(--teal);font-weight:700">£${cost.toFixed(2)}</span></span>
       </div>
-      <table class="data-table"><thead><tr>
-        <th>Date</th><th>In</th><th>Out</th><th>Break</th><th class="r">Hrs</th><th class="r">Pay</th><th>Status</th>
+      <div class="tbl-scroll"><table class="data-table"><thead><tr>
+        <th>Date</th><th>In</th><th>Out</th><th class="m-hide">Break</th><th class="r">Hrs</th><th class="r m-hide">Pay</th><th>Status</th>
         ${isSuperAdmin()?'<th>Actions</th>':''}
       </tr></thead><tbody>`;
     stShifts.forEach(s=>{
@@ -1172,8 +1361,8 @@ async function renderTimesheets(){
         h+=`<tr>
           <td>${fmtDate(s.clock_in)}</td><td>${fmtTime(s.clock_in)}</td>
           <td>${s.clock_out?fmtTime(s.clock_out):sb}</td>
-          <td>${s.break_minutes||0}m</td>
-          <td class="r">${h2.toFixed(2)}</td><td class="r">£${p.toFixed(2)}</td>
+          <td class="m-hide">${s.break_minutes||0}m</td>
+          <td class="r">${h2.toFixed(2)}</td><td class="r m-hide">£${p.toFixed(2)}</td>
           <td>${s.clock_out?sb:''}</td>
           ${isSuperAdmin()?`<td style="white-space:nowrap">
             <button class="btn-sm" onclick="editingShiftId='${s.id}';setTab('timesheets')">✏️ Edit</button>
@@ -1182,7 +1371,7 @@ async function renderTimesheets(){
         </tr>`;
       }
     });
-    h+=`</tbody></table></div>`;
+    h+=`</tbody></table></div></div>`;
   });
   h+=`<div style="padding:12px;background:var(--teal-l);border-radius:8px;display:flex;justify-content:space-between"><strong>Month total</strong><strong>${totalHrs.toFixed(1)}h · £${totalCost.toFixed(2)}</strong></div></div>`;
   return h;
@@ -1210,8 +1399,7 @@ async function approveShift(id){
       u.total_hours=Math.max(0,mins/60).toFixed(2);
     }
     await dbPatch('shifts',id,u);
-    showToast('Approved ✓','ok');
-    setTimeout(()=>setTab('timesheets'),600);
+    showToast('Approved ✓','ok');setTimeout(()=>setTab('timesheets'),600);
   }catch(e){showToast('Error: '+e.message);}
 }
 function previewHrs(){
@@ -1231,7 +1419,6 @@ async function saveEdit(shiftId,staffId,approve=false){
   if(!date||!inT){showToast('Date and start time required.');return;}
   const ci=new Date(`${date}T${inT}:00`);
   let co=outT?new Date(`${date}T${outT}:00`):null;
-  // Handle midnight crossover — if out is earlier than in, shift goes to next day
   if(co&&co<=ci)co=new Date(co.getTime()+86400000);
   const mins=co?(co-ci)/60000-brk:0;
   try{
@@ -1274,14 +1461,14 @@ async function renderPayPeriods(){
           ${isSuperAdmin()?`£<input type="number" step="0.01" value="${p.tips_total||0}" style="width:80px;border:1px solid var(--border);border-radius:5px;padding:3px 6px" onchange="updateTips('${p.id}',+this.value)">`:`<strong>£${parseFloat(p.tips_total||0).toFixed(2)}</strong>`}
           split ${staffWorked.size} ways = £${tipShare.toFixed(2)} each
         </div>
-        <table class="data-table" style="font-size:12px"><thead><tr><th>Staff</th><th class="r">Hrs</th><th class="r">Wages</th><th class="r">Tips</th><th class="r">Total</th></tr></thead><tbody>`;
+        <div class="tbl-scroll"><table class="data-table" style="font-size:12px"><thead><tr><th>Staff</th><th class="r">Hrs</th><th class="r">Wages</th><th class="r">Tips</th><th class="r">Total</th></tr></thead><tbody>`;
       ALL_STAFF.forEach(st=>{
         const sts=shifts.filter(s=>s.staff_id===st.id);if(!sts.length)return;
         const hrs=sts.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
         const wages=hrs*(st.hourly_rate||0),tips=staffWorked.has(st.id)?tipShare:0;
         h+=`<tr><td>${st.name}</td><td class="r">${hrs.toFixed(1)}</td><td class="r">£${wages.toFixed(2)}</td><td class="r">£${tips.toFixed(2)}</td><td class="r"><strong>£${(wages+tips).toFixed(2)}</strong></td></tr>`;
       });
-      h+=`</tbody></table></div>`;
+      h+=`</tbody></table></div></div>`;
     }
   }
   return h;
@@ -1342,23 +1529,12 @@ async function uploadAvatar(input){
   try{
     const ext=file.name.split('.').pop().toLowerCase()||'jpg';
     const path=`${ME.id}.${ext}`;
-    // Try both keys — newer Supabase projects use publishable key for storage
     let uploaded=false;
-    for(const key of [SB.key, SB.jwt]){
-      const r=await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`,{
-        method:'PUT',
-        headers:{'apikey':key,'Authorization':'Bearer '+key,'Content-Type':file.type||'image/jpeg','x-upsert':'true'},
-        body:file
-      });
+    for(const key of [SB.key,SB.jwt]){
+      const r=await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`,{method:'PUT',headers:{'apikey':key,'Authorization':'Bearer '+key,'Content-Type':file.type||'image/jpeg','x-upsert':'true'},body:file});
       if(r.ok){uploaded=true;break;}
-      if(key===SB.key){
-        // First key failed, log and try second
-        const tx=await r.text();
-        console.warn('Key 1 failed:',r.status,tx.slice(0,100));
-      } else {
-        const tx=await r.text();
-        throw new Error(`Upload ${r.status}: ${tx.slice(0,120)}`);
-      }
+      if(key===SB.key){const tx=await r.text();console.warn('Key 1 failed:',r.status,tx.slice(0,100));}
+      else{const tx=await r.text();throw new Error(`Upload ${r.status}: ${tx.slice(0,120)}`);}
     }
     if(!uploaded)throw new Error('Both keys failed for upload');
     const url=`${SB.url}/storage/v1/object/public/profile-pics/${path}?t=${Date.now()}`;
@@ -1407,7 +1583,7 @@ async function renderStaffAdmin(){
     <button class="btn-teal" onclick="addStaff()" style="margin-top:10px">Add Staff Member</button>
     <div id="add-staff-msg" style="margin-top:8px"></div></div>
   <div class="card"><div class="card-title">All Staff (${ALL_STAFF.length})</div>
-    <table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Email</th><th class="r">Rate</th><th>PIN</th><th>Active</th><th></th></tr></thead><tbody>`;
+    <div class="tbl-scroll"><table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Team</th><th class="m-hide">Email</th><th class="r">Rate</th><th class="m-hide">PIN</th><th class="m-hide">Active</th><th></th></tr></thead><tbody>`;
   ALL_STAFF.forEach(st=>{
     h+=`<tr>
       <td><strong>${st.name}</strong></td>
@@ -1416,14 +1592,14 @@ async function renderStaffAdmin(){
         <option value="foh" ${st.team!=='boh'?'selected':''}>🍸 FOH</option>
         <option value="boh" ${st.team==='boh'?'selected':''}>🍕 BOH</option>
       </select></td>
-      <td style="font-size:12px;color:var(--muted)">${st.email||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)" class="m-hide">${st.email||'—'}</td>
       <td class="r">£<input type="number" step="0.01" value="${parseFloat(st.hourly_rate||0).toFixed(2)}" style="width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px" onchange="updateRate('${st.id}',+this.value)"></td>
-      <td>${st.id===ME.id?'—':`<button class="btn-sm" onclick="resetPIN('${st.id}','${st.name.replace(/'/g,'&#39;')}')">Reset</button>`}</td>
-      <td><label style="cursor:pointer"><input type="checkbox" ${st.is_active?'checked':''} onchange="toggleActive('${st.id}',this.checked)"> ${st.is_active?'Active':'Inactive'}</label></td>
+      <td class="m-hide">${st.id===ME.id?'—':`<button class="btn-sm" onclick="resetPIN('${st.id}','${st.name.replace(/'/g,'&#39;')}')">Reset</button>`}</td>
+      <td class="m-hide"><label style="cursor:pointer"><input type="checkbox" ${st.is_active?'checked':''} onchange="toggleActive('${st.id}',this.checked)"> ${st.is_active?'Active':'Inactive'}</label></td>
       <td>${st.id!==ME.id?`<button class="del-btn" onclick="removeStaff('${st.id}','${st.name.replace(/'/g,'&#39;')}')">✕</button>`:''}</td>
     </tr>`;
   });
-  h+=`</tbody></table></div>`;return h;
+  h+=`</tbody></table></div></div>`;return h;
 }
 async function addStaff(){
   const name=document.getElementById('ns-name').value.trim();
@@ -1442,12 +1618,11 @@ async function addStaff(){
     setTimeout(()=>setTab('staff-admin'),800);
   }catch(e){showMsg('add-staff-msg','Error: '+e.message,'err');}
 }
-async function updateStaffField(id, field, val){
+async function updateStaffField(id,field,val){
   try{
     await dbPatch('staff',id,{[field]:val});
-    const st=ALL_STAFF.find(s=>s.id===id);
-    if(st)st[field]=val;
-    showToast(`✓ ${field==='hourly_rate'?'Rate':field==='role'?'Role':field==='team'?'Team':'Name'} updated`,'ok');
+    const st=ALL_STAFF.find(s=>s.id===id);if(st)st[field]=val;
+    showToast(`✓ Updated`,'ok');
   }catch(e){showToast('Error: '+e.message);}
 }
 async function updateRate(id,val){return updateStaffField(id,'hourly_rate',val);}
@@ -1459,26 +1634,6 @@ async function archiveStaff(id,name){
     showToast(`${name} archived — shift history kept`,'ok');
     setTimeout(()=>setTab('staff-admin'),600);
   }catch(e){showToast('Error: '+e.message);}
-}
-async function restoreStaff(id,name){
-  try{
-    await dbPatch('staff',id,{is_active:true});
-    showToast(`${name} restored ✓`,'ok');
-    const fresh=await dbGet('staff','is_active=eq.true&order=name.asc');
-    ALL_STAFF=fresh;
-    setTimeout(()=>setTab('staff-admin'),600);
-  }catch(e){showToast('Error: '+e.message);}
-}
-function hardDeleteStaff(btn,id,name){
-  twoTapDelete(btn,async()=>{
-    try{
-      // Anonymise their shifts rather than deleting (keeps payroll history intact)
-      await dbPatch('staff',id,{is_active:false,name:`[Deleted] ${name}`,email:null,phone:null,pin_hash:'0000'});
-      ALL_STAFF=ALL_STAFF.filter(s=>s.id!==id);
-      showToast(`${name} permanently deleted`,'ok');
-      setTimeout(()=>setTab('staff-admin'),600);
-    }catch(e){showToast('Delete failed: '+e.message);}
-  });
 }
 async function resetPIN(id,name){
   try{await dbPatch('staff',id,{pin_hash:'0000'});showToast(`${name}'s PIN reset to 0000`,'ok');}
