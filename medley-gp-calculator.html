@@ -1150,9 +1150,7 @@ function renderGP(gpType){
                 onfocus="showMasterDrop(${item.id})"
                 onkeydown="navMasterDrop(event,${item.id})">
               <input type="hidden" id="ms-${item.id}" value="">
-              <div id="ms-drop-${item.id}"
-                style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--teal);border-top:none;border-radius:0 0 6px 6px;max-height:220px;overflow-y:auto;z-index:500;box-shadow:0 4px 12px rgba(0,0,0,.15)">
-              </div>
+              <!-- dropdown rendered as body portal via JS -->
             </div>
             <input type="number" id="mq-${item.id}" placeholder="qty" step="any" style="width:80px" oninput="onQtyIn(${item.id})">
             <span id="mu-${item.id}" class="muted small" style="min-width:30px"></span>
@@ -1239,39 +1237,58 @@ function delItem(id,type,e){
 function buildMasterList(){
   return MASTERS.slice().sort((a,b)=>a.name.localeCompare(b.name));
 }
+/* ── Portal dropdown — escapes overflow:hidden on gp-table ── */
+let _portalDrop=null,_portalItemId=null;
+function getPortalDrop(){
+  if(!_portalDrop){
+    _portalDrop=document.createElement('div');
+    _portalDrop.id='ms-portal-drop';
+    _portalDrop.style.cssText='position:fixed;background:#fff;border:2px solid var(--teal);border-radius:8px;max-height:280px;overflow-y:auto;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.2);display:none';
+    document.body.appendChild(_portalDrop);
+  }
+  return _portalDrop;
+}
+function positionPortalDrop(inp){
+  const r=inp.getBoundingClientRect(),drop=getPortalDrop();
+  const below=window.innerHeight-r.bottom;
+  drop.style.left=r.left+'px';
+  drop.style.width=Math.max(r.width,340)+'px';
+  if(below>150){drop.style.top=(r.bottom+2)+'px';drop.style.bottom='auto';}
+  else{drop.style.bottom=(window.innerHeight-r.top+2)+'px';drop.style.top='auto';}
+}
 function showMasterDrop(itemId){filterMasterDrop(itemId,true);}
 function filterMasterDrop(itemId,showAll=false){
   const inp=document.getElementById(`ms-search-${itemId}`);
-  const drop=document.getElementById(`ms-drop-${itemId}`);
-  if(!inp||!drop)return;
+  if(!inp)return;
+  _portalItemId=itemId;
+  const drop=getPortalDrop();
   const q=(inp.value||'').toLowerCase().trim();
   const all=buildMasterList();
   const filtered=showAll&&!q?all:all.filter(m=>
     m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||
     m.cat.toLowerCase().includes(q)||m.sup.toLowerCase().includes(q));
   if(!filtered.length){
-    drop.style.display='block';
-    drop.innerHTML=`<div style="padding:8px 10px;color:var(--muted);font-size:12px">No results for "${q}"</div>`;
-    return;
+    drop.innerHTML=`<div style="padding:10px 14px;color:var(--muted);font-size:13px">No results for "${q}"</div>`;
+    drop.style.display='block';positionPortalDrop(inp);return;
   }
   let ddHtml='';
   [{t:'D',label:'Drink Master'},{t:'F',label:'Food Master'},{t:'O',label:'Ops & Misc'}].forEach(({t,label})=>{
     const group=filtered.filter(m=>m.type===t);
     if(!group.length)return;
-    ddHtml+=`<div style="padding:4px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#f5f5f5;border-bottom:1px solid var(--border)">${label}</div>`;
+    ddHtml+=`<div style="padding:5px 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#f0f0f0;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1">${label}</div>`;
     group.forEach(m=>{
-      const hi=q?m.name.replace(new RegExp(`(${q})`,'gi'),'<strong>$1</strong>'):m.name;
-      const safeN=m.name.replace(/'/g,"\\'");
+      const hi=q?m.name.replace(new RegExp(`(${q})`,'gi'),'<strong style="color:var(--teal)">$1</strong>'):m.name;
+      const safeN=m.name.replace(/'/g,"\'");
       ddHtml+=`<div class="ms-drop-item" data-id="${m.id}"
         onmousedown="selectMasterItem(${itemId},'${m.id}','${safeN}','${m.unit}')"
-        style="padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;gap:8px">
-        <span><span style="color:var(--teal);font-size:10px;font-weight:700;margin-right:4px">[${m.id}]</span>${hi}</span>
-        <span style="color:var(--teal);font-weight:700;white-space:nowrap">${fmtCpuDisplay(m)}</span>
+        style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span><span style="color:var(--teal);font-size:10px;font-weight:700;margin-right:5px">[${m.id}]</span>${hi}</span>
+        <span style="color:var(--teal);font-weight:700;white-space:nowrap;font-size:12px">${fmtCpuDisplay(m)}</span>
       </div>`;
     });
   });
   drop.innerHTML=ddHtml;
-  drop.style.display='block';
+  drop.style.display='block';positionPortalDrop(inp);
   drop.querySelectorAll('.ms-drop-item').forEach(el=>{
     el.onmouseenter=()=>el.style.background='var(--teal-l)';
     el.onmouseleave=()=>el.style.background='';
@@ -1280,7 +1297,7 @@ function filterMasterDrop(itemId,showAll=false){
 function selectMasterItem(itemId,mid,name,unit){
   const inp=document.getElementById(`ms-search-${itemId}`);
   const hid=document.getElementById(`ms-${itemId}`);
-  const drop=document.getElementById(`ms-drop-${itemId}`);
+  const drop=getPortalDrop(); // use portal
   const uSp=document.getElementById(`mu-${itemId}`);
   const pSp=document.getElementById(`mp-${itemId}`);
   const qIn=document.getElementById(`mq-${itemId}`);
@@ -1292,7 +1309,7 @@ function selectMasterItem(itemId,mid,name,unit){
   if(qIn){qIn.focus();qIn.oninput=()=>{const m=getMaster(mid);const qty=parseFloat(qIn.value)||0;const cost=qty*cpu(m);if(pSp)pSp.textContent=cost>0?`= £${cost.toFixed(3)}`:'';};}
 }
 function navMasterDrop(e,itemId){
-  const drop=document.getElementById(`ms-drop-${itemId}`);
+  const drop=getPortalDrop();
   if(!drop||drop.style.display==='none')return;
   const items=[...drop.querySelectorAll('.ms-drop-item')];
   const cur=drop.querySelector('.ms-drop-item[data-focused]');
@@ -1306,8 +1323,9 @@ function navMasterDrop(e,itemId){
   if(items[idx]){items[idx].dataset.focused='1';items[idx].style.background='var(--teal-l)';items[idx].scrollIntoView({block:'nearest'});}
 }
 document.addEventListener('click',e=>{
-  if(!e.target.closest('.add-ing-section'))
-    document.querySelectorAll('[id^="ms-drop-"]').forEach(d=>d.style.display='none');
+  if(!e.target.closest('.add-ing-section')&&!e.target.closest('#ms-portal-drop')){
+    const drop=getPortalDrop();drop.style.display='none';
+  }
 });
 function onMSel(){}
 function onQtyIn(itemId){
