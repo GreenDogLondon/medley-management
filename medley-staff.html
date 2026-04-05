@@ -289,7 +289,33 @@ async function dbPost(t,d){return sbFetch('POST',t,{data:d});}
 async function dbPatch(t,id,d){return sbFetch('PATCH',t,{query:'id=eq.'+id,data:d});}
 async function dbDel(t,id){return sbFetch('DELETE',t,{query:'id=eq.'+id});}
 
-/* ── GP ACCESS SETTINGS (stored in medley_settings table) ── */
+/* ── PAY PERIOD LIVE STATUS POLLING ── */
+function stopPayPoll(){
+  if(payPollInterval){clearInterval(payPollInterval);payPollInterval=null;}
+}
+async function startPayPoll(){
+  stopPayPoll();
+  // Seed the current statuses so first tick only fires on actual changes
+  try{
+    const init=await dbGet('pay_periods','select=id,status');
+    (init||[]).forEach(p=>{_lastPayStatuses[p.id]=p.status;});
+  }catch(e){}
+  payPollInterval=setInterval(async()=>{
+    if(activeTab!=='pay'){stopPayPoll();return;}
+    try{
+      const periods=await dbGet('pay_periods','select=id,status');
+      let changed=false;
+      (periods||[]).forEach(p=>{
+        if(_lastPayStatuses[p.id]!==p.status)changed=true;
+        _lastPayStatuses[p.id]=p.status;
+      });
+      if(changed){
+        showToast('Pay period updated — refreshing','ok');
+        setTimeout(()=>setTab('pay'),800);
+      }
+    }catch(e){}
+  },15000); // check every 15 seconds
+}
 async function loadGPSettings(){
   try{
     const rows=await dbGet('medley_settings','key=in.(gp_password,gp_access_ids,gp_sync_code)');
@@ -433,6 +459,7 @@ function twoTapDelete(btn,action){
 /* ── STATE ── */
 let ME=null,ALL_STAFF=[],activeTab='',pinEntry='',pinTarget=null,clockTimer=null,rotaWeekOffset=0,refreshInterval=null,editingShiftId=null,rotaAddTarget=null;
 let _posting=false;
+let payPollInterval=null,_lastPayStatuses={}; // for live pay period status updates
 let GP_SETTINGS={
   password:'medley2025',
   accessIds:[],
@@ -534,6 +561,7 @@ async function pinSubmit(){
 function logout(){
   ME=null;clearSession();
   clearInterval(refreshInterval);clearInterval(clockTimer);clearInterval(inactivityTimer);
+  stopPayPoll();
   cleanupRotaDrag(); // ensure drag state is cleared on logout
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
@@ -575,6 +603,7 @@ async function launchApp(){
 }
 function setTab(tab){
   activeTab=tab;
+  if(tab!=='pay')stopPayPoll(); // stop polling when leaving pay tab
   document.querySelectorAll('.navtab').forEach(b=>b.classList.remove('active'));
   const el=document.getElementById('tab-'+tab);if(el)el.classList.add('active');
   render();
@@ -593,7 +622,7 @@ async function render(){
         initRotaTouchDrag(); // all staff can drag to swap shifts
         break;
       case 'timesheets': c.innerHTML=await renderTimesheets();break;
-      case 'pay':        c.innerHTML=await renderPayPeriods();break;
+      case 'pay':        c.innerHTML=await renderPayPeriods(); startPayPoll(); break;
       case 'gp-access':   c.innerHTML=renderGPAccess();break;
       case 'menu':       c.innerHTML=renderMenu();break;
       case 'profile':    c.innerHTML=renderProfile();break;
@@ -1678,9 +1707,7 @@ async function saveEdit(shiftId,staffId,approve=false){
 async function renderPayPeriods(){
   const periods=await dbGet('pay_periods','order=start_date.desc');
   let h='';
-
   if(isSuperAdmin()){
-    // Smart defaults: start from day after last period, end today
     const lastEnd=periods.length>0?periods[0].end_date:'';
     const smartStart=lastEnd?addDays(lastEnd,1):'';
     const todayStr=localDate();
@@ -1690,106 +1717,162 @@ async function renderPayPeriods(){
         <div class="form-group"><label>End</label><input type="date" id="pp-end" value="${todayStr}"></div>
       </div>
       ${smartStart?`<div style="font-size:12px;color:var(--teal);margin:8px 0;padding:8px 12px;background:var(--teal-l);border-radius:7px">
-        💡 Start date pre-filled to the day after your last period ended (${fmtDateShort(lastEnd)})
+        Start pre-filled from day after last period (${fmtDateShort(lastEnd)})
       </div>`:''}
       <button class="btn-teal" onclick="createPayPeriod()" style="margin-top:4px">Create Period</button>
     </div>`;
   }
-
   if(!periods.length){h+=`<div class="empty"><div class="empty-icon">💰</div>No pay periods yet</div>`;return h;}
-
-  // ── Uncovered shifts warning ──────────────────────────────────────────
-  // Find all approved shifts that don't fall within any existing pay period
-  try{
-    const allCompleted=await dbGet('shifts','status=eq.completed&select=id,staff_id,clock_in,total_hours');
-    if(allCompleted&&allCompleted.length){
-      const uncovered=allCompleted.filter(s=>{
-        if(!s.clock_in)return false;
-        const d=s.clock_in.slice(0,10); // UTC date — consistent with period query
-        return!periods.some(p=>d>=p.start_date&&d<=p.end_date);
-      });
-      if(uncovered.length>0){
-        const byStaff={};
-        uncovered.forEach(s=>{
-          if(!byStaff[s.staff_id])byStaff[s.staff_id]={hrs:0,count:0};
-          byStaff[s.staff_id].hrs+=parseFloat(s.total_hours||0);
-          byStaff[s.staff_id].count++;
+  // Uncovered shifts warning (super admins only — contains wage context)
+  if(isSuperAdmin()){
+    try{
+      const allCompleted=await dbGet('shifts','status=eq.completed&select=id,staff_id,clock_in,total_hours');
+      if(allCompleted&&allCompleted.length){
+        const uncovered=allCompleted.filter(s=>{
+          if(!s.clock_in)return false;
+          const d=s.clock_in.slice(0,10);
+          return!periods.some(p=>d>=p.start_date&&d<=p.end_date);
         });
-        const totalUncoveredHrs=uncovered.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
-        // Earliest uncovered shift date for smart pre-fill
-        const earliest=uncovered.reduce((min,s)=>s.clock_in<min?s.clock_in:min,uncovered[0].clock_in).slice(0,10);
-        h+=`<div class="card" style="border-left:4px solid var(--orange)">
-          <div class="card-title" style="color:var(--orange)">⚠️ Approved shifts not yet in a pay period</div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5">
-            These completed shifts fall outside all existing pay periods. 
-            Create a new period to capture them.
-          </p>
-          <div class="tbl-scroll"><table class="data-table" style="font-size:13px">
-            <thead><tr><th>Staff member</th><th class="r">Shifts</th><th class="r">Hours</th></tr></thead>
-            <tbody>`;
-        Object.entries(byStaff).forEach(([staffId,data])=>{
-          const st=ALL_STAFF.find(s=>s.id===staffId);
-          h+=`<tr><td>${st?st.name:'Unknown'}</td><td class="r">${data.count}</td><td class="r"><strong>${data.hrs.toFixed(1)}h</strong></td></tr>`;
-        });
-        h+=`<tr style="background:var(--orange-l)">
-            <td><strong>Total uncovered</strong></td>
-            <td class="r"><strong>${uncovered.length} shifts</strong></td>
-            <td class="r"><strong>${totalUncoveredHrs.toFixed(1)}h</strong></td>
-          </tr>
-          </tbody></table></div>
-          ${isSuperAdmin()?`<button class="btn-teal" style="background:var(--orange);margin-top:12px"
-            onclick="document.getElementById('pp-start').value='${earliest}';document.getElementById('pp-end').value='${localDate()}';window.scrollTo(0,0);showToast('Dates pre-filled — review and tap Create Period','ok')">
-            📅 Pre-fill new period for these shifts
-          </button>`:''}
-        </div>`;
+        if(uncovered.length>0){
+          const byStaff={};
+          uncovered.forEach(s=>{
+            if(!byStaff[s.staff_id])byStaff[s.staff_id]={hrs:0,count:0};
+            byStaff[s.staff_id].hrs+=parseFloat(s.total_hours||0);
+            byStaff[s.staff_id].count++;
+          });
+          const totalUncoveredHrs=uncovered.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
+          const earliest=uncovered.reduce((min,s)=>s.clock_in<min?s.clock_in:min,uncovered[0].clock_in).slice(0,10);
+          h+=`<div class="card" style="border-left:4px solid var(--orange)">
+            <div class="card-title" style="color:var(--orange)">⚠️ Approved shifts not yet in a pay period</div>
+            <div class="tbl-scroll"><table class="data-table" style="font-size:13px">
+              <thead><tr><th>Staff member</th><th class="r">Shifts</th><th class="r">Hours</th></tr></thead><tbody>`;
+          Object.entries(byStaff).forEach(([staffId,data])=>{
+            const st=ALL_STAFF.find(s=>s.id===staffId);
+            h+=`<tr><td>${st?st.name:'Unknown'}</td><td class="r">${data.count}</td><td class="r"><strong>${data.hrs.toFixed(1)}h</strong></td></tr>`;
+          });
+          h+=`<tr style="background:var(--orange-l)"><td><strong>Total uncovered</strong></td>
+              <td class="r"><strong>${uncovered.length}</strong></td>
+              <td class="r"><strong>${totalUncoveredHrs.toFixed(1)}h</strong></td></tr>
+            </tbody></table></div>
+            ${isSuperAdmin()?`<button class="btn-teal" style="background:var(--orange);margin-top:12px"
+              onclick="document.getElementById('pp-start').value='${earliest}';document.getElementById('pp-end').value='${localDate()}';window.scrollTo(0,0);showToast('Dates pre-filled','ok')">
+              Pre-fill new period for these shifts
+            </button>`:''}
+          </div>`;
+        }
       }
-    }
-  }catch(e){/* skip uncovered check silently */}
-
-  // ── Pay periods list ──────────────────────────────────────────────────
+    }catch(e){}
+  }
+  // Pay periods
   for(const p of periods){
+    const isPaid=p.status==='paid';
     const shifts=await dbGet('shifts',`clock_in=gte.${p.start_date}T00:00:00Z&clock_in=lte.${p.end_date}T23:59:59Z&status=eq.completed`);
     const staffWorked=new Set(shifts.map(s=>s.staff_id));
     const tipShare=staffWorked.size>0?(parseFloat(p.tips_total)||0)/staffWorked.size:0;
     let totalPay=0;
     shifts.forEach(s=>{const st=ALL_STAFF.find(m=>m.id===s.staff_id);totalPay+=(parseFloat(s.total_hours)||0)*(st?st.hourly_rate:0);});
-    const myS=shifts.filter(s=>s.staff_id===ME.id);
-    const myH=myS.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
-    const myP=myH*(ME.hourly_rate||0),myT=staffWorked.has(ME.id)?tipShare:0;
-
-    // Period header card
-    h+=`<div class="pay-card" style="position:relative">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.75;margin-bottom:2px">Pay Period</div>
-      <div style="font-size:17px;font-weight:800;margin-bottom:6px">${fmtDateShort(p.start_date)} – ${fmtDateShort(p.end_date)}</div>
-      <div class="pay-card-amount">£${(myP+myT).toFixed(2)}</div>
-      <div class="pay-card-detail">${myH.toFixed(1)}h × £${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr = £${myP.toFixed(2)}</div>
-      ${myT>0?`<div class="tips-badge">+ £${myT.toFixed(2)} tips</div>`:''}
+    const myShifts=shifts.filter(s=>s.staff_id===ME.id);
+    const myHrs=myShifts.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
+    const myWages=myHrs*(ME.hourly_rate||0);
+    const myTips=staffWorked.has(ME.id)?tipShare:0;
+    const myTotal=myWages+myTips;
+    const cardBg=isPaid?'#1a4d2e':'var(--teal)';
+    // Header bar
+    h+=`<div style="background:${cardBg};color:#fff;border-radius:var(--radius) var(--radius) 0 0;padding:16px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin-bottom:2px">Pay Period</div>
+          <div style="font-size:16px;font-weight:800">${fmtDateShort(p.start_date)} – ${fmtDateShort(p.end_date)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:800;letter-spacing:.04em;align-self:center">
+          ${isPaid?'✅ PAID':'💰 IN PROGRESS'}
+        </div>
+      </div>
     </div>`;
-
-    if(isManager()){
-      h+=`<div class="card" style="margin-top:-8px;border-radius:0 0 var(--radius) var(--radius)">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div style="font-size:13px">
-            Total wages: <strong>£${totalPay.toFixed(2)}</strong> · Tips pot: 
-            ${isSuperAdmin()?`£<input type="number" step="0.01" value="${p.tips_total||0}" style="width:80px;border:1px solid var(--border);border-radius:5px;padding:3px 6px" onchange="updateTips('${p.id}',+this.value)">`:`<strong>£${parseFloat(p.tips_total||0).toFixed(2)}</strong>`}
+    // Personal summary (all users)
+    h+=`<div class="card" style="border-radius:0;border-top:none;border-left:4px solid ${cardBg};margin-bottom:0">
+      <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Your Pay Summary</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--muted)">Hours worked</span><strong>${myHrs.toFixed(2)}h</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--muted)">Hourly rate</span><span>£${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--muted)">Wages</span><span>£${myWages.toFixed(2)}</span>
+        </div>
+        ${myTips>0?`<div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--muted)">Tips (split ${staffWorked.size} ways)</span>
+          <span style="color:var(--orange)">+ £${myTips.toFixed(2)}</span>
+        </div>`:''}
+        <div style="border-top:2px solid var(--border);margin-top:2px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;font-size:18px;font-weight:900">
+          <span style="color:var(--teal)">${isPaid?'Total paid':'Total'}</span>
+          <span style="color:var(--teal)">£${myTotal.toFixed(2)}</span>
+        </div>
+      </div>
+      ${isPaid?`
+      <div style="background:var(--good-bg);border:1.5px solid var(--good);border-radius:10px;padding:16px;margin-top:16px;text-align:center">
+        <div style="font-size:28px;margin-bottom:6px">🙌</div>
+        <div style="font-weight:800;font-size:15px;color:var(--good);margin-bottom:6px">Your pay for this period is complete — thank you!</div>
+        <div style="font-size:13px;color:var(--muted)">Any questions about your pay? Speak to Ed or Charlie.</div>
+      </div>`:`
+      <div style="font-size:12px;color:var(--muted);margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:8px">
+        ⏳ Pay run in progress — you'll be notified here once this period is marked as paid.
+      </div>`}
+    </div>`;
+    // Team breakdown — super admins only (managers see only their own summary above)
+    if(isSuperAdmin()){
+      h+=`<div class="card" style="margin-top:0;border-top:none;border-radius:0 0 var(--radius) var(--radius);border-left:4px solid ${cardBg}">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div style="font-size:13px;color:var(--muted)">
+            Total wages: <strong style="color:var(--text)">£${totalPay.toFixed(2)}</strong>
+            · Tips pot: ${isSuperAdmin()&&!isPaid?
+              `£<input type="number" step="0.01" value="${p.tips_total||0}" style="width:72px;border:1px solid var(--border);border-radius:5px;padding:3px 6px" onchange="updateTips('${p.id}',+this.value)">`:
+              `<strong style="color:var(--text)">£${parseFloat(p.tips_total||0).toFixed(2)}</strong>`}
             · split ${staffWorked.size} ways = £${tipShare.toFixed(2)} each
           </div>
-          ${isSuperAdmin()?`<button class="btn-danger" id="del-pp-${p.id}" onclick="deletePayPeriod(this,'${p.id}')" style="font-size:11px;padding:3px 10px">🗑️ Delete</button>`:''}
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            ${isSuperAdmin()&&!isPaid?`<button class="btn-teal" style="background:var(--good);font-size:12px;white-space:nowrap" id="paid-btn-${p.id}" onclick="markPeriodPaid(this,'${p.id}')">✅ Mark as paid</button>`:''}
+            ${isSuperAdmin()?`<button class="btn-danger" id="del-pp-${p.id}" onclick="deletePayPeriod(this,'${p.id}')" style="font-size:11px;padding:3px 10px">🗑️</button>`:''}
+          </div>
         </div>
-        <div class="tbl-scroll"><table class="data-table" style="font-size:12px">
-          <thead><tr><th>Staff</th><th class="r">Hrs</th><th class="r m-hide">Wages</th><th class="r m-hide">Tips</th><th class="r">Total</th></tr></thead>
-          <tbody>`;
+        <div class="tbl-scroll"><table class="data-table" style="font-size:13px">
+          <thead><tr>
+            <th>Staff member</th>
+            <th class="r">Hours</th>
+            <th class="r m-hide">Wages</th>
+            <th class="r m-hide">Tips</th>
+            <th class="r">Total pay</th>
+          </tr></thead><tbody>`;
       ALL_STAFF.forEach(st=>{
         const sts=shifts.filter(s=>s.staff_id===st.id);if(!sts.length)return;
         const hrs=sts.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
         const wages=hrs*(st.hourly_rate||0),tips=staffWorked.has(st.id)?tipShare:0;
-        h+=`<tr><td>${st.name}</td><td class="r">${hrs.toFixed(1)}</td><td class="r m-hide">£${wages.toFixed(2)}</td><td class="r m-hide">£${tips.toFixed(2)}</td><td class="r"><strong>£${(wages+tips).toFixed(2)}</strong></td></tr>`;
+        h+=`<tr>
+          <td>${st.name}</td>
+          <td class="r">${hrs.toFixed(1)}h</td>
+          <td class="r m-hide">£${wages.toFixed(2)}</td>
+          <td class="r m-hide">£${tips.toFixed(2)}</td>
+          <td class="r"><strong>£${(wages+tips).toFixed(2)}</strong></td>
+        </tr>`;
       });
-      h+=`</tbody></table></div></div>`;
+      const grandTotal=totalPay+(parseFloat(p.tips_total)||0);
+      h+=`<tr style="background:var(--teal-l)">
+          <td><strong>Total</strong></td>
+          <td class="r"><strong>${shifts.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0).toFixed(1)}h</strong></td>
+          <td class="r m-hide"><strong>£${totalPay.toFixed(2)}</strong></td>
+          <td class="r m-hide"><strong>£${parseFloat(p.tips_total||0).toFixed(2)}</strong></td>
+          <td class="r"><strong>£${grandTotal.toFixed(2)}</strong></td>
+        </tr>
+      </tbody></table></div>
+      </div>`;
     }
+    h+=`<div style="height:20px"></div>`;
   }
   return h;
 }
+
 async function deletePayPeriod(btn,id){
   twoTapDelete(btn,async()=>{
     try{
@@ -1798,6 +1881,17 @@ async function deletePayPeriod(btn,id){
       setTimeout(()=>setTab('pay'),500);
     }catch(e){showToast('Delete failed: '+e.message);}
   });
+}
+async function markPeriodPaid(btn,id){
+  twoTapDelete(btn,async()=>{
+    try{
+      await dbPatch('pay_periods',id,{status:'paid'});
+      showToast('Pay period marked as paid ✓ — staff will now see the confirmation','ok');
+      setTimeout(()=>setTab('pay'),600);
+    }catch(e){showToast('Error: '+e.message);}
+  });
+  // Override the twoTap label for this context
+  if(btn._confirming){btn.textContent='Tap again to confirm paid';}
 }
 async function createPayPeriod(){
   const s=document.getElementById('pp-start').value,e=document.getElementById('pp-end').value;
