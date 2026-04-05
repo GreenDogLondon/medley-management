@@ -964,37 +964,10 @@ async function loadScript(src){
 }
 
 async function exportRotaImage(){
-  showToast('Generating image…','ok');
+  showToast('Generating full rota image…','ok');
   try{
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-    const el=document.getElementById('rota-export-area');
-    if(!el){showToast('Rota not found — please reload');return;}
-
-    // Temporarily remove overflow/scroll constraints so full rota captures
-    const rotaWraps=el.querySelectorAll('.rota-wrap');
-    const origStyles=[];
-    rotaWraps.forEach(w=>{
-      origStyles.push(w.style.cssText);
-      w.style.overflowX='visible';
-      w.style.width='max-content';
-    });
-    el.style.width='max-content';
-    el.style.minWidth='700px';
-
-    const canvas=await html2canvas(el,{
-      backgroundColor:'#f5f7f6',
-      scale:2,
-      useCORS:true,
-      scrollX:0,scrollY:0,
-      windowWidth:1200,
-      width:el.scrollWidth,
-      height:el.scrollHeight
-    });
-
-    // Restore styles
-    rotaWraps.forEach((w,i)=>w.style.cssText=origStyles[i]);
-    el.style.width='';el.style.minWidth='';
-
+    const canvas=await captureFullRota();
     const a=document.createElement('a');
     const dates=getWeekDates(rotaWeekOffset);
     a.download=`medley-rota-${dates[0]}.png`;
@@ -1005,55 +978,69 @@ async function exportRotaImage(){
 }
 
 async function exportRotaPDF(){
-  showToast('Generating PDF…','ok');
+  showToast('Generating full rota PDF…','ok');
   try{
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-
-    const el=document.getElementById('rota-export-area');
-    if(!el){showToast('Rota not found');return;}
-
-    // Expand to full width for capture
-    const rotaWraps=el.querySelectorAll('.rota-wrap');
-    const origStyles=[];
-    rotaWraps.forEach(w=>{
-      origStyles.push(w.style.cssText);
-      w.style.overflowX='visible';
-      w.style.width='max-content';
-    });
-    el.style.width='max-content';
-    el.style.minWidth='700px';
-
-    const canvas=await html2canvas(el,{
-      backgroundColor:'#f5f7f6',
-      scale:2,useCORS:true,
-      scrollX:0,scrollY:0,
-      windowWidth:1200,
-      width:el.scrollWidth,
-      height:el.scrollHeight
-    });
-
-    rotaWraps.forEach((w,i)=>w.style.cssText=origStyles[i]);
-    el.style.width='';el.style.minWidth='';
-
+    const canvas=await captureFullRota();
     const imgData=canvas.toDataURL('image/png');
     const {jsPDF}=window.jspdf;
+    // Always landscape A4
     const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    const pdfW=pdf.internal.pageSize.getWidth();
-    const pdfH=pdf.internal.pageSize.getHeight();
-    const imgH=(canvas.height*pdfW)/canvas.width;
-    // Scale down if taller than page, otherwise centre vertically
-    if(imgH<=pdfH){
-      pdf.addImage(imgData,'PNG',0,(pdfH-imgH)/2,pdfW,imgH);
-    } else {
-      // Scale to fit height instead
-      const scaledW=(canvas.width*pdfH)/canvas.height;
-      pdf.addImage(imgData,'PNG',(pdfW-scaledW)/2,0,scaledW,pdfH);
-    }
+    const pdfW=pdf.internal.pageSize.getWidth();   // 297mm
+    const pdfH=pdf.internal.pageSize.getHeight();  // 210mm
+    const ratio=canvas.width/canvas.height;
+    let w=pdfW, h=pdfW/ratio;
+    if(h>pdfH){h=pdfH;w=pdfH*ratio;}
+    // Centre on page
+    const x=(pdfW-w)/2, y=(pdfH-h)/2;
+    pdf.addImage(imgData,'PNG',x,y,w,h);
     const dates=getWeekDates(rotaWeekOffset);
     pdf.save(`medley-rota-${dates[0]}.pdf`);
     showToast('PDF downloaded ✓','ok');
   }catch(e){showToast('Export failed: '+e.message);}
+}
+
+async function captureFullRota(){
+  const el=document.getElementById('rota-export-area');
+  if(!el)throw new Error('Rota not found — please reload');
+
+  // Clone the rota into a hidden off-screen div at full desktop width
+  // This means mobile viewport doesn't limit what gets captured
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='position:fixed;left:-9999px;top:0;width:1100px;background:#f5f7f6;padding:16px;z-index:-1;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  const clone=el.cloneNode(true);
+  // Remove + Add buttons and × delete buttons from clone — cleaner export
+  clone.querySelectorAll('.rota-empty,.rota-shift .del,[onclick*="showRotaAdd"],[onclick*="delRota"]').forEach(b=>{
+    if(b.classList.contains('rota-empty'))b.textContent='';
+    else b.remove();
+  });
+  // Remove overflow from rota-wrap in clone
+  clone.querySelectorAll('.rota-wrap').forEach(w=>{
+    w.style.overflow='visible';
+    w.style.width='100%';
+  });
+  clone.querySelectorAll('.rota-table').forEach(t=>{
+    t.style.minWidth='unset';
+    t.style.width='100%';
+  });
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+
+  // Wait for layout
+  await new Promise(r=>setTimeout(r,100));
+
+  const canvas=await html2canvas(wrapper,{
+    backgroundColor:'#f5f7f6',
+    scale:2,
+    useCORS:true,
+    scrollX:0,scrollY:0,
+    width:1100,
+    windowWidth:1200
+  });
+
+  document.body.removeChild(wrapper);
+  return canvas;
 }
 
 function showRotaAdd(staffId,date){
