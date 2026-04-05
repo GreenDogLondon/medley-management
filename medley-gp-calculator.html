@@ -128,21 +128,73 @@ nav::-webkit-scrollbar{display:none}
 
 /* ── Responsive ── */
 @media(max-width:768px){
-  /* Topbar — stack brand and buttons */
-  .topbar{padding:8px 12px;flex-wrap:wrap;gap:6px}
-  .brand{font-size:14px}
-  .brand em{display:none} /* hide subtitle on mobile */
-  .topbar-right{gap:5px;flex-wrap:wrap}
-  .topbar-right button,.topbar-right .tb-import{font-size:10px;padding:4px 8px;height:28px}
-  .inv-badge{font-size:10px;padding:2px 7px}
+  /* Topbar — compact single row, no wrapping */
+  .topbar{padding:7px 10px;flex-wrap:nowrap;gap:4px;min-height:44px}
+  .brand{font-size:13px;white-space:nowrap;flex-shrink:0}
+  .brand em{display:none}
+  .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
+  .topbar-right button,.topbar-right .tb-import{font-size:10px;padding:3px 7px;height:26px;white-space:nowrap}
+  .inv-badge{display:none} /* hide save badge on mobile */
 
-  /* Nav tabs — scrollable, no overflow */
-  nav{padding:0 4px;top:50px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* Nav — horizontal scroll only, frozen in place, no vertical movement */
+  nav{
+    padding:0;
+    top:44px; /* matches compact topbar height */
+    overflow-x:auto;
+    overflow-y:hidden; /* prevent vertical scroll on nav */
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    flex-shrink:0;
+    /* Prevent nav from being part of page scroll */
+    touch-action:pan-x;
+  }
   nav::-webkit-scrollbar{display:none}
-  .navtab{padding:9px 10px;font-size:11px}
+  .navtab{padding:10px 11px;font-size:11px;flex-shrink:0}
 
-  /* Content padding */
-  #content{padding:10px 10px}
+  /* Content — full width, no horizontal overflow */
+  #content{padding:8px;max-width:100vw;overflow-x:hidden}
+
+  /* Master bar — stack vertically, full width */
+  .master-bar{flex-direction:column;align-items:stretch;gap:6px}
+  .master-bar input{width:100%;height:40px;font-size:15px}
+  .master-bar select{width:100%;height:40px;font-size:14px}
+  .master-bar button{width:100%;height:40px;font-size:14px}
+
+  /* Master table — horizontal scroll, hide less critical columns */
+  .master-table{font-size:12px}
+  .master-table thead th{padding:6px 5px;font-size:10px}
+  .master-table td{padding:8px 5px}
+  .master-table td:nth-child(3),.master-table th:nth-child(3),
+  .master-table td:nth-child(4),.master-table th:nth-child(4){display:none}
+  .master-table .del-btn{width:32px;height:32px;font-size:16px}
+
+  /* GP table — horizontal scroll, hide ex-VAT col to save space */
+  .gp-table{font-size:12px}
+  .gp-table thead th{padding:6px 4px;font-size:10px}
+  .gp-table td{padding:8px 4px}
+  /* On mobile hide ex-VAT column (col 4) to reduce width */
+  .gp-table td:nth-child(4),.gp-table th:nth-child(4){display:none}
+  .sell-in{width:55px;font-size:12px}
+
+  /* Metrics grid — 2 cols */
+  .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
+  .metric-val,.mv{font-size:20px}
+
+  /* Wastage metrics */
+  .wastage-metric .wm-val{font-size:18px}
+
+  /* Subtab bar */
+  .subtab-bar{flex-wrap:nowrap;overflow-x:auto;gap:2px;scrollbar-width:none}
+  .subtab-bar::-webkit-scrollbar{display:none}
+  .subtab-btn{font-size:11px;padding:5px 10px;white-space:nowrap}
+
+  /* Tab header */
+  .tab-title{font-size:14px}
+  .tab-sub{font-size:11px}
+
+  /* Labour table */
+  .labour-table{font-size:12px}
+}
 
   /* Master bar — stack vertically */
   .master-bar{flex-direction:column;align-items:stretch;gap:6px}
@@ -2685,8 +2737,26 @@ function init() {
     const savedAt = loadState();
     if (savedAt) updateSaveStatus(savedAt);
     render();
-    // Auto-sync from cloud on load so all users get latest data
-    if(CLOUD) forceSyncFromCloud();
+
+    // Auto-sync from cloud on load — always pull latest on open
+    if(CLOUD){
+      forceSyncFromCloud().then(()=>{
+        // After initial sync, set up background sync every 5 minutes
+        setInterval(()=>{
+          if(CLOUD && document.visibilityState==='visible'){
+            forceSyncFromCloud();
+          }
+        }, 5 * 60 * 1000);
+      });
+    }
+
+    // Also sync when tab becomes visible (user switches back to this tab)
+    document.addEventListener('visibilitychange',()=>{
+      if(CLOUD && document.visibilityState==='visible'){
+        forceSyncFromCloud();
+      }
+    });
+
   } else {
     document.getElementById('login-screen').style.display = 'flex';
   }
