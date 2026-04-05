@@ -1047,10 +1047,12 @@ function renderGP(gpType){
       <div class="ms">${best?gpPct(best).toFixed(1)+'%':''}</div></div>
   </div>
   <div class="target-row">
-    <label>Target GP%</label>
-    <input type="range" min="50" max="85" value="${target}"
-      oninput="target=+this.value;this.nextElementSibling.textContent=this.value+'%';render()">
-    <span class="tv">${target}%</span>
+    <label style="font-weight:600;color:var(--text)">Target GP%</label>
+    <button onclick="adjustTarget(-1)" style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--teal)">−</button>
+    <span class="tv" style="font-size:18px;font-weight:900;color:var(--teal);min-width:48px;text-align:center">${target}%</span>
+    <button onclick="adjustTarget(+1)" style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--teal)">+</button>
+    <button onclick="saveTarget()" class="btn-teal" style="padding:5px 14px;font-size:12px;margin-left:4px">Save target</button>
+    <span id="target-saved-msg" style="font-size:11px;color:var(--good);opacity:0;transition:opacity .4s">✓ Saved</span>
   </div>
   <table class="gp-table">
     <colgroup>
@@ -1258,6 +1260,16 @@ function gpDragEnd(e){
   _dragId=null;_dragType=null;
 }
 
+function adjustTarget(delta){
+  target=Math.min(95,Math.max(30,target+delta));
+  render();
+}
+function saveTarget(){
+  saveState();
+  // Flash saved message
+  const msg=document.getElementById('target-saved-msg');
+  if(msg){msg.style.opacity='1';setTimeout(()=>msg.style.opacity='0',2000);}
+}
 function setSell(id,type,val){
   const item=getGP(type).find(i=>i.id===id);
   if(item){item.sell=val;render();}
