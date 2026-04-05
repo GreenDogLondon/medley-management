@@ -88,6 +88,11 @@ nav::-webkit-scrollbar{display:none}
 .gp-table thead th{padding:8px 10px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
 .gp-table th.num,.gp-table td.num{text-align:right}
 .gp-row{cursor:pointer;transition:.1s}
+.gp-row.dragging{opacity:.4;background:var(--teal-l)}
+.gp-row.drag-over{border-top:3px solid var(--orange)}
+.drag-handle{cursor:grab;color:var(--muted);font-size:16px;padding:0 6px 0 2px;user-select:none;opacity:.5}
+.drag-handle:hover{opacity:1;color:var(--teal)}
+.drag-handle:active{cursor:grabbing}
 .gp-row:hover{background:var(--teal-l)}
 .gp-row.expanded{background:var(--teal-l)}
 .gp-table td{padding:8px 10px;vertical-align:middle;border-bottom:1px solid var(--border)}
@@ -1071,8 +1076,20 @@ function renderGP(gpType){
     const pct=gpPct(item);
     const isExp=expandedId===item.id && expandedType===gpType;
 
-    h+=`<tr class="gp-row${isExp?' expanded':''}" onclick="toggleExp(${item.id},'${gpType}')">
-      <td><span class="xi">${isExp?'▼':'▶'}</span><strong>${item.name}</strong></td>
+    h+=`<tr class="gp-row${isExp?' expanded':''}"
+      draggable="true"
+      data-id="${item.id}"
+      data-gptype="${gpType}"
+      onclick="toggleExp(${item.id},'${gpType}')"
+      ondragstart="gpDragStart(event,${item.id},'${gpType}')"
+      ondragover="gpDragOver(event)"
+      ondragleave="gpDragLeave(event)"
+      ondrop="gpDrop(event,${item.id},'${gpType}')"
+      ondragend="gpDragEnd(event)">
+      <td style="white-space:nowrap">
+        <span class="drag-handle" onclick="event.stopPropagation()" title="Drag to reorder">⠿</span>
+        <span class="xi">${isExp?'▼':'▶'}</span><strong>${item.name}</strong>
+      </td>
       <td><span class="cat-badge${gpType==='dry'?' dry':''}">${item.cat}</span></td>
       <td class="num" onclick="event.stopPropagation()">
         <span class="psym">£</span><input class="sell-in" type="number" step="0.05"
@@ -1201,6 +1218,44 @@ function toggleExp(id,type){
   if(expandedId===id&&expandedType===type){expandedId=null;expandedType=null;}
   else{expandedId=id;expandedType=type;}
   render();
+}
+
+/* ── GP row drag-and-drop reordering ── */
+let _dragId=null,_dragType=null;
+
+function gpDragStart(e,id,gpType){
+  _dragId=id;_dragType=gpType;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',id);
+}
+function gpDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  // Only highlight the main gp-row, not expand-rows
+  const row=e.currentTarget;
+  if(row.classList.contains('gp-row'))row.classList.add('drag-over');
+}
+function gpDragLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+function gpDrop(e,targetId,gpType){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(_dragId===null||_dragId===targetId)return;
+  const arr=getGP(gpType);
+  const fromIdx=arr.findIndex(i=>i.id===_dragId);
+  const toIdx=arr.findIndex(i=>i.id===targetId);
+  if(fromIdx<0||toIdx<0)return;
+  // Move item from fromIdx to toIdx
+  const [moved]=arr.splice(fromIdx,1);
+  arr.splice(toIdx,0,moved);
+  saveState();render();
+}
+function gpDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(r=>r.classList.remove('drag-over'));
+  _dragId=null;_dragType=null;
 }
 
 function setSell(id,type,val){
