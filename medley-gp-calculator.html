@@ -2,2047 +2,1531 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Medley — GP & Cost Calculator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>The Medley — Staff Portal</title>
 <style>
-:root {
-  --teal:#1a6b5a; --teal-l:#e8f4f1; --teal-d:#134f43;
-  --orange:#e8571a; --orange-l:#fdf0ea;
-  --good:#1a6b5a; --good-bg:#e8f4f1;
-  --mid:#8a5200; --mid-bg:#fef3e2;
-  --bad:#a32d2d; --bad-bg:#fdeaea;
-  --bg:#f7f8f6; --bg2:#ffffff; --border:#dde5e2;
-  --text:#1a2620; --muted:#7a8f89; --small:12px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
-
-/* ── Top bar ── */
-.topbar{background:var(--teal);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.brand{font-weight:800;font-size:17px;letter-spacing:0.04em}
-.brand em{color:#a8d9cf;font-style:normal;font-weight:400;font-size:13px;margin-left:10px}
-.inv-badge{background:rgba(255,255,255,.15);font-size:11px;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
-
-/* ── Nav tabs ── */
-nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 16px;position:sticky;top:45px;z-index:99;overflow-x:auto;-webkit-overflow-scrolling:touch}
+:root{--teal:#1a6b5a;--teal-d:#134f43;--teal-l:#e8f4f1;--orange:#e8571a;--orange-l:#fdf0ea;--bg:#f5f7f6;--white:#ffffff;--border:#dde5e2;--text:#1a2620;--muted:#7a8f89;--good:#1a6b5a;--good-bg:#e8f4f1;--warn:#8a5200;--warn-bg:#fef3e2;--bad:#a32d2d;--bad-bg:#fdeaea;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.1)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+#login-screen{position:fixed;inset:0;background:var(--teal);z-index:9000;display:flex;flex-direction:column;align-items:center;overflow-y:auto}
+.login-header{text-align:center;padding:32px 20px 20px;color:#fff}
+.login-logo{font-size:28px;font-weight:900;letter-spacing:.06em}
+.login-tagline{font-size:13px;opacity:.7;margin-top:4px}
+.login-instruction{font-size:13px;opacity:.8;margin-top:16px}
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;padding:16px;width:100%;max-width:600px}
+.staff-card{background:rgba(255,255,255,.12);border:2px solid transparent;border-radius:var(--radius);padding:16px 8px;text-align:center;cursor:pointer;transition:.15s;color:#fff}
+.staff-card:hover,.staff-card.selected{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5)}
+.staff-avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;overflow:hidden}
+.staff-avatar img{width:100%;height:100%;object-fit:cover}
+.staff-card-name{font-size:13px;font-weight:600;line-height:1.3}
+.staff-card-role{font-size:10px;opacity:.7;margin-top:2px}
+#pin-screen{display:none;position:fixed;inset:0;background:var(--teal);z-index:9100;flex-direction:column;align-items:center;justify-content:center}
+.pin-who{color:#fff;font-size:16px;font-weight:700;margin-bottom:8px}
+.pin-dots{display:flex;gap:12px;margin-bottom:28px}
+.pin-dot{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.3);transition:.15s}
+.pin-dot.filled{background:#fff}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px}
+.pin-btn{height:64px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:24px;font-weight:600;transition:.15s}
+.pin-btn:active{background:rgba(255,255,255,.3);transform:scale(.95)}
+.pin-btn.action{font-size:14px}
+.pin-error{color:#ffb3b3;font-size:13px;margin-top:12px;text-align:center;min-height:18px}
+.pin-back{color:rgba(255,255,255,.7);font-size:13px;margin-top:20px;text-decoration:underline;cursor:pointer;background:none;border:none}
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{background:var(--teal);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{font-weight:900;font-size:15px;letter-spacing:.04em}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.topbar-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;overflow:hidden}
+.topbar-avatar img{width:100%;height:100%;object-fit:cover}
+.topbar-name{font-size:13px;font-weight:600}
+.topbar-role{font-size:10px;opacity:.7}
+.logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600}
+nav{background:#fff;border-bottom:2px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 12px;position:sticky;top:52px;z-index:99}
 nav::-webkit-scrollbar{display:none}
-.navtab{border:none;background:none;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.15s}
-.navtab:hover{color:var(--teal)}
+.navtab{border:none;background:none;padding:11px 14px;font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;cursor:pointer;transition:.15s}
 .navtab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
-
-/* ── Content ── */
-#content{padding:16px 20px;max-width:1200px;margin:0 auto}
-
-/* ── Tab header ── */
-.tab-header{margin-bottom:14px}
-.tab-title{font-size:16px;font-weight:800;color:var(--teal)}
-.tab-sub{font-size:11px;color:var(--muted);margin-top:3px;display:block}
-
-/* ── Master table ── */
-.master-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-.master-bar input,.master-bar select{height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;color:var(--text)}
-.master-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.master-table thead tr{background:var(--teal);color:#fff}
-.master-table thead th{padding:8px 10px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;position:sticky;top:88px;z-index:10;background:var(--teal);box-shadow:0 2px 4px rgba(0,0,0,.15)}
-.master-table th.num,.master-table td.num{text-align:right}
-.master-table tbody tr{border-bottom:1px solid var(--border);transition:.1s}
-.master-table tbody tr:hover{background:var(--teal-l)}
-.master-table tbody tr.editing-row{background:#fffbf5;border-left:3px solid var(--orange)}
-.master-table td{padding:7px 10px;vertical-align:middle}
-.master-table td input{border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:12px;width:100%}
-.table-footer{font-size:11px;color:var(--muted);margin-top:6px;padding-left:4px}
-.cat-badge{background:var(--teal-l);color:var(--teal);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;white-space:nowrap}
-.cat-badge.ops{background:#f0ebfb;color:#5b3c99}
-.cat-badge.dry{background:var(--orange-l);color:var(--orange)}
-.teal-bold{color:var(--teal);font-weight:700}
-.bold{font-weight:600}
-.muted{color:var(--muted)}
-.small{font-size:11px}
-
-/* ── Buttons ── */
-.btn-teal{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
+#content{padding:16px;max-width:1100px;margin:0 auto;width:100%}
+.card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.card-title{font-size:13px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.metric-grid{grid-template-columns:repeat(4,1fr)}}
+.metric{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);text-align:center}
+.metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.metric-value{font-size:26px;font-weight:900;color:var(--teal);margin:4px 0}
+.metric-sub{font-size:11px;color:var(--muted)}
+.clock-section{text-align:center;padding:24px 16px}
+.clock-display{font-size:42px;font-weight:900;color:var(--teal);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.clock-date{color:var(--muted);font-size:13px;margin-bottom:24px}
+.clock-btn{display:inline-block;width:160px;height:160px;border-radius:50%;border:none;font-size:20px;font-weight:800;cursor:pointer;transition:.2s;box-shadow:0 6px 24px rgba(0,0,0,.15)}
+.clock-btn.in{background:var(--teal);color:#fff}
+.clock-btn.out{background:var(--orange);color:#fff}
+.clock-btn.out:active{background:#c44414;transform:scale(.97)}
+.clock-status{margin-top:20px;font-size:14px;color:var(--muted)}
+.clock-timer{font-size:18px;font-weight:700;color:var(--orange)}
+.break-select{width:100%;height:40px;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:14px}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;padding:8px 10px;border-bottom:2px solid var(--border);text-align:left;white-space:nowrap}
+.data-table th.r,.data-table td.r{text-align:right}
+.data-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tbody tr:hover{background:var(--teal-l)}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.badge.super{background:#f0ebfb;color:#5b3c99}
+.badge.manager{background:var(--warn-bg);color:var(--warn)}
+.badge.staff{background:var(--teal-l);color:var(--teal)}
+.badge.ok{background:var(--good-bg);color:var(--good)}
+.badge.pending{background:var(--warn-bg);color:var(--warn)}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}
+.form-grid{display:grid;gap:12px}
+@media(min-width:500px){.form-grid.cols2{grid-template-columns:1fr 1fr}}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;transition:.2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--teal)}
+.form-group textarea{height:80px;resize:vertical}
+.btn-teal{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700}
 .btn-teal:hover{background:var(--teal-d)}
-.btn-sm{border:1px solid var(--border);background:#fff;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:11px;color:var(--text)}
-.btn-sm:hover{border-color:var(--teal);color:var(--teal)}
-.btn-sm.del{border-color:#fca5a5;color:var(--bad)}
-.btn-sm.del:hover{background:#fdeaea}
-.del-btn{border:none;background:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
+.btn-sm{border:1px solid var(--border);background:#fff;border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text)}
+.btn-danger{background:var(--bad);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;transition:.2s}
+.del-btn{border:none;background:none;color:#ccc;font-size:16px;cursor:pointer}
 .del-btn:hover{color:var(--bad)}
-.actions{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap}
-
-/* ── GP Metrics ── */
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.metric{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px}
-.ml{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.mv{font-size:22px;font-weight:800;color:var(--teal);line-height:1.2;margin:3px 0}
-.mv.small-text{font-size:14px;margin:4px 0}
-.ms{font-size:11px;color:var(--muted)}
-.target-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--muted)}
-.target-row input[type=range]{width:140px;accent-color:var(--teal)}
-.tv{font-weight:700;color:var(--teal);min-width:36px}
-
-/* ── GP table ── */
-.gp-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.gp-table colgroup col{}
-.gp-table thead tr{background:var(--teal);color:#fff}
-.gp-table thead th{padding:8px 10px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
-.gp-table th.num,.gp-table td.num{text-align:right}
-.gp-row{cursor:pointer;transition:.1s}
-.gp-row:hover{background:var(--teal-l)}
-.gp-row.expanded{background:var(--teal-l)}
-.gp-table td{padding:8px 10px;vertical-align:middle;border-bottom:1px solid var(--border)}
-.xi{color:var(--teal);font-size:10px;margin-right:6px;opacity:.7}
-.sell-in{width:62px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px;font-weight:600;color:var(--teal)}
-.psym{color:var(--muted);font-size:11px;margin-right:1px}
-.pill{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700}
-.pill.good{background:var(--good-bg);color:var(--good)}
-.pill.mid{background:var(--mid-bg);color:var(--mid)}
-.pill.bad{background:var(--bad-bg);color:var(--bad)}
-
-/* ── Recipe panel ── */
-.expand-row td{background:#f0f7f5;padding:0 !important;border-bottom:2px solid var(--teal)}
-.recipe-panel{padding:14px 20px}
-.recipe-header{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.recipe-table{width:100%;border-collapse:collapse;font-size:12px}
-.recipe-table thead th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;padding:4px 8px;border-bottom:1px solid var(--border)}
-.recipe-table th.num,.recipe-table td.num{text-align:right}
-.recipe-table td{padding:5px 8px;vertical-align:middle;border-bottom:1px solid #e8f0ee}
-.recipe-table tr:last-child td{border-bottom:none}
-.recipe-total td{background:rgba(26,107,90,.08);font-weight:700;padding:6px 8px}
-.master-tag{background:var(--teal-l);color:var(--teal);font-size:10px;padding:1px 5px;border-radius:3px;font-weight:700;font-family:monospace}
-.master-tag.custom{background:var(--orange-l);color:var(--orange)}
-.qty-in{width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px}
-.cost-in{width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px}
-
-/* ── Add ingredient ── */
-.add-ing-section{margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)}
-.add-ing-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.add-ing-row select,.add-ing-row input{height:28px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px;color:var(--text)}
-.form-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;font-weight:600}
-.ing-preview{font-size:12px;font-weight:700;color:var(--teal);min-width:70px}
-
-/* ── Responsive ── */
-@media(max-width:768px){
-  /* Topbar — stack brand and buttons */
-  .topbar{padding:8px 12px;flex-wrap:wrap;gap:6px}
-  .brand{font-size:14px}
-  .brand em{display:none} /* hide subtitle on mobile */
-  .topbar-right{gap:5px;flex-wrap:wrap}
-  .topbar-right button,.topbar-right .tb-import{font-size:10px;padding:4px 8px;height:28px}
-  .inv-badge{font-size:10px;padding:2px 7px}
-
-  /* Nav tabs — scrollable, no overflow */
-  nav{padding:0 4px;top:50px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  nav::-webkit-scrollbar{display:none}
-  .navtab{padding:9px 10px;font-size:11px}
-
-  /* Content padding */
-  #content{padding:10px 10px}
-
-  /* Master bar — stack vertically */
-  .master-bar{flex-direction:column;align-items:stretch;gap:6px}
-  .master-bar input{width:100%;height:38px;font-size:14px}
-  .master-bar select{width:100%;height:38px;font-size:14px}
-  .master-bar button{width:100%;height:38px;font-size:13px}
-
-  /* Master table — hide less important columns, make readable */
-  .master-table{font-size:12px}
-  .master-table thead th{padding:6px 6px;font-size:10px}
-  .master-table td{padding:8px 6px}
-  /* Hide Pack Size column on mobile — it's in the cost/unit anyway */
-  .master-table td:nth-child(3),.master-table th:nth-child(3),
-  .master-table td:nth-child(4),.master-table th:nth-child(4){display:none}
-  /* Keep: Name, Category, Pack£, Unit, Cost/unit, Actions */
-
-  /* Make Edit/Delete buttons bigger for touch */
-  .master-table .btn-edit{padding:5px 10px;font-size:12px}
-  .master-table .del-btn{width:28px;height:28px;font-size:14px}
-
-  /* GP tables */
-  .gp-table{font-size:11px}
-  .gp-table thead th{padding:5px 4px;font-size:9px}
-  .gp-table td{padding:6px 4px}
-
-  /* Metrics grid — 2 cols on mobile */
-  .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
-  .metric-val{font-size:20px}
-
-  /* Subtab bar */
-  .subtab-bar{flex-wrap:nowrap;overflow-x:auto;gap:2px}
-  .subtab-bar::-webkit-scrollbar{display:none}
-  .subtab-btn{font-size:11px;padding:5px 10px;white-space:nowrap}
-
-  /* Tab header */
-  .tab-title{font-size:14px}
-
-  /* Forms in edit rows — stack on mobile */
-  .editing-row td{display:block;width:100%;border:none;padding:4px 8px}
-  .editing-row td input,.editing-row td select{width:100%;margin-bottom:4px}
-}
-
-/* ── Login screen ── */
-#login-screen{position:fixed;inset:0;background:var(--teal);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
-.login-box{background:#fff;border-radius:16px;padding:40px 44px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
-.login-logo{font-size:26px;font-weight:900;color:var(--teal);letter-spacing:.05em;margin-bottom:4px}
-.login-logo span{color:var(--orange)}
-.login-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
-.login-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:left;display:block;margin-bottom:5px}
-.login-input{width:100%;height:42px;border:2px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;outline:none;transition:.2s;margin-bottom:10px}
-.login-input:focus{border-color:var(--teal)}
-.login-btn{width:100%;height:42px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;margin-top:4px}
-.login-btn:hover{background:var(--teal-d)}
-.login-error{color:var(--bad);font-size:12px;margin-top:8px;display:none}
-.login-hint{font-size:11px;color:var(--muted);margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
-
-/* ── Topbar enhancements ── */
-.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.save-status{font-size:11px;color:rgba(255,255,255,.7);white-space:nowrap}
-.save-status.ok{color:#a8d9cf}
-.tb-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s}
-.tb-btn:hover{background:rgba(255,255,255,.28)}
-.tb-import{position:relative;overflow:hidden}
-.tb-import input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
-.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;background:#aaa}
-.sync-dot.ok{background:#4ade80}.sync-dot.busy{background:#fbbf24;animation:pulse .8s infinite}
-.sync-dot.err{background:#f87171}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
-/* ── Cloud sync modal ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8000;display:flex;align-items:center;justify-content:center}
-.modal-box{background:#fff;border-radius:14px;padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-.modal-title{font-size:16px;font-weight:800;color:var(--teal);margin-bottom:4px}
-.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
-.modal-section{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)}
-.modal-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.modal-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px}
-.modal-input{width:100%;height:36px;border:1.5px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;outline:none;transition:.2s;font-family:monospace}
-.modal-input:focus{border-color:var(--teal)}
-.modal-row{display:flex;gap:8px;margin-top:8px}
-.share-code-box{background:var(--teal-l);border:1px solid var(--teal);border-radius:7px;padding:10px 14px;font-family:monospace;font-size:12px;color:var(--teal);word-break:break-all;margin-top:8px;cursor:pointer;position:relative}
-.share-code-box:after{content:'Click to copy';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);font-family:sans-serif}
-.sync-status-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:10px 14px;background:var(--bg);border-radius:8px}
-.step-num{background:var(--teal);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
-
-/* ── Labour tab ── */
-.labour-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.labour-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px}
-.panel-title{font-size:12px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-.shift-form{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-.shift-form label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px}
-.shift-form input,.shift-form select{height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;color:var(--text)}
-.shift-preview{font-size:13px;font-weight:700;color:var(--teal);padding:5px 0;min-width:120px}
-.labour-table{width:100%;border-collapse:collapse;font-size:12px}
-.labour-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;padding:5px 8px;border-bottom:1px solid var(--border);text-align:left}
-.labour-table th.num,.labour-table td.num{text-align:right}
-.labour-table td{padding:6px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-.labour-table tbody tr:hover{background:var(--teal-l)}
-.subtab-bar{display:flex;gap:2px;margin-bottom:14px;background:var(--bg);border-radius:8px;padding:3px}
-.subtab{border:none;background:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:.15s}
-.subtab.active{background:#fff;color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.1)}
-.week-badge{background:var(--teal-l);color:var(--teal);font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700}
+.rota-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.rota-nav button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
+.rota-week-label{font-size:14px;font-weight:700;color:var(--teal)}
+.rota-table{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+.rota-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid var(--border)}
+.rota-wrap::-webkit-scrollbar{height:4px}
+.rota-wrap::-webkit-scrollbar-track{background:#f0f0f0}
+.rota-wrap::-webkit-scrollbar-thumb{background:var(--teal);border-radius:2px}
+.rota-table th{background:var(--teal);color:#fff;padding:8px;font-size:11px;font-weight:700;text-align:center}
+.rota-table th:first-child{text-align:left;padding-left:10px}
+.rota-table td{border:1px solid var(--border);padding:4px;vertical-align:top;min-width:80px;cursor:pointer}
+.rota-table td:first-child{background:#f9fbfa;font-weight:600;font-size:12px;cursor:default;min-width:120px;padding:6px 10px}
+.rota-table td:hover:not(:first-child){background:var(--teal-l)}
+.rota-shift{background:var(--teal);color:#fff;border-radius:4px;padding:3px 6px;font-size:11px;margin:2px;display:flex;justify-content:space-between;align-items:center}
+.rota-shift .del{background:none;border:none;color:rgba(255,255,255,.7);font-size:12px;padding:0;margin-left:4px;cursor:pointer}
+.rota-empty{color:#ccc;font-size:10px;text-align:center;padding:8px 0}
+.rota-add-form{background:var(--teal-l);border-radius:10px;padding:14px;margin-top:10px}
+.profile-avatar-wrap{text-align:center;margin-bottom:20px}
+.profile-avatar{width:100px;height:100px;border-radius:50%;border:4px solid var(--teal-l);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:var(--teal);background:var(--teal-l);margin:0 auto 10px;overflow:hidden}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.avatar-upload{display:inline-block;background:var(--teal-l);color:var(--teal);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.avatar-upload input{display:none}
+.pay-card{background:var(--teal);color:#fff;border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.pay-card-period{font-size:12px;opacity:.8}
+.pay-card-amount{font-size:32px;font-weight:900;margin:4px 0}
+.pay-card-detail{font-size:12px;opacity:.8}
+.tips-badge{background:rgba(255,255,255,.2);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;display:inline-block;margin-top:6px}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:10px}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.alert{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px}
+.alert.ok{background:var(--good-bg);color:var(--good)}
+.alert.err{background:var(--bad-bg);color:var(--bad)}
+.two-col{display:grid;gap:14px}
+@media(min-width:700px){.two-col{grid-template-columns:1fr 1fr}}
+/* Toast — iframe-safe */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:340px;width:90%;text-align:center;animation:toastIn .2s ease}
+.toast.ok{background:var(--teal)}.toast.err{background:var(--bad)}.toast.warn{background:var(--warn)}
+@keyframes toastIn{from{opacity:0;top:0}to{opacity:1;top:16px}}
+/* Two-tap delete button states */
+.btn-danger.confirming{background:#7f1d1d;animation:pulse .6s infinite alternate}
+@keyframes pulse{from{opacity:.8}to{opacity:1}}
 </style>
 </head>
 <body>
 
-<!-- ── Cloud Sync Modal ── -->
-<div class="modal-overlay" id="sync-modal" style="display:none" onclick="if(event.target===this)closeSyncModal()">
-  <div class="modal-box">
-    <div class="modal-title">☁️ Cloud Sync Setup</div>
-    <div class="modal-sub">Sync data live between all three of you — owner, GM, head chef</div>
-
-    <div class="modal-section" id="sync-status-section" style="display:none">
-      <div class="sync-status-row">
-        <span class="sync-dot ok" id="sync-dot"></span>
-        <span id="sync-status-text">Connected — last synced just now</span>
-        <button class="btn-sm btn-teal" onclick="forceSyncFromCloud()" style="margin-left:auto">↻ Sync now</button>
-      </div>
-      <div style="margin-top:12px">
-        <div class="modal-label">Your Share Code — send this to Charlie &amp; the head chef</div>
-        <div class="share-code-box" id="share-code-display" onclick="copyShareCode()"></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px">They paste this in their app under ☁️ → "Join existing sync" to connect to your data.</div>
-      </div>
-      <div class="modal-row" style="margin-top:12px">
-        <button class="btn-sm del" onclick="disconnectCloud()">Disconnect cloud sync</button>
-        <button class="btn-sm" onclick="closeSyncModal()" style="margin-left:auto">Close</button>
-      </div>
-    </div>
-
-    <div id="sync-setup-section">
-      <div class="modal-section">
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <span class="step-num">1</span>
-          <span style="font-size:13px">Go to <a href="https://jsonbin.io/signup" target="_blank" style="color:var(--teal)">jsonbin.io/signup</a> and create a free account</span>
-        </div>
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <span class="step-num">2</span>
-          <span style="font-size:13px">In the JSONBin dashboard, click <strong>API Keys</strong> → copy your <strong>Master Key</strong></span>
-        </div>
-        <div style="display:flex;gap:6px">
-          <span class="step-num">3</span>
-          <span style="font-size:13px">Paste it below — takes about 10 seconds to set up</span>
-        </div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-label">Option A — New setup (first person to configure)</div>
-        <label class="modal-label" style="margin-top:10px">JSONBin Master Key</label>
-        <input class="modal-input" type="password" id="new-api-key" placeholder="$2a$10$...">
-        <div class="modal-row">
-          <button class="btn-sm btn-teal" onclick="setupNewCloud()">Create cloud storage →</button>
-        </div>
-        <div id="setup-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-label">Option B — Join existing (Charlie / head chef joining GM's setup)</div>
-        <label class="modal-label" style="margin-top:10px">Share Code (from the person who set it up)</label>
-        <input class="modal-input" type="text" id="join-code" placeholder="Paste share code here...">
-        <div class="modal-row">
-          <button class="btn-sm btn-teal" onclick="joinCloud()">Connect →</button>
-        </div>
-        <div id="join-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
-      </div>
-      <div style="text-align:right">
-        <button class="btn-sm" onclick="closeSyncModal()">Cancel</button>
-      </div>
-    </div>
+<div id="login-screen">
+  <div class="login-header">
+    <div class="login-logo">THE MEDLEY</div>
+    <div class="login-tagline">Staff Portal · Season 2026</div>
+    <div class="login-instruction">Tap your name to sign in</div>
   </div>
+  <div class="staff-grid" id="staff-grid"><div class="loading">Loading staff…</div></div>
 </div>
 
-<!-- ── Login Screen ── -->
-<div id="login-screen" style="display:none">
-  <div class="login-box">
-    <div class="login-logo">THE MEDLEY<span>.</span></div>
-    <div class="login-sub">GP &amp; Operations Calculator · Management Access</div>
-    <label class="login-label">Password</label>
-    <input class="login-input" type="password" id="pwd-input" placeholder="Enter password"
-      onkeydown="if(event.key==='Enter')attemptLogin()">
-    <button class="login-btn" onclick="attemptLogin()">Enter</button>
-    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
-    <div class="login-hint">Access restricted to Medley management team.<br>Contact Charlie to request access.</div>
+<div id="pin-screen">
+  <div class="pin-who" id="pin-who"></div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div>
+    <div class="pin-dot"></div><div class="pin-dot"></div>
   </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinKey('1')">1</button>
+    <button class="pin-btn" onclick="pinKey('2')">2</button>
+    <button class="pin-btn" onclick="pinKey('3')">3</button>
+    <button class="pin-btn" onclick="pinKey('4')">4</button>
+    <button class="pin-btn" onclick="pinKey('5')">5</button>
+    <button class="pin-btn" onclick="pinKey('6')">6</button>
+    <button class="pin-btn" onclick="pinKey('7')">7</button>
+    <button class="pin-btn" onclick="pinKey('8')">8</button>
+    <button class="pin-btn" onclick="pinKey('9')">9</button>
+    <button class="pin-btn action" onclick="pinClear()">⌫</button>
+    <button class="pin-btn" onclick="pinKey('0')">0</button>
+    <button class="pin-btn action" onclick="pinSubmit()">✓</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <button class="pin-back" onclick="showLogin()">← Back to staff list</button>
 </div>
 
-<div class="topbar">
-  <div class="brand">THE MEDLEY <em>GP & Cost Calculator</em></div>
-  <div class="topbar-right">
-    <span class="save-status" id="save-status">Not saved yet</span>
-    <button class="tb-btn" onclick="document.getElementById('sync-modal').style.display='flex'" title="Cloud sync settings">
-      <span class="sync-dot" id="sync-dot-tb"></span>☁️ Sync
-    </button>
-    <button class="tb-btn" onclick="exportData()" title="Download your data as a JSON backup file">↓ Export</button>
-    <div class="tb-btn tb-import" title="Import a previously exported JSON file">
-      ↑ Import
-      <input type="file" accept=".json" onchange="importData(this)">
+<div id="app" style="display:flex">
+  <div class="topbar">
+    <div class="topbar-brand">THE MEDLEY</div>
+    <div class="topbar-user">
+      <div class="topbar-avatar" id="tb-avatar"></div>
+      <div>
+        <div class="topbar-name" id="tb-name"></div>
+        <div class="topbar-role" id="tb-role"></div>
+      </div>
+      <button class="logout-btn" onclick="logout()">🚪 Sign out</button>
     </div>
   </div>
+  <nav id="app-nav"></nav>
+  <div id="content"><div class="loading">Loading…</div></div>
 </div>
-
-<nav>
-  <button class="navtab" id="t-drink" onclick="setTab('drink')">🧴 Drink Ingredients</button>
-  <button class="navtab" id="t-food"  onclick="setTab('food')">🥗 Food Ingredients</button>
-  <button class="navtab" id="t-ops"   onclick="setTab('ops')">📦 Ops & Misc</button>
-  <button class="navtab active" id="t-wet"  onclick="setTab('wet')">🍸 Wet GP</button>
-  <button class="navtab" id="t-dry"   onclick="setTab('dry')">🍕 Dry GP</button>
-  <button class="navtab" id="t-labour" onclick="setTab('labour')">👷 Labour</button>
-</nav>
-
-<div id="content"></div>
 
 <script>
-/* ═══════════════════════════════════════════
-   MASTER INGREDIENT DATA
-   ═══════════════════════════════════════════
-   Each entry: {id, type('D'/'F'/'O'), name, sup, cat, pack, cost, size, unit}
-   costPerUnit = cost / size  (auto-calculated everywhere)
-*/
-let MASTERS = [
-
-  /* ── DRINK MASTER (type D) ──────────────────── */
-
-  // Spirits & Liqueurs
-  {id:'DM01',type:'D',name:'Aperol',sup:'Booker',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:11.99,size:700,unit:'ml'},
-  {id:'DM02',type:'D',name:"Pimm's No 1",sup:'Booker',cat:'Spirits & Liqueurs',pack:'70cl bottle (case price)',cost:13.28,size:700,unit:'ml'},
-  {id:'DM03',type:'D',name:'Limoncello',sup:'Various',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:15.10,size:700,unit:'ml'},
-  {id:'DM04',type:'D',name:'House Gin',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:20.00,size:700,unit:'ml'},
-  {id:'DM05',type:'D',name:'Triple Sec',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:12.00,size:700,unit:'ml'},
-  {id:'DM06',type:'D',name:'Tequila',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:19.94,size:700,unit:'ml'},
-
-  // Wine — White
-  {id:'DM10',type:'D',name:'Jean Didier Blanc (House White)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:7.74,size:750,unit:'ml'},
-  {id:'DM11',type:'D',name:'La Barbe SB / Vermentino (French SB)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:8.58,size:750,unit:'ml'},
-  {id:'DM12',type:'D',name:'Pa Road Sauvignon Blanc (NZ)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:10.80,size:750,unit:'ml'},
-  {id:'DM17',type:'D',name:'Vinho Verde',sup:'— update supplier —',cat:'Wine — White',pack:'750ml bottle',cost:8.00,size:750,unit:'ml'},
-  // Wine — Rosé
-  {id:'DM18',type:'D',name:'House Rosé',sup:'— update supplier —',cat:'Wine — Rosé',pack:'750ml bottle',cost:8.00,size:750,unit:'ml'},
-  {id:'DM19',type:'D',name:'Provence Rosé',sup:'— update supplier —',cat:'Wine — Rosé',pack:'750ml bottle',cost:11.00,size:750,unit:'ml'},
-  // Wine — Red
-  {id:'DM13',type:'D',name:'Jean Didier Rouge (House Red)',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:7.74,size:750,unit:'ml'},
-  {id:'DM14',type:'D',name:'Perdido Tinto (Tempranillo)',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:8.58,size:750,unit:'ml'},
-  {id:'DM15',type:'D',name:'Zensa Primitivo',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:10.68,size:750,unit:'ml'},
-  // Wine — Sparkling
-  {id:'DM16',type:'D',name:'A Borga Extra Dry DOC (Prosecco)',sup:'Grape Minds',cat:'Wine — Sparkling',pack:'750ml bottle',cost:10.32,size:750,unit:'ml'},
-  {id:'DM20',type:'D',name:'Champagne',sup:'— update supplier —',cat:'Wine — Sparkling',pack:'750ml bottle',cost:22.00,size:750,unit:'ml'},
-
-  // Draught Beer — size = pints per keg (50L ÷ 0.568L × 0.93 wastage ≈ 82 pints)
-  {id:'DM30',type:'D',name:'Medley Lager (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:127.75,size:82,unit:'pint'},
-  {id:'DM31',type:'D',name:'Stowford Press Cider (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:93.98,size:82,unit:'pint'},
-  {id:'DM32',type:'D',name:'Yabba Dabba Doo (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:153.13,size:82,unit:'pint'},
-  {id:'DM33',type:'D',name:'IPA (keg)',sup:'— update supplier —',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:130.00,size:82,unit:'pint'},
-
-  // Bottled / Canned Beer
-  {id:'DM35',type:'D',name:'0% Heineken',sup:'Various',cat:'Bottled Beer',pack:'Per bottle',cost:0.88,size:1,unit:'each'},
-  {id:'DM36',type:'D',name:'0% Craft Tap Social',sup:'Various',cat:'Bottled Beer',pack:'Per bottle/pint',cost:0.88,size:1,unit:'each'},
-
-  // Canned Cocktails
-  {id:'DM40',type:'D',name:'Margarita (Can)',sup:'Various',cat:'Canned Cocktails',pack:'Per can',cost:1.80,size:1,unit:'each'},
-  {id:'DM41',type:'D',name:'Paloma (Can)',sup:'Various',cat:'Canned Cocktails',pack:'Per can',cost:1.80,size:1,unit:'each'},
-
-  // Mixers — BIBs use effective ml after dilution
-  {id:'DM50',type:'D',name:'Fever Tree Light Tonic 200ml',sup:'Booker',cat:'Mixers',pack:'Case 24×200ml · £15.00/case',cost:15.00,size:4800,unit:'ml'},
-  {id:'DM51',type:'D',name:'Fever Tree Premium Indian Tonic 200ml',sup:'Booker',cat:'Mixers',pack:'Case 24×200ml · £16.99/case',cost:16.99,size:4800,unit:'ml'},
-  {id:'DM52',type:'D',name:'Carters Royal Tonic Water',sup:'Booker',cat:'Mixers',pack:'Case 12×1ltr · £7.59/case',cost:7.59,size:12000,unit:'ml'},
-  {id:'DM53',type:'D',name:'Schweppes Lemonade (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 7.5:1 dilution = 59.5L yield · £83.63',cost:83.63,size:59500,unit:'ml'},
-  {id:'DM54',type:'D',name:'Coca-Cola Draft (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 5.2:1 dilution = 43.4L yield · £87.00',cost:87.00,size:43400,unit:'ml'},
-  {id:'DM55',type:'D',name:'Diet Coke Draft (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 5.2:1 dilution = 43.4L yield · £74.00',cost:74.00,size:43400,unit:'ml'},
-  {id:'DM56',type:'D',name:'Soda Water',sup:'Booker',cat:'Mixers',pack:'Case 12×1ltr · £7.59/case',cost:7.59,size:12000,unit:'ml'},
-
-  // Garnishes (whole items)
-  {id:'DM60',type:'D',name:'Lemon (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.42',cost:0.42,size:1,unit:'each'},
-  {id:'DM61',type:'D',name:'Lime (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.28',cost:0.28,size:1,unit:'each'},
-  {id:'DM62',type:'D',name:'Orange (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.58',cost:0.58,size:1,unit:'each'},
-  {id:'DM63',type:'D',name:'Cucumber (whole)',sup:'Booker',cat:'Garnishes',pack:'Each · £1.25',cost:1.25,size:1,unit:'each'},
-  {id:'DM64',type:'D',name:'Mint pot',sup:'Arthur David',cat:'Garnishes',pack:'Per pot ≈40 sprigs · £2.38',cost:2.38,size:40,unit:'sprig'},
-  // Garnishes (per-serve derived — 1 unit = 1 slice/wedge/sprig)
-  {id:'DM65',type:'D',name:'Lemon slice',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Lemon (whole)',cost:0,size:1,unit:'each',parentId:'DM60',portions:8},
-  {id:'DM66',type:'D',name:'Lime wedge',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Lime (whole)',cost:0,size:1,unit:'each',parentId:'DM61',portions:6},
-  {id:'DM67',type:'D',name:'Orange slice',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Orange (whole)',cost:0,size:1,unit:'each',parentId:'DM62',portions:8},
-  {id:'DM68',type:'D',name:'Cucumber slice',sup:'Booker',cat:'Garnishes',pack:'Derived from Cucumber (whole)',cost:0,size:1,unit:'each',parentId:'DM63',portions:15},
-  {id:'DM69',type:'D',name:'Mint sprig',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Mint (100g bag ~40 sprigs)',cost:0,size:1,unit:'each',parentId:'DM64',portions:40},
-
-  // Drink consumables
-  {id:'DM70',type:'D',name:'Paper Straw (black 210mm)',sup:'Booker',cat:'Consumables',pack:'250 per pack · £2.49',cost:2.49,size:250,unit:'each'},
-  {id:'DM71',type:'D',name:'Ice portion (per drink)',sup:'Booker',cat:'Consumables',pack:'Party ice 2.27kg bag · ~20 portions · £1.02/bag',cost:1.015,size:20,unit:'each'},
-
-
-  /* ── FOOD MASTER (type F) ────────────────────── */
-
-  // Flour & Base
-  {id:'FM01',type:'F',name:'Semola Rimacinata (Martimucci)',sup:'Carnevale',cat:'Flour & Base',pack:'25kg sack · £32.40',cost:32.40,size:25000,unit:'g'},
-  {id:'FM02',type:'F',name:'Caputo Pizza Flour Blue (Tipo 00)',sup:'Booker',cat:'Flour & Base',pack:'15kg bag · £17.99',cost:17.99,size:15000,unit:'g'},
-  {id:'FM03',type:'F',name:'GF Flour (pizza blend)',sup:'Various',cat:'Flour & Base',pack:'2kg bag · £17.50',cost:17.50,size:2000,unit:'g'},
-  {id:'FM04',type:'F',name:'Fresh Yeast',sup:'Arthur David',cat:'Flour & Base',pack:'1kg block · £2.85',cost:2.85,size:1000,unit:'g'},
-  {id:'FM05',type:'F',name:'Salt',sup:'Various',cat:'Dry Goods',pack:'Per kg · £1.08',cost:1.08,size:1000,unit:'g'},
-  {id:'FM06',type:'F',name:'Olive Oil (cooking)',sup:'Various',cat:'Dry Goods',pack:'Per kg / litre · £8.76',cost:8.76,size:1000,unit:'g'},
-
-  // Dairy
-  {id:'FM10',type:'F',name:'Fiordilatte Mozzarella (Valerio 10mm cubetti)',sup:'Carnevale',cat:'Dairy',pack:'Case 6×2kg = 12kg · £91.80',cost:91.80,size:12000,unit:'g'},
-  {id:'FM11',type:'F',name:'Provola',sup:'Various',cat:'Dairy',pack:'Per kg · £5.35',cost:5.35,size:1000,unit:'g'},
-  {id:'FM12',type:'F',name:'Parmesan Reggiano (Parmigiano)',sup:'Arthur David',cat:'Dairy',pack:'Per kg · £22.00',cost:22.00,size:1000,unit:'g'},
-  {id:'FM13',type:'F',name:'Pecorino Romano',sup:'Various',cat:'Dairy',pack:'Per kg · £21.10',cost:21.10,size:1000,unit:'g'},
-  {id:'FM14',type:'F',name:'Ricotta Italian',sup:'Arthur David',cat:'Dairy',pack:'1.5kg tub · £6.06',cost:6.06,size:1500,unit:'g'},
-  {id:'FM15',type:'F',name:'Burrata',sup:'Various',cat:'Dairy',pack:'Per ball · £1.65',cost:1.65,size:1,unit:'each'},
-  {id:'FM16',type:'F',name:'Mascarpone',sup:'Various',cat:'Dairy',pack:'Per kg · £8.18',cost:8.18,size:1000,unit:'g'},
-
-  // Produce
-  {id:'FM20',type:'F',name:'Cherry Vine Tomatoes',sup:'Arthur David',cat:'Produce',pack:'3kg box · £18.50',cost:18.50,size:3000,unit:'g'},
-  {id:'FM21',type:'F',name:'Tinned Tomatoes (for sauce batches)',sup:'Various',cat:'Produce',pack:'2.5kg tin · £3.42',cost:3.42,size:2500,unit:'g'},
-  {id:'FM25',type:'F',name:'Garlic (peeled)',sup:'Arthur David',cat:'Produce',pack:'Per kg · £8.16',cost:8.16,size:1000,unit:'g'},
-  {id:'FM26',type:'F',name:'Padron Peppers',sup:'Arthur David',cat:'Produce',pack:'Per kg · £9.54',cost:9.54,size:1000,unit:'g'},
-  {id:'FM27',type:'F',name:'Broccoli',sup:'Arthur David',cat:'Produce',pack:'Per kg · £4.00',cost:4.00,size:1000,unit:'g'},
-  {id:'FM28',type:'F',name:'Aubergine (raw)',sup:'Various',cat:'Produce',pack:'Box ≈5kg · £14.50',cost:14.50,size:5000,unit:'g'},
-  {id:'FM29',type:'F',name:'Red Chillies',sup:'Arthur David',cat:'Produce',pack:'3kg box · £31.35',cost:31.35,size:3000,unit:'g'},
-  {id:'FM30',type:'F',name:'Cavolo Nero (raw)',sup:'Various',cat:'Produce',pack:'Box ≈4.5kg · £20.09',cost:20.09,size:4500,unit:'g'},
-  {id:'FM31',type:'F',name:'Lemons',sup:'Arthur David',cat:'Produce',pack:'Each · £0.42',cost:0.42,size:1,unit:'each'},
-  {id:'FM32',type:'F',name:'Limes',sup:'Arthur David',cat:'Produce',pack:'Each · £0.28',cost:0.28,size:1,unit:'each'},
-
-  // Herbs
-  {id:'FM22',type:'F',name:'Sweet Basil (fresh)',sup:'Arthur David',cat:'Herbs',pack:'Bunch ≈95g · £2.34 → £24.63/kg',cost:2.34,size:95,unit:'g'},
-  {id:'FM23',type:'F',name:'Flat-leaf Parsley',sup:'Arthur David',cat:'Herbs',pack:'Bunch ≈180g · £1.56 → £8.67/kg',cost:1.56,size:180,unit:'g'},
-  {id:'FM24',type:'F',name:'Fresh Mint',sup:'Arthur David',cat:'Herbs',pack:'Pot ≈100g · £2.38',cost:2.38,size:100,unit:'g'},
-
-  // Charcuterie & Proteins
-  {id:'FM40',type:'F',name:'Anchovies',sup:'Various',cat:'Charcuterie',pack:'Per kg · £23.59',cost:23.59,size:1000,unit:'g'},
-  {id:'FM41',type:'F',name:"Nduja (Charcuti')",sup:'Arthur David',cat:'Charcuterie',pack:'250g pack · £6.67',cost:6.67,size:250,unit:'g'},
-  {id:'FM42',type:'F',name:'Pepperoni (sliced)',sup:'Arthur David',cat:'Charcuterie',pack:'Per kg · £17.60',cost:17.60,size:1000,unit:'g'},
-  {id:'FM43',type:'F',name:'Mortadella',sup:'Various',cat:'Charcuterie',pack:'Per kg · £12.30',cost:12.30,size:1000,unit:'g'},
-  {id:'FM44',type:'F',name:'Fennel Sausage',sup:'Various',cat:'Charcuterie',pack:'Per kg · £9.78',cost:9.78,size:1000,unit:'g'},
-
-  // Dry Goods & Pantry
-  {id:'FM50',type:'F',name:'Capers Surfines',sup:'Arthur David',cat:'Dry Goods',pack:'1.6kg tin · £10.83 → £6.77/kg',cost:10.83,size:1600,unit:'g'},
-  {id:'FM51',type:'F',name:'Black Pitted Olives (tinned)',sup:'Arthur David',cat:'Dry Goods',pack:'4.1kg tin · £11.04 → £2.69/kg',cost:11.04,size:4100,unit:'g'},
-  {id:'FM52',type:'F',name:'Misto Mixed Olives',sup:'Arthur David',cat:'Dry Goods',pack:'3kg tub · £20.72 → £6.91/kg',cost:20.72,size:3000,unit:'g'},
-  {id:'FM53',type:'F',name:'White Wine Vinegar',sup:'Arthur David',cat:'Dry Goods',pack:'5ltr · £5.33 → £1.07/ltr',cost:5.33,size:5000,unit:'g'},
-  {id:'FM54',type:'F',name:'Fresh Lemon Juice (squeezed)',sup:'Arthur David',cat:'Dry Goods',pack:'1ltr · £3.73',cost:3.73,size:1000,unit:'g'},
-  {id:'FM55',type:'F',name:'Sugar',sup:'Various',cat:'Dry Goods',pack:'Per kg · £1.72',cost:1.72,size:1000,unit:'g'},
-  {id:'FM56',type:'F',name:'Rubbed Oregano (dried)',sup:'Arthur David',cat:'Dry Goods',pack:'Pack ≈500g · £4.32',cost:4.32,size:500,unit:'g'},
-  {id:'FM57',type:'F',name:'Ground Black Pepper',sup:'Arthur David',cat:'Dry Goods',pack:'Pack ≈500g · £9.47',cost:9.47,size:500,unit:'g'},
-  {id:'FM58',type:'F',name:'Dijon Mustard',sup:'Arthur David',cat:'Dry Goods',pack:'5kg tub · £19.60',cost:19.60,size:5000,unit:'g'},
-  {id:'FM59',type:'F',name:'Vanilla Ice Cream',sup:'Booker',cat:'Frozen',pack:'4ltr tub · £9.59 → £2.40/ltr',cost:9.59,size:4000,unit:'ml'},
-  {id:'FM60',type:'F',name:'Lady Fingers (Savoiardi biscuits)',sup:'Various',cat:'Dry Goods',pack:'2-pack · £7.00 est.',cost:7.00,size:2,unit:'pack'},
-  {id:'FM61',type:'F',name:'Egg Yolk (pasteurised)',sup:'Various',cat:'Dairy',pack:'Per kg · £10.91',cost:10.91,size:1000,unit:'g'},
-  {id:'FM62',type:'F',name:'Egg White (pasteurised)',sup:'Various',cat:'Dairy',pack:'Per kg · £5.41',cost:5.41,size:1000,unit:'g'},
-  {id:'FM63',type:'F',name:'Espresso Coffee (beans)',sup:'Various',cat:'Hot Drinks',pack:'Per kg · £22.55',cost:22.55,size:1000,unit:'g'},
-
-  /* ── COMPOUND / BATCH ITEMS ────────────────────
-     These are house-made preparations. Cost = batch cost ÷ batch yield.
-     Update the batch cost here and all GP recipes auto-recalculate.  */
-  {id:'FM70',type:'F',name:'Pizza Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'15kg flour batch · £22.43 total · ≈93 balls',cost:22.43,size:93,unit:'each'},
-  {id:'FM71',type:'F',name:'GF Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'3.6kg batch · £18.60 · 12 balls',cost:18.60,size:12,unit:'each'},
-  {id:'FM72',type:'F',name:'Tomato Sauce (1 ladle = 70g)',sup:'House',cat:'Compound — Batch',pack:'2.5kg tin batch · £3.59 · 36 ladles',cost:3.59,size:36,unit:'each'},
-  {id:'FM73',type:'F',name:'House Pesto',sup:'House',cat:'Compound — Batch',pack:'1880g batch · £30.97 → £16.48/kg',cost:30.97,size:1880,unit:'g'},
-  {id:'FM74',type:'F',name:'Parsley Sauce',sup:'House',cat:'Compound — Batch',pack:'650g batch · £5.68 → £8.74/kg',cost:5.68,size:650,unit:'g'},
-  {id:'FM75',type:'F',name:'Chilli Dip',sup:'House',cat:'Compound — Batch',pack:'3.1kg batch · £22.93 → £7.40/kg',cost:22.93,size:3100,unit:'g'},
-  {id:'FM76',type:'F',name:'Aubergine Topping (roasted, prepped)',sup:'House',cat:'Compound — Batch',pack:'3.28kg yield from 1 box · £18.72 batch → £5.71/kg',cost:18.72,size:3280,unit:'g'},
-  {id:'FM77',type:'F',name:'Cavolo Nero Topping (wilted, prepped)',sup:'House',cat:'Compound — Batch',pack:'2.05kg yield from 1 box · £21.06 batch → £10.27/kg',cost:21.06,size:2050,unit:'g'},
-  {id:'FM78',type:'F',name:'Aubergine Parmigiana (per serving 1/18)',sup:'House',cat:'Compound — Batch',pack:'18-serving batch · £25.94 → £1.44 each',cost:25.94,size:18,unit:'each'},
-
-
-  /* ── OPS & MISC MASTER (type O) ─────────────── */
-
-  // Packaging
-  {id:'OM01',type:'O',name:'8oz Kraft Food Pot & Lid (combined)',sup:'Booker',cat:'Packaging',pack:'50 per pack · £9.49 → £0.19 each',cost:9.49,size:50,unit:'each'},
-  {id:'OM02',type:'O',name:'Pizza Box 12" (31cm)',sup:'Carnevale',cat:'Packaging',pack:'100 per case · £26.80 → £0.27 each',cost:26.80,size:100,unit:'each'},
-  {id:'OM03',type:'O',name:'White Napkin 30cm (1-ply)',sup:'Booker',cat:'Packaging',pack:'500 per pack · £22.99 → £0.046 each',cost:22.99,size:500,unit:'each'},
-  {id:'OM04',type:'O',name:'Paper Straw Black 210mm',sup:'Booker',cat:'Packaging',pack:'250 per pack · £2.49 → £0.01 each',cost:2.49,size:250,unit:'each'},
-  // PPE
-  {id:'OM05',type:'O',name:'Nitrile Gloves (Black, M)',sup:'Booker',cat:'PPE',pack:'100 per pack · £7.99 → £0.08 each',cost:7.99,size:100,unit:'each'},
-  // Cleaning
-  {id:'OM06',type:'O',name:'2-ply Paper Towel / Blue Roll',sup:'Booker',cat:'Cleaning',pack:'12-pack · £14.89 → £1.24/roll',cost:14.89,size:12,unit:'each'},
-  {id:'OM07',type:'O',name:'Dettol Multi-Action Spray 4ltr',sup:'Booker',cat:'Cleaning',pack:'Each · £6.59',cost:6.59,size:1,unit:'each'},
-  {id:'OM08',type:'O',name:'HD Degreaser 750ml',sup:'Booker',cat:'Cleaning',pack:'Each · £2.49',cost:2.49,size:1,unit:'each'},
-  {id:'OM09',type:'O',name:'Kitchen Cleaner 750ml',sup:'Booker',cat:'Cleaning',pack:'Each · £2.49',cost:2.49,size:1,unit:'each'},
-  // Consumables
-  {id:'OM10',type:'O',name:'Party Ice Cubes 2.27kg bag',sup:'Booker',cat:'Consumables',pack:'6-bag case · £6.09/case → £1.02/bag',cost:6.09,size:6,unit:'each'},
-  {id:'OM11',type:'O',name:'Squeezy Bottle 24oz',sup:'Arthur David',cat:'Equipment',pack:'Each · £2.72',cost:2.72,size:1,unit:'each'},
-  {id:'OM12',type:'O',name:'CO₂ / Gas (draught beer)',sup:'Various',cat:'Consumables',pack:'Per bottle · est. £35',cost:35.00,size:1,unit:'each'},
-];
-
-/* ════════════════════════════════════════════
-   GP RECIPE DATA
-   ════════════════════════════════════════════
-   Recipe ingredient formats:
-   {mid:'DM01', qty:50}           → master-linked (cost = qty × master.cost/master.size)
-   {mid:null, n:'Name', c:0.00}  → manual entry (cost = c)
-*/
-
-let WET_GP = [
-  // ── Canned Cocktails
-  {id:1,name:'Margarita (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[
-    {mid:'DM40',qty:1},
-    {mid:null,n:'Ice & presentation',c:0.05}]},
-  {id:2,name:'Paloma (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[
-    {mid:'DM41',qty:1},
-    {mid:null,n:'Ice & presentation',c:0.05}]},
-
-  // ── Cocktails (quantities from Medley Wet Cost PDF)
-  {id:3,name:'G&T — Single',cat:'Cocktails',sell:6.76,recipe:[
-    {mid:'DM04',qty:25},
-    {mid:'DM50',qty:200},
-    {mid:'DM65',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:4,name:'G&T — Double',cat:'Cocktails',sell:10.00,recipe:[
-    {mid:'DM04',qty:50},
-    {mid:'DM51',qty:200},
-    {mid:'DM65',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:5,name:'Aperol Spritz (glass)',cat:'Cocktails',sell:9.20,recipe:[
-    {mid:'DM01',qty:50},
-    {mid:'DM56',qty:125},
-    {mid:'DM16',qty:50},
-    {mid:'DM67',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:6,name:'Aperol Spritz (jug)',cat:'Cocktails',sell:31.00,recipe:[
-    {mid:'DM01',qty:200},
-    {mid:'DM56',qty:500},
-    {mid:'DM16',qty:200},
-    {mid:'DM67',qty:4},
-    {mid:'DM70',qty:4}]},
-  {id:7,name:"Pimm's (glass)",cat:'Cocktails',sell:8.25,recipe:[
-    {mid:'DM02',qty:50},
-    {mid:'DM53',qty:225},
-    {mid:'DM69',qty:1},
-    {mid:'DM65',qty:1},
-    {mid:'DM66',qty:1},
-    {mid:'DM68',qty:1},
-    {mid:'DM67',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:8,name:"Pimm's (jug)",cat:'Cocktails',sell:31.00,recipe:[
-    {mid:'DM02',qty:200},
-    {mid:'DM53',qty:900},
-    {mid:'DM69',qty:4},
-    {mid:'DM65',qty:4},
-    {mid:'DM66',qty:4},
-    {mid:'DM68',qty:4},
-    {mid:'DM67',qty:4},
-    {mid:'DM70',qty:4}]},
-  {id:9,name:'Limoncello Spritz',cat:'Cocktails',sell:8.50,recipe:[
-    {mid:'DM03',qty:50},
-    {mid:'DM53',qty:125},
-    {mid:'DM16',qty:50},
-    {mid:'DM65',qty:1},
-    {mid:'DM70',qty:1}]},
-
-  // ── Beers
-  {id:10,name:'Medley Lager (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM30',qty:1}]},
-  {id:11,name:'IPA (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM33',qty:1}]},
-  {id:12,name:'Yabba Dabba Doo (pint)',cat:'Beers',sell:6.90,recipe:[{mid:'DM32',qty:1}]},
-  {id:13,name:'Stowford Press (pint)',cat:'Beers',sell:6.50,recipe:[{mid:'DM31',qty:1}]},
-  {id:14,name:'0% Heineken',cat:'Beers',sell:4.20,recipe:[{mid:'DM35',qty:1}]},
-  {id:15,name:'0% Craft Tap Social',cat:'Beers',sell:5.45,recipe:[{mid:'DM36',qty:1}]},
-
-  // ── Soft Drinks (quantities from Wet Cost PDF)
-  {id:16,name:'Coke',cat:'Soft Drinks',sell:3.10,recipe:[
-    {mid:'DM54',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:17,name:'Diet Coke',cat:'Soft Drinks',sell:3.10,recipe:[
-    {mid:'DM55',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:18,name:'Lemonade',cat:'Soft Drinks',sell:3.10,recipe:[
-    {mid:'DM53',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:19,name:'Cordial & Soda',cat:'Soft Drinks',sell:1.60,recipe:[
-    {mid:'DM56',qty:300},
-    {mid:null,n:'Cordial 50ml (Rocks / Belvoir)',c:0.08},
-    {mid:'DM66',qty:1},{mid:'DM70',qty:1}]},
-  {id:20,name:'Juice',cat:'Soft Drinks',sell:2.90,recipe:[
-    {mid:null,n:'Juice 300ml (OJ / Apple)',c:0.45},
-    {mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
-
-  // ── Wine by the glass (175ml / 125ml)
-  {id:21,name:'House White — 125ml',cat:'Wine',sell:5.00,recipe:[{mid:'DM10',qty:125}]},
-  {id:22,name:'House White — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM10',qty:175}]},
-  {id:23,name:'House White — 250ml',cat:'Wine',sell:8.00,recipe:[{mid:'DM10',qty:250}]},
-  {id:24,name:'House White — Bottle',cat:'Wine',sell:28.00,recipe:[{mid:'DM10',qty:750}]},
-  {id:25,name:'French SB — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM11',qty:175}]},
-  {id:26,name:'NZ SB — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM12',qty:175}]},
-  {id:27,name:'Vinho Verde — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM17',qty:175}]},
-  {id:28,name:'House Rosé — 175ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM18',qty:175}]},
-  {id:29,name:'Provence Rosé — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM19',qty:175}]},
-  {id:30,name:'House Red — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM13',qty:175}]},
-  {id:31,name:'Tempranillo — 175ml',cat:'Wine',sell:7.50,recipe:[{mid:'DM14',qty:175}]},
-  {id:32,name:'Primitivo — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM15',qty:175}]},
-  {id:33,name:'Prosecco — 125ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM16',qty:125}]},
-  {id:34,name:'Prosecco — Bottle',cat:'Wine',sell:35.00,recipe:[{mid:'DM16',qty:750}]},
-  {id:35,name:'Champagne — Bottle',cat:'Wine',sell:50.00,recipe:[{mid:'DM20',qty:750}]},
-];
-
-/* ── DRY GP — quantities from MEDLEY DRY COST PRICING 2025 PDF ── */
-let DRY_GP = [
-  // Starters & Sharers
-  {id:1,name:'Mixed Olives',cat:'Starters',sell:4.50,recipe:[
-    {mid:'FM52',qty:80},      // Mixed olives 80g from tub
-    {mid:null,n:'Olive oil drizzle',c:0.04},
-    {mid:'OM01',qty:1}]},     // 8oz kraft pot & lid
-  {id:2,name:'Garlic Pizette',cat:'Starters',sell:5.00,recipe:[
-    {mid:'FM70',qty:0.5},     // ½ dough ball (PDF)
-    {mid:'FM25',qty:2},       // Garlic 2g (PDF)
-    {mid:'FM06',qty:6}]},     // Olive oil 6g (PDF)
-  {id:3,name:'Padron Peppers',cat:'Starters',sell:6.50,recipe:[
-    {mid:'FM26',qty:100},     // Padron peppers 100g
-    {mid:'FM12',qty:20},      // Parmesan 20g
-    {mid:'FM75',qty:20},      // Chilli dip 20g
-    {mid:'FM05',qty:2}]},     // Sea salt 2g
-
-  // Pizzas — exact quantities from DRY PDF
-  {id:4,name:'Marinara',cat:'Pizza',sell:10.00,recipe:[
-    {mid:'FM70',qty:1},       // 1 dough ball
-    {mid:'FM72',qty:1.5},     // 1.5 ladles tomato sauce (105g ÷ 70g/ladle)
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM20',qty:50},      // Cherry tomatoes 50g
-    {mid:'FM06',qty:6},       // Olive oil 6g
-    {mid:'FM25',qty:2}]},     // Garlic 2g
-  {id:5,name:'Margherita',cat:'Pizza',sell:12.00,recipe:[
-    {mid:'FM70',qty:1},       // 1 dough ball
-    {mid:'FM72',qty:1},       // 1 ladle tomato sauce (70g)
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM06',qty:10},      // Olive oil 10g
-    {mid:'FM10',qty:50}]},    // Fiordilatte 50g
-  {id:6,name:'Anchovie',cat:'Pizza',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM06',qty:6},       // Olive oil 6g
-    {mid:'FM25',qty:2},       // Garlic 2g
-    {mid:'FM51',qty:27},      // Black olives 27g
-    {mid:'FM40',qty:10},      // Anchovies 10g
-    {mid:'FM50',qty:7},       // Capers 7g
-    {mid:'FM74',qty:17}]},    // Parsley sauce 17g
-  {id:7,name:'Pepperoni & Nduja',cat:'Pizza',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM42',qty:36},      // Pepperoni 36g
-    {mid:'FM41',qty:20}]},    // Nduja 20g
-  {id:8,name:'Broccoli Ricotta',cat:'Pizza',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM14',qty:80},      // Ricotta 80g
-    {mid:'FM10',qty:75},      // Fiordilatte 75g
-    {mid:'FM27',qty:100},     // Broccoli 100g
-    {mid:'FM12',qty:20},      // Parmesan 20g
-    {mid:null,n:'Chilli flakes',c:0.03},
-    {mid:'FM54',qty:15}]},    // Lemon juice 15g
-
-  // Upcoming menu (May) — from DRY PDF
-  {id:9,name:'Wood Fired Aubergine',cat:'Pizza — May Menu',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM76',qty:65},      // Aubergine topping 65g
-    {mid:'FM20',qty:50},      // Cherry toms 50g
-    {mid:'FM13',qty:4}]},     // Pecorino 4g
-  {id:10,name:'Cavolo Nero',cat:'Pizza — May Menu',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM06',qty:15},      // Olive oil 15g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM11',qty:50},      // Provola 50g
-    {mid:'FM77',qty:70},      // Cavolo nero topping 70g
-    {mid:'FM44',qty:80},      // Fennel sausage 80g
-    {mid:'FM75',qty:20}]},    // Chilli dip 20g
-  {id:11,name:'Genovese Pesto',cat:'Pizza — May Menu',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM73',qty:55},      // House pesto 55g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM20',qty:55},      // Cherry tomatoes 55g
-    {mid:'FM15',qty:1},       // Burrata 1 ball
-    {mid:'FM12',qty:3}]},     // Parmesan 3g
-
-  // Sides — May Menu (from DRY PDF)
-  {id:12,name:'Caprese',cat:'Sides — May Menu',sell:7.00,recipe:[
-    {mid:'FM20',qty:200},     // Tomatoes 200g
-    {mid:'FM22',qty:5},       // Basil 5g
-    {mid:'FM74',qty:15},      // Parsley sauce 15g
-    {mid:'FM15',qty:1}]},     // Burrata 1 ball
-  {id:13,name:'Aubergine Parmigiana',cat:'Sides — May Menu',sell:6.67,recipe:[
-    {mid:'FM78',qty:1},       // 1 serving from batch
-    {mid:null,n:'Tomato sauce (1.5 ladle)',c:0.15},
-    {mid:'FM22',qty:1},       // Basil 1 leaf ≈1g
-    {mid:'FM12',qty:3},       // Parmesan 3g
-    {mid:'FM70',qty:0.25}]},  // ¼ dough ball (bread)
-  {id:14,name:'Broccoli (side)',cat:'Sides — May Menu',sell:5.00,recipe:[
-    {mid:'FM27',qty:165},     // Broccoli 165g
-    {mid:'FM75',qty:20},      // Chilli dip 20g
-    {mid:'FM06',qty:10}]},    // Olive oil 10g
-
-  // Desserts
-  {id:15,name:'Affogato',cat:'Desserts',sell:6.50,recipe:[
-    {mid:'FM63',qty:16},      // Coffee ≈2 shots × 8g
-    {mid:'FM59',qty:150}]},   // Vanilla ice cream 150ml
-  {id:16,name:'Dough Ring',cat:'Desserts',sell:7.50,recipe:[
-    {mid:'FM70',qty:0.25},    // ¼ dough ball
-    {mid:null,n:'Chocolate filling 30g',c:0.40},
-    {mid:'FM14',qty:50},      // Ricotta 50g
-    {mid:'FM59',qty:100}]},   // Ice cream 100ml
-  {id:17,name:'Tiramisu (per serving, 1/24)',cat:'Desserts',sell:6.00,recipe:[
-    {mid:null,n:'Lady fingers (⅞ of 2 packs ÷ 24)',c:0.25},
-    {mid:'FM61',qty:10.4},    // Egg yolk 250g ÷ 24
-    {mid:'FM62',qty:16.7},    // Egg white 400g ÷ 24
-    {mid:'FM55',qty:15.6},    // Sugar 375g ÷ 24
-    {mid:'FM16',qty:83.3},    // Mascarpone 2000g ÷ 24
-    {mid:'FM63',qty:4}]},     // Coffee per serve
-];
-
-/* ════════════════════════════════════════════
-   STATE
-   ════════════════════════════════════════════ */
-let activeTab = 'wet';
-let expandedId = null;
-let expandedType = null;
-let editingMId = null;
-let target = 70;
-let mFilter = '';
-let nextIds = {D:80, F:90, O:20};
-let nextWet = 40;
-let nextDry = 20;
-
-/* ── Labour state ── */
-let STAFF = [];
-let SHIFTS = [];
-let nextStaffId = 1;
-let nextShiftId = 1;
-let labourSubTab = 'shifts'; // 'roster' | 'shifts' | 'summary'
-let seasonStart = '2026-04-01';
-
-/* ── Cloud sync state ── */
-let CLOUD = null; // {apiKey, binId} when configured
-let syncTimer = null;
-
-/* ════════════════════════════════════════════
-   HELPERS
-   ════════════════════════════════════════════ */
-function getMaster(id){ return MASTERS.find(m=>m.id===id) }
-
-// Returns the effective cost per unit for a master ingredient
-// If the ingredient is derived (has parentId + portions), calculates from parent
-function cpu(m){
-  if(!m) return 0;
-  if(m.parentId && m.portions){
-    const parent=getMaster(m.parentId);
-    if(parent) return cpu(parent)/m.portions;
-  }
-  if(!m.size) return 0;
-  return m.cost/m.size;
-}
-
-function ingCost(ri){
-  if(ri.mid){
-    const m=getMaster(ri.mid);
-    return m ? ri.qty*cpu(m) : 0;
-  }
-  return ri.c||0;
-}
-
-function ingLabel(ri){
-  if(ri.mid){
-    const m=getMaster(ri.mid);
-    return m ? `${m.name} — ${ri.qty}${m.unit}` : `[deleted] — ${ri.qty}`;
-  }
-  return ri.n||'Custom';
-}
-
-function totalCost(item){ return item.recipe.reduce((s,r)=>s+ingCost(r),0) }
-
-function gpPct(item){
-  const c=totalCost(item);
-  const exVat=item.sell/1.2;  // GP calculated on ex-VAT price
-  return exVat>0 ? ((exVat-c)/exVat*100) : 0;
-}
-
-function gpPill(pct){
-  const cls=pct>=target?'good':pct>=target-10?'mid':'bad';
-  return `<span class="pill ${cls}">${pct.toFixed(1)}%</span>`;
-}
-
-function fmtCpu(m){
-  const c=cpu(m);
-  if(m.unit==='ml'){
-    if(c<0.01) return `£${(c*1000).toFixed(3)}/L`;
-    return `£${(c*100).toFixed(3)}/100ml`;
-  }
-  if(m.unit==='g') return `£${(c*100).toFixed(4)}/100g`;
-  if(m.unit==='each'||m.unit==='pint'||m.unit==='sprig'||m.unit==='pack')
-    return `£${c.toFixed(4)}/ea`;
-  return `£${c.toFixed(5)}/${m.unit}`;
-}
-
-function fmtCpuDisplay(m){
-  // Derived items — calculate from parent
-  if(m.parentId && m.portions){
-    const parent=getMaster(m.parentId);
-    if(parent){
-      const c=cpu(parent)/m.portions;
-      return `£${c.toFixed(3)} each`;
-    }
-  }
-  // More human-readable for table display
-  const c=cpu(m);
-  if(m.unit==='ml'){
-    if(c>=0.001) return `£${(c*1000).toFixed(2)}/L`;
-    return `£${(c*100).toFixed(3)}/100ml`;
-  }
-  if(m.unit==='g') return `£${(c*1000).toFixed(2)}/kg`;
-  return `£${c.toFixed(3)} each`;
-}
-
-function getGP(type){ return type==='wet'?WET_GP:DRY_GP }
-
-/* ════════════════════════════════════════════
-   MASTER RENDER
-   ════════════════════════════════════════════ */
-function renderMaster(type){
-  const all=MASTERS.filter(m=>m.type===type);
-  const filtered=mFilter
-    ? all.filter(m=>m.name.toLowerCase().includes(mFilter.toLowerCase())||m.cat.toLowerCase().includes(mFilter.toLowerCase())||m.sup.toLowerCase().includes(mFilter.toLowerCase()))
-    : all;
-
-  const cats=[...new Set(all.map(m=>m.cat))].sort();
-
-  let h=`<div class="master-bar">
-    <input type="text" placeholder="Search name, category, supplier… (press Enter)" value="${mFilter}"
-      id="master-search-input"
-      onkeydown="if(event.key==='Enter'){mFilter=this.value;render();}"
-      style="flex:1;min-width:160px">
-    <button class="btn-sm" onclick="mFilter=document.getElementById('master-search-input').value;render()" style="height:36px;padding:0 12px">Search</button>
-    <button class="btn-sm" onclick="mFilter='';document.getElementById('master-search-input').value='';render()" style="height:36px;padding:0 10px;color:var(--muted)" title="Clear search">✕</button>
-    <select onchange="mFilter=this.value;render()" style="flex:1;min-width:140px">
-      <option value="">All categories (${all.length})</option>
-      ${cats.map(c=>`<option${mFilter===c?' selected':''}>${c}</option>`).join('')}
-    </select>
-    <button class="btn-teal" onclick="addMaster('${type}')" style="white-space:nowrap">+ Add ingredient</button>
-  </div>
-  <table class="master-table">
-    <thead><tr>
-      <th>Name</th><th>Supplier</th><th>Category</th><th>Pack / Purchase unit</th>
-      <th class="num">Pack £</th><th class="num">Size</th><th class="num">Unit</th>
-      <th class="num" style="background:#1f7d6a">Cost / unit</th><th style="background:#1f7d6a"></th>
-    </tr></thead>
-    <tbody>`;
-
-  filtered.forEach(m=>{
-    const isEd=editingMId===m.id;
-    if(isEd){
-      const isDerived=!!(m.parentId && m.portions);
-      const parentOptions=MASTERS.filter(x=>x.id!==m.id).map(x=>`<option value="${x.id}"${m.parentId===x.id?' selected':''}>[${x.id}] ${x.name}</option>`).join('');
-      h+=`<tr class="editing-row">
-        <td><input id="e-n" value="${esc(m.name)}" style="width:100%"></td>
-        <td><input id="e-s" value="${esc(m.sup)}" style="width:100%"></td>
-        <td><input id="e-c" value="${esc(m.cat)}" style="width:100%"></td>
-        <td>
-          <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em">Derived from parent?</div>
-          <select id="e-par" onchange="toggleDerivedFields()" style="width:100%;height:28px;border:1px solid var(--border);border-radius:5px;font-size:11px;margin-bottom:4px">
-            <option value="">— Not derived (own pack price) —</option>
-            ${parentOptions}
-          </select>
-          <div id="e-derived-row" style="display:${isDerived?'flex':'none'};gap:6px;align-items:center;margin-bottom:4px">
-            <span style="font-size:11px;color:var(--muted)">Portions per parent unit:</span>
-            <input id="e-por" type="number" step="1" min="1" value="${m.portions||1}"
-              style="width:60px;border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:13px;font-weight:700"
-              onchange="updateDerivedPreview()">
-            <span id="e-derived-preview" style="font-size:11px;color:var(--teal);font-weight:700"></span>
-          </div>
-          <div id="e-pack-row" style="display:${isDerived?'none':'block'}">
-            <input id="e-p" value="${esc(m.pack)}" style="width:100%;font-size:11px" placeholder="e.g. 1kg bag · Arthur David">
-          </div>
-        </td>
-        <td class="num">
-          ${isDerived
-            ? `<span style="color:var(--muted);font-size:11px">Auto</span><input id="e-co" type="hidden" value="${m.cost}">`
-            : `<input id="e-co" type="number" step="0.01" value="${m.cost}" style="width:70px;text-align:right">`
-          }
-        </td>
-        <td class="num">
-          ${isDerived
-            ? `<span style="color:var(--muted);font-size:11px">1</span><input id="e-si" type="hidden" value="1">`
-            : `<input id="e-si" type="number" step="0.001" value="${m.size}" style="width:70px;text-align:right">`
-          }
-        </td>
-        <td class="num"><input id="e-u" value="${m.unit}" style="width:50px"></td>
-        <td class="num teal-bold">${fmtCpuDisplay(m)}</td>
-        <td class="actions">
-          <button class="btn-sm btn-teal" onclick="saveMaster('${m.id}')">✓ Save</button>
-          <button class="btn-sm" onclick="editingMId=null;render()">✕</button>
-        </td></tr>`;
-    } else {
-      const isDerived=!!(m.parentId && m.portions);
-      const packDisplay=isDerived
-        ? `<span style="color:var(--teal);font-size:10px;font-weight:700">⬡ Derived</span> <span class="muted small">from ${getMaster(m.parentId)?.name||m.parentId} ÷ ${m.portions}</span>`
-        : `<span class="muted small">${m.pack}</span>`;
-      h+=`<tr>
-        <td class="bold">${m.name}</td>
-        <td class="muted">${m.sup}</td>
-        <td><span class="cat-badge${m.type==='O'?' ops':''}">${m.cat}</span></td>
-        <td>${packDisplay}</td>
-        <td class="num">£${isDerived?'auto':m.cost.toFixed(2)}</td>
-        <td class="num">${isDerived?'—':m.size}</td>
-        <td class="num muted">${m.unit}</td>
-        <td class="num teal-bold">${fmtCpuDisplay(m)}</td>
-        <td class="actions">
-          <button class="btn-sm" onclick="editingMId='${m.id}';render()">Edit</button>
-          <button class="btn-sm del" onclick="delMaster('${m.id}')">✕</button>
-        </td></tr>`;
-    }
-  });
-
-  h+=`</tbody></table>
-  <div class="table-footer">${filtered.length} of ${all.length} ingredients${mFilter?' (filtered)':''}</div>`;
+/* ── SUPABASE ── */
+const SB = {
+  url: 'https://aborbveavyyuqfevnjwh.supabase.co',
+  key: 'sb_publishable_lXU329EeGST_bzwJVZqOQw_Uo-7ofqA',
+  jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFib3JidmVhdnl5dXFmZXZuandoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MzMsImV4cCI6MjA5MDgwNDYzM30.kf-dkJko3WCcubIeIT-sa2UOss-_Ol_77amDw9u4CqI'
+};
+function hdr(key,write=false){
+  const h={'apikey':key,'Authorization':'Bearer '+key};
+  if(write){h['Content-Type']='application/json';h['Prefer']='return=representation';}
   return h;
 }
-
-/* ════════════════════════════════════════════
-   MASTER CRUD
-   ════════════════════════════════════════════ */
-function toggleDerivedFields(){
-  const par=document.getElementById('e-par')?.value;
-  const derivedRow=document.getElementById('e-derived-row');
-  const packRow=document.getElementById('e-pack-row');
-  if(derivedRow) derivedRow.style.display=par?'flex':'none';
-  if(packRow) packRow.style.display=par?'none':'block';
-  updateDerivedPreview();
-}
-function updateDerivedPreview(){
-  const parId=document.getElementById('e-par')?.value;
-  const portions=parseInt(document.getElementById('e-por')?.value)||1;
-  const preview=document.getElementById('e-derived-preview');
-  if(!preview||!parId) return;
-  const parent=getMaster(parId);
-  if(parent){
-    const costEach=cpu(parent)/portions;
-    preview.textContent=`= £${costEach.toFixed(4)} each`;
-  }
-}
-function saveMaster(id){
-  const m=getMaster(id);
-  if(!m)return;
-  m.name=document.getElementById('e-n').value.trim()||m.name;
-  m.sup=document.getElementById('e-s').value.trim();
-  m.cat=document.getElementById('e-c').value.trim();
-  m.unit=document.getElementById('e-u').value.trim()||m.unit;
-
-  const parId=document.getElementById('e-par')?.value;
-  if(parId){
-    // Derived ingredient
-    m.parentId=parId;
-    m.portions=parseInt(document.getElementById('e-por')?.value)||1;
-    m.cost=0;
-    m.size=1;
-    const parent=getMaster(parId);
-    m.pack=`Derived from ${parent?parent.name:'parent'} ÷ ${m.portions}`;
-  } else {
-    // Own pack price
-    delete m.parentId;
-    delete m.portions;
-    m.pack=document.getElementById('e-p')?.value.trim()||m.pack;
-    m.cost=parseFloat(document.getElementById('e-co')?.value)||m.cost;
-    m.size=parseFloat(document.getElementById('e-si')?.value)||m.size;
-  }
-  editingMId=null;
-  render();
-}
-
-function delMaster(id){
-  if(!confirm('Remove this ingredient? Linked GP recipes will show £0 for this ingredient.'))return;
-  MASTERS=MASTERS.filter(m=>m.id!==id);
-  render();
-}
-
-function addMaster(type){
-  const prefix={D:'DM',F:'FM',O:'OM'}[type];
-  const id=prefix+nextIds[type]++;
-  MASTERS.push({id,type,name:'New ingredient',sup:'',cat:'',pack:'',cost:0,size:1,unit:'g'});
-  editingMId=id;
-  mFilter='';
-  render();
-}
-
-/* ════════════════════════════════════════════
-   GP RENDER
-   ════════════════════════════════════════════ */
-function renderGP(gpType){
-  const items=getGP(gpType);
-  const avgGP=items.length ? items.reduce((s,i)=>s+gpPct(i),0)/items.length : 0;
-  const totalSellInc=items.reduce((s,i)=>s+i.sell,0);
-  const totalSellEx=totalSellInc/1.2;
-  const totalGPVal=items.reduce((s,i)=>s+(i.sell/1.2-totalCost(i)),0);
-  const onTarget=items.filter(i=>gpPct(i)>=target).length;
-  const best=items.length?items.reduce((a,b)=>gpPct(a)>gpPct(b)?a:b):null;
-  const col=avgGP>=target?'var(--good)':avgGP>=target-10?'var(--mid)':'var(--bad)';
-
-  let h=`
-  <div class="metrics">
-    <div class="metric"><div class="ml">Average GP%</div>
-      <div class="mv" style="color:${col}">${avgGP.toFixed(1)}%</div>
-      <div class="ms">Target ${target}% · ex VAT</div></div>
-    <div class="metric"><div class="ml">Menu sell (inc VAT)</div>
-      <div class="mv">£${totalSellInc.toFixed(2)}</div>
-      <div class="ms">Ex VAT: £${totalSellEx.toFixed(2)}</div></div>
-    <div class="metric"><div class="ml">At / above target</div>
-      <div class="mv">${onTarget} / ${items.length}</div>
-      <div class="ms">${items.length?Math.round(onTarget/items.length*100):0}% of items</div></div>
-    <div class="metric"><div class="ml">Best performer</div>
-      <div class="mv small-text">${best?best.name:'—'}</div>
-      <div class="ms">${best?gpPct(best).toFixed(1)+'%':''}</div></div>
-  </div>
-  <div class="target-row">
-    <label>Target GP%</label>
-    <input type="range" min="50" max="85" value="${target}"
-      oninput="target=+this.value;this.nextElementSibling.textContent=this.value+'%';render()">
-    <span class="tv">${target}%</span>
-  </div>
-  <table class="gp-table">
-    <colgroup>
-      <col style="width:22%"><col style="width:12%">
-      <col style="width:10%"><col style="width:10%">
-      <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:5%">
-    </colgroup>
-    <thead><tr>
-      <th>Item</th><th>Category</th>
-      <th class="num">Sell (inc VAT)</th>
-      <th class="num">Sell (ex VAT)</th>
-      <th class="num">Cost £</th>
-      <th class="num">GP £</th>
-      <th class="num">GP%</th>
-      <th></th>
-    </tr></thead>
-    <tbody>`;
-
-  items.forEach(item=>{
-    const cost=totalCost(item);
-    const exVat=item.sell/1.2;
-    const gpVal=exVat-cost;
-    const pct=gpPct(item);
-    const isExp=expandedId===item.id && expandedType===gpType;
-
-    h+=`<tr class="gp-row${isExp?' expanded':''}" onclick="toggleExp(${item.id},'${gpType}')">
-      <td><span class="xi">${isExp?'▼':'▶'}</span><strong>${item.name}</strong></td>
-      <td><span class="cat-badge${gpType==='dry'?' dry':''}">${item.cat}</span></td>
-      <td class="num" onclick="event.stopPropagation()">
-        <span class="psym">£</span><input class="sell-in" type="number" step="0.05"
-          value="${item.sell.toFixed(2)}"
-          onchange="setSell(${item.id},'${gpType}',+this.value)"
-          onclick="event.stopPropagation()">
-      </td>
-      <td class="num" style="color:var(--muted)">£${exVat.toFixed(2)}</td>
-      <td class="num">£${cost.toFixed(2)}</td>
-      <td class="num" style="color:${gpVal>=0?'var(--teal)':'var(--bad)'}">£${gpVal.toFixed(2)}</td>
-      <td class="num">${gpPill(pct)}</td>
-      <td><button class="del-btn" onclick="delItem(${item.id},'${gpType}',event)">✕</button></td>
-    </tr>`;
-
-    if(isExp){
-      h+=`<tr class="expand-row"><td colspan="8"><div class="recipe-panel">
-        <div class="recipe-header">Recipe — ${item.name}</div>
-        <table class="recipe-table">
-          <thead><tr>
-            <th style="width:34%">Ingredient</th>
-            <th style="width:28%">Master ID / pack</th>
-            <th class="num" style="width:18%">Qty / cost</th>
-            <th class="num" style="width:14%">£ cost</th>
-            <th style="width:6%"></th>
-          </tr></thead>
-          <tbody>`;
-
-      item.recipe.forEach((ri,idx)=>{
-        const m=ri.mid?getMaster(ri.mid):null;
-        const rCost=ingCost(ri);
-        const name=ri.mid?(m?m.name:'[deleted master]'):(ri.n||'Custom');
-        const midTag=m
-          ?`<span class="master-tag">${m.id}</span> <span class="muted small">${m.pack.split('·')[0].trim()}</span>`
-          :`<span class="master-tag custom">manual</span>`;
-
-        h+=`<tr>
-          <td>${name}</td>
-          <td>${midTag}</td>
-          <td class="num">`;
-
-        if(ri.mid && m){
-          h+=`<input class="qty-in" type="number" step="${m.unit==='each'||m.unit==='pint'||m.unit==='sprig'?'0.1':'1'}"
-              value="${ri.qty}"
-              onchange="setQty(${item.id},'${gpType}',${idx},+this.value)"
-              onclick="event.stopPropagation()"> <span class="muted small">${m.unit}</span>`;
-        } else {
-          h+=`£<input class="cost-in" type="number" step="0.01"
-              value="${(ri.c||0).toFixed(2)}"
-              onchange="setCost(${item.id},'${gpType}',${idx},+this.value)"
-              onclick="event.stopPropagation()">`;
-        }
-
-        h+=`</td>
-          <td class="num teal-bold">£${rCost.toFixed(3)}</td>
-          <td><button class="del-btn" onclick="delIng(${item.id},'${gpType}',${idx},event)">✕</button></td>
-        </tr>`;
-      });
-
-      h+=`<tr class="recipe-total">
-          <td colspan="3"><strong>Total cost per serve</strong></td>
-          <td class="num teal-bold"><strong>£${cost.toFixed(3)}</strong></td>
-          <td></td>
-        </tr>
-        </tbody></table>
-
-        <!-- ── Add ingredient from master ── -->
-        <div class="add-ing-section" onclick="event.stopPropagation()">
-          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Add ingredient</div>
-          <div class="add-ing-row" style="position:relative">
-            <div style="flex:2;min-width:220px;position:relative">
-              <input type="text" id="ms-search-${item.id}" placeholder="Type to search ingredient…"
-                autocomplete="off"
-                style="width:100%;height:28px;border:1px solid var(--border);border-radius:5px;padding:0 28px 0 8px;font-size:12px"
-                oninput="filterMasterDrop(${item.id})"
-                onfocus="showMasterDrop(${item.id})"
-                onkeydown="navMasterDrop(event,${item.id})">
-              <input type="hidden" id="ms-${item.id}" value="">
-              <div id="ms-drop-${item.id}"
-                style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--teal);border-top:none;border-radius:0 0 6px 6px;max-height:220px;overflow-y:auto;z-index:500;box-shadow:0 4px 12px rgba(0,0,0,.15)">
-              </div>
-            </div>
-            <input type="number" id="mq-${item.id}" placeholder="qty" step="any" style="width:80px" oninput="onQtyIn(${item.id})">
-            <span id="mu-${item.id}" class="muted small" style="min-width:30px"></span>
-            <span id="mp-${item.id}" class="ing-preview" style="min-width:70px"></span>
-            <button class="btn-sm btn-teal" onclick="addFromMaster(${item.id},\'${gpType}\')">Add ↓</button>
-          </div>
-          <div class="add-ing-row" style="margin-top:8px">
-            <span class="muted small" style="white-space:nowrap">or custom:</span>
-            <input type="text" id="cn-${item.id}" placeholder="Ingredient name" style="flex:2">
-            <span style="color:var(--muted);font-size:12px">£</span>
-            <input type="number" id="cc-${item.id}" placeholder="0.00" step="0.01" style="width:80px">
-            <button class="btn-sm btn-teal" onclick="addCustom(${item.id},\'${gpType}\')">Add ↓</button>
-          </div>
-        </div>
-      </div></td></tr>`;
+async function sbFetch(method,table,opts={}){
+  const {query='',data}=opts;
+  const url=`${SB.url}/rest/v1/${table}${query?'?'+query:''}`;
+  for(const key of [SB.jwt,SB.key]){
+    const ctrl=new AbortController();
+    const t=setTimeout(()=>ctrl.abort(),10000);
+    try{
+      const r=await fetch(url,{method,headers:hdr(key,method!=='GET'&&method!=='DELETE'),signal:ctrl.signal,body:data?JSON.stringify(data):undefined});
+      clearTimeout(t);
+      if(r.status===401||r.status===403)continue;
+      if(!r.ok){const tx=await r.text();throw new Error(`${r.status}: ${tx.slice(0,200)}`);}
+      const tx=await r.text();return tx?JSON.parse(tx):null;
+    }catch(e){
+      clearTimeout(t);
+      if(e.name==='AbortError')throw new Error('Request timed out');
+      if(e.message.match(/^\d{3}:/))throw e;
+      if(key===SB.key)throw new Error('Network error: '+e.message);
     }
-  });
+  }
+}
+async function dbGet(t,q=''){return sbFetch('GET',t,{query:q});}
+async function dbPost(t,d){return sbFetch('POST',t,{data:d});}
+async function dbPatch(t,id,d){return sbFetch('PATCH',t,{query:'id=eq.'+id,data:d});}
+async function dbDel(t,id){return sbFetch('DELETE',t,{query:'id=eq.'+id});}
 
-  h+=`</tbody></table>
-  <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap">
-    <button class="btn-teal" onclick="document.getElementById('ngf-${gpType}').style.display='block'">+ Add menu item</button>
-  </div>
-  <div id="ngf-${gpType}" style="display:none;margin-top:10px;padding:14px;background:#fff;border:1px solid var(--border);border-radius:8px">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-      <div><label class="form-label">Item name</label>
-        <input id="nn-${gpType}" placeholder="e.g. Negroni" style="width:180px;height:30px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px">
-      </div>
-      <div><label class="form-label">Category</label>
-        <select id="nc-${gpType}" style="height:30px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px">
-          ${[...new Set(items.map(i=>i.cat))].map(c=>`<option>${c}</option>`).join('')}
-        </select>
-      </div>
-      <div><label class="form-label">Sell price £</label>
-        <input id="np-${gpType}" type="number" step="0.50" placeholder="0.00" style="width:80px;height:30px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px;text-align:right">
-      </div>
-      <button class="btn-teal" onclick="addItem('${gpType}')">Add item</button>
-      <button class="btn-sm" onclick="document.getElementById('ngf-${gpType}').style.display='none'">Cancel</button>
-    </div>
-  </div>`;
-
-  return h;
+/* ── TOAST (iframe-safe, no alert/confirm) ── */
+function showToast(msg,type='err'){
+  document.querySelectorAll('.toast').forEach(x=>x.remove());
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),4000);
 }
 
-/* ════════════════════════════════════════════
-   GP EVENT HANDLERS
-   ════════════════════════════════════════════ */
-function toggleExp(id,type){
-  if(expandedId===id&&expandedType===type){expandedId=null;expandedType=null;}
-  else{expandedId=id;expandedType=type;}
-  render();
-}
-
-function setSell(id,type,val){
-  const item=getGP(type).find(i=>i.id===id);
-  if(item){item.sell=val;render();}
-}
-
-function setQty(id,type,idx,val){
-  const item=getGP(type).find(i=>i.id===id);
-  if(item&&item.recipe[idx]){item.recipe[idx].qty=val;render();}
-}
-
-function setCost(id,type,idx,val){
-  const item=getGP(type).find(i=>i.id===id);
-  if(item&&item.recipe[idx]){item.recipe[idx].c=val;render();}
-}
-
-function delIng(id,type,idx,e){
-  e.stopPropagation();
-  const item=getGP(type).find(i=>i.id===id);
-  if(item){item.recipe.splice(idx,1);render();}
-}
-
-function delItem(id,type,e){
-  e.stopPropagation();
-  if(!confirm('Remove this menu item?'))return;
-  if(type==='wet')WET_GP=WET_GP.filter(i=>i.id!==id);
-  else DRY_GP=DRY_GP.filter(i=>i.id!==id);
-  if(expandedId===id){expandedId=null;expandedType=null;}
-  render();
-}
-
-/* ── Searchable ingredient picker ── */
-function buildMasterList(){
-  return MASTERS.slice().sort((a,b)=>a.name.localeCompare(b.name));
-}
-function showMasterDrop(itemId){filterMasterDrop(itemId,true);}
-function filterMasterDrop(itemId,showAll=false){
-  const inp=document.getElementById(`ms-search-${itemId}`);
-  const drop=document.getElementById(`ms-drop-${itemId}`);
-  if(!inp||!drop)return;
-  const q=(inp.value||'').toLowerCase().trim();
-  const all=buildMasterList();
-  const filtered=showAll&&!q?all:all.filter(m=>
-    m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||
-    m.cat.toLowerCase().includes(q)||m.sup.toLowerCase().includes(q));
-  if(!filtered.length){
-    drop.style.display='block';
-    drop.innerHTML=`<div style="padding:8px 10px;color:var(--muted);font-size:12px">No results for "${q}"</div>`;
+/* ── TWO-TAP DELETE (iframe-safe, replaces confirm()) ──
+   First tap: button turns red, shows "Tap again to confirm"
+   Second tap within 3s: executes delete
+   Usage: twoTapDelete(btn, async () => { ... delete logic ... })
+*/
+function twoTapDelete(btn, action){
+  if(btn._confirming){
+    clearTimeout(btn._confirmTimer);
+    btn._confirming=false;
+    btn.textContent='🗑️';
+    btn.classList.remove('confirming');
+    action();
     return;
   }
-  let ddHtml='';
-  [{t:'D',label:'Drink Master'},{t:'F',label:'Food Master'},{t:'O',label:'Ops & Misc'}].forEach(({t,label})=>{
-    const group=filtered.filter(m=>m.type===t);
-    if(!group.length)return;
-    ddHtml+=`<div style="padding:4px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#f5f5f5;border-bottom:1px solid var(--border)">${label}</div>`;
-    group.forEach(m=>{
-      const hi=q?m.name.replace(new RegExp(`(${q})`,'gi'),'<strong>$1</strong>'):m.name;
-      const safeN=m.name.replace(/'/g,"\\'");
-      ddHtml+=`<div class="ms-drop-item" data-id="${m.id}"
-        onmousedown="selectMasterItem(${itemId},'${m.id}','${safeN}','${m.unit}')"
-        style="padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;gap:8px">
-        <span><span style="color:var(--teal);font-size:10px;font-weight:700;margin-right:4px">[${m.id}]</span>${hi}</span>
-        <span style="color:var(--teal);font-weight:700;white-space:nowrap">${fmtCpuDisplay(m)}</span>
+  btn._confirming=true;
+  btn.classList.add('confirming');
+  btn.textContent='Sure? Tap again';
+  btn._confirmTimer=setTimeout(()=>{
+    btn._confirming=false;
+    btn.classList.remove('confirming');
+    btn.textContent='🗑️';
+  },3000);
+}
+
+/* ── STATE ── */
+let ME=null,ALL_STAFF=[],activeTab='',pinEntry='',pinTarget=null,clockTimer=null,rotaWeekOffset=0,refreshInterval=null,editingShiftId=null,rotaAddTarget=null;
+let _posting=false;
+const ROLES={super_admin:'Super Admin',manager:'Manager',staff:'Staff'};
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// Always use LOCAL date string — avoids BST/UTC midnight shift
+function localDate(d=new Date()){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+const SESSION_KEY='medley-staff-v3';
+const SESSION_MS=15*60*1000;
+let lastActivity=Date.now(),inactivityTimer=null;
+
+function isSuperAdmin(){return ME&&ME.role==='super_admin';}
+function isManager(){return ME&&(ME.role==='manager'||ME.role==='super_admin');}
+
+function avatarHtml(p,size=40){
+  if(p&&p.avatar_url)return`<img src="${p.avatar_url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`;
+  const i=(p?p.name:'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return`<span style="font-size:${Math.round(size*.4)}px;font-weight:800">${i}</span>`;
+}
+
+/* ── SESSION ── */
+function saveSession(){if(ME)localStorage.setItem(SESSION_KEY,JSON.stringify({staff:ME,at:Date.now()}));}
+function loadSession(){
+  try{
+    const r=localStorage.getItem(SESSION_KEY);
+    if(!r)return null;
+    const {staff,at}=JSON.parse(r);
+    if(!staff||Date.now()-at>SESSION_MS){localStorage.removeItem(SESSION_KEY);return null;}
+    return staff;
+  }catch(e){return null;}
+}
+function clearSession(){localStorage.removeItem(SESSION_KEY);}
+function resetInactivity(){lastActivity=Date.now();if(ME)saveSession();}
+function startInactivityWatch(){
+  ['click','touchstart','keydown','scroll'].forEach(ev=>document.addEventListener(ev,resetInactivity,{passive:true}));
+  inactivityTimer=setInterval(()=>{
+    if(ME&&Date.now()-lastActivity>SESSION_MS){showToast('Signed out due to inactivity');logout();}
+  },60000);
+}
+
+/* ── AUTH ── */
+async function loadStaffList(){
+  const grid=document.getElementById('staff-grid');
+  grid.innerHTML='<div style="color:rgba(255,255,255,.6);text-align:center;width:100%;padding:20px">Connecting…</div>';
+  try{
+    ALL_STAFF=await dbGet('staff','is_active=eq.true&order=name.asc');
+    renderStaffGrid();
+  }catch(e){
+    grid.innerHTML=`<div style="color:#fff;text-align:center;width:90%;padding:20px;max-width:400px;margin:0 auto">
+      <div style="font-size:18px;margin-bottom:8px">⚠️</div>
+      <div style="font-weight:700;margin-bottom:6px">Connection failed</div>
+      <div style="background:rgba(0,0,0,.25);border-radius:8px;padding:10px;font-size:11px;word-break:break-all;margin-bottom:12px;font-family:monospace">${e.message}</div>
+      <button onclick="loadStaffList()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 20px;cursor:pointer">↻ Retry</button>
+    </div>`;
+  }
+}
+function renderStaffGrid(){
+  const grid=document.getElementById('staff-grid');
+  if(!ALL_STAFF.length){grid.innerHTML='<div style="color:rgba(255,255,255,.7);text-align:center;width:100%;padding:20px">No staff yet.</div>';return;}
+  grid.innerHTML=ALL_STAFF.map(s=>`
+    <div class="staff-card" onclick="selectStaff('${s.id}')">
+      <div class="staff-avatar">${s.avatar_url?`<img src="${s.avatar_url}">`:(s.name.split(' ').map(w=>w[0]).join('').slice(0,2))}</div>
+      <div class="staff-card-name">${s.name}</div>
+      <div class="staff-card-role">${ROLES[s.role]||s.role}</div>
+    </div>`).join('');
+}
+function selectStaff(id){
+  pinTarget=ALL_STAFF.find(s=>s.id===id);
+  pinEntry='';
+  document.getElementById('pin-who').textContent=`Hi ${pinTarget.name.split(' ')[0]} 👋`;
+  updatePinDots();
+  document.getElementById('pin-error').textContent='';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('pin-screen').style.display='flex';
+}
+function showLogin(){
+  pinTarget=null;pinEntry='';
+  document.getElementById('pin-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+function pinKey(d){if(pinEntry.length>=4)return;pinEntry+=d;updatePinDots();if(pinEntry.length===4)setTimeout(pinSubmit,100);}
+function pinClear(){pinEntry=pinEntry.slice(0,-1);updatePinDots();}
+function updatePinDots(){document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('filled',i<pinEntry.length));}
+async function pinSubmit(){
+  if(!pinTarget||pinEntry.length!==4)return;
+  if(pinEntry===pinTarget.pin_hash){
+    ME=pinTarget;saveSession();
+    document.getElementById('pin-screen').style.display='none';
+    launchApp();
+  }else{
+    document.getElementById('pin-error').textContent='Incorrect PIN. Try again.';
+    pinEntry='';updatePinDots();
+  }
+}
+function logout(){
+  ME=null;clearSession();
+  clearInterval(refreshInterval);clearInterval(clockTimer);clearInterval(inactivityTimer);
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  loadStaffList();
+}
+
+/* ── APP LAUNCH ── */
+function launchApp(){
+  startInactivityWatch();
+  document.getElementById('app').style.display='flex';
+  document.getElementById('tb-avatar').innerHTML=avatarHtml(ME,30);
+  document.getElementById('tb-name').textContent=ME.name.split(' ')[0];
+  document.getElementById('tb-role').textContent=ROLES[ME.role]||ME.role;
+  const nav=document.getElementById('app-nav');
+  let tabs=isManager()?[
+    {id:'home',label:'📢 Home'},
+    {id:'dashboard',label:'🏠 Dashboard'},
+    {id:'clock',label:'🕐 Clock In/Out'},
+    {id:'rota',label:'📅 Rota'},
+    {id:'timesheets',label:'📋 Timesheets'},
+    {id:'pay',label:'💰 Pay Periods'},
+    {id:'menu',label:'🍕 Menu'},
+    {id:'profile',label:'👤 My Profile'},
+  ]:[
+    {id:'home',label:'📢 Home'},
+    {id:'clock',label:'🕐 Clock In/Out'},
+    {id:'my-shifts',label:'📊 My Shifts'},
+    {id:'rota',label:'📅 My Rota'},
+    {id:'menu',label:'🍕 Menu'},
+    {id:'profile',label:'👤 My Profile'},
+  ];
+  if(isSuperAdmin())tabs.push({id:'staff-admin',label:'👥 Staff'});
+  nav.innerHTML=tabs.map(t=>`<button class="navtab${t.id===tabs[0].id?' active':''}" id="tab-${t.id}" onclick="setTab('${t.id}')">${t.label}</button>`).join('');
+  if(isManager())nav.innerHTML+=`<button class="navtab" onclick="window.open('https://greendoglondon.github.io/medley-management/medley-gp-calculator.html','_blank')" style="color:var(--orange);margin-left:auto">📊 GP ↗</button>`;
+  setTab(tabs[0].id);
+  refreshInterval=setInterval(()=>{if(activeTab==='dashboard'||activeTab==='timesheets')render();},60000);
+}
+function setTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.navtab').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('tab-'+tab);if(el)el.classList.add('active');
+  render();
+}
+async function render(){
+  const c=document.getElementById('content');
+  c.innerHTML='<div class="loading">Loading…</div>';
+  try{
+    switch(activeTab){
+      case 'home':       c.innerHTML=await renderHome();break;
+      case 'dashboard':  c.innerHTML=await renderDashboard();break;
+      case 'clock':      c.innerHTML=await renderClock();startClockTimer();break;
+      case 'my-shifts':  c.innerHTML=await renderMyShifts();break;
+      case 'rota':       c.innerHTML=await renderRota();break;
+      case 'timesheets': c.innerHTML=await renderTimesheets();break;
+      case 'pay':        c.innerHTML=await renderPayPeriods();break;
+      case 'menu':       c.innerHTML=renderMenu();break;
+      case 'profile':    c.innerHTML=renderProfile();break;
+      case 'staff-admin':c.innerHTML=await renderStaffAdmin();break;
+      default:           c.innerHTML='<div class="loading">Coming soon</div>';
+    }
+  }catch(e){c.innerHTML=`<div class="alert err">Error: ${e.message}</div>`;}
+}
+
+/* ── HOME / ANNOUNCEMENTS ── */
+async function renderHome(){
+  let anns=[];
+  try{anns=await dbGet('announcements','order=created_at.desc&limit=20');}catch(e){}
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  let h=`<div style="background:var(--teal);color:#fff;border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <div><div style="font-size:20px;font-weight:900">${greet}, ${ME.name.split(' ')[0]} 👋</div>
+    <div style="opacity:.8;font-size:13px;margin-top:2px">The Medley · Season 2026</div></div>
+    <button class="btn-teal" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3)" onclick="setTab('clock')">🕐 Clock In/Out</button>
+  </div>`;
+  if(isManager()){
+    h+=`<div class="card"><div class="card-title">📢 Post Announcement</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Title</label><input id="ann-title" placeholder="e.g. Staff meeting Sunday" style="font-weight:600"></div>
+        <div class="form-group"><label>Message</label><textarea id="ann-body" placeholder="Write your announcement…" style="height:80px"></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+        <select id="ann-priority" style="height:36px;border:1.5px solid var(--border);border-radius:8px;padding:0 10px;font-size:13px">
+          <option value="normal">📌 Normal</option>
+          <option value="important">⚠️ Important</option>
+          <option value="urgent">🚨 Urgent</option>
+        </select>
+        <button class="btn-teal" id="ann-post-btn" onclick="postAnnouncement()">Post to all staff</button>
+      </div>
+    </div>`;
+  }
+  h+=`<div class="card"><div class="card-title">📢 Announcements</div>`;
+  if(!anns.length){h+=`<div class="empty"><div class="empty-icon">📢</div>No announcements yet</div>`;}
+  else{
+    anns.forEach(a=>{
+      const poster=ALL_STAFF.find(s=>s.id===a.posted_by);
+      const bg=a.priority==='urgent'?'#fdeaea':a.priority==='important'?'#fef3e2':'var(--teal-l)';
+      const col=a.priority==='urgent'?'var(--bad)':a.priority==='important'?'var(--warn)':'var(--teal)';
+      const icon=a.priority==='urgent'?'🚨':a.priority==='important'?'⚠️':'📌';
+      h+=`<div style="background:${bg};border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid ${col}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <div style="font-weight:800;font-size:15px;color:${col}">${icon} ${a.title}</div>
+          ${isSuperAdmin()?`<button class="btn-danger" style="font-size:11px;padding:2px 8px" id="del-ann-${a.id}" onclick="deleteAnn(this,'${a.id}')">🗑️</button>`:''}
+        </div>
+        <div style="font-size:14px;color:var(--text);margin:8px 0;line-height:1.5">${a.body}</div>
+        <div style="font-size:11px;color:var(--muted)">${poster?poster.name:'Management'} · ${fmtDateShort(a.created_at.slice(0,10))} ${new Date(a.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
       </div>`;
     });
-  });
-  drop.innerHTML=ddHtml;
-  drop.style.display='block';
-  drop.querySelectorAll('.ms-drop-item').forEach(el=>{
-    el.onmouseenter=()=>el.style.background='var(--teal-l)';
-    el.onmouseleave=()=>el.style.background='';
-  });
+  }
+  h+=`</div>`;return h;
 }
-function selectMasterItem(itemId,mid,name,unit){
-  const inp=document.getElementById(`ms-search-${itemId}`);
-  const hid=document.getElementById(`ms-${itemId}`);
-  const drop=document.getElementById(`ms-drop-${itemId}`);
-  const uSp=document.getElementById(`mu-${itemId}`);
-  const pSp=document.getElementById(`mp-${itemId}`);
-  const qIn=document.getElementById(`mq-${itemId}`);
-  if(inp)inp.value=name+' ['+mid+']';
-  if(hid)hid.value=mid;
-  if(drop)drop.style.display='none';
-  if(uSp)uSp.textContent=unit;
-  if(pSp)pSp.textContent='';
-  if(qIn){qIn.focus();qIn.oninput=()=>{const m=getMaster(mid);const qty=parseFloat(qIn.value)||0;const cost=qty*cpu(m);if(pSp)pSp.textContent=cost>0?`= £${cost.toFixed(3)}`:'';};}
-}
-function navMasterDrop(e,itemId){
-  const drop=document.getElementById(`ms-drop-${itemId}`);
-  if(!drop||drop.style.display==='none')return;
-  const items=[...drop.querySelectorAll('.ms-drop-item')];
-  const cur=drop.querySelector('.ms-drop-item[data-focused]');
-  let idx=items.indexOf(cur);
-  if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(idx+1,items.length-1);}
-  else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(idx-1,0);}
-  else if(e.key==='Enter'&&cur){e.preventDefault();cur.onmousedown();return;}
-  else if(e.key==='Escape'){drop.style.display='none';return;}
-  else return;
-  items.forEach(i=>{delete i.dataset.focused;i.style.background='';});
-  if(items[idx]){items[idx].dataset.focused='1';items[idx].style.background='var(--teal-l)';items[idx].scrollIntoView({block:'nearest'});}
-}
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.add-ing-section'))
-    document.querySelectorAll('[id^="ms-drop-"]').forEach(d=>d.style.display='none');
-});
-function onMSel(){}
-function onQtyIn(itemId){
-  const mid=document.getElementById(`ms-${itemId}`)?.value;
-  const qIn=document.getElementById(`mq-${itemId}`);
-  const pSp=document.getElementById(`mp-${itemId}`);
-  const m=getMaster(mid);
-  if(m&&qIn){const qty=parseFloat(qIn.value)||0;const cost=qty*cpu(m);if(pSp)pSp.textContent=cost>0?`= £${cost.toFixed(3)}`:'';}
-}
-
-function addFromMaster(itemId,gpType){
-  const mid=document.getElementById(`ms-${itemId}`).value;
-  const qty=parseFloat(document.getElementById(`mq-${itemId}`).value);
-  if(!mid){alert('Please select an ingredient from the master.');return;}
-  if(isNaN(qty)||qty<=0){alert('Please enter a quantity greater than 0.');return;}
-  const item=getGP(gpType).find(i=>i.id===itemId);
-  if(item){
-    item.recipe.push({mid,qty});
-    expandedId=itemId; expandedType=gpType;
-    render();
+async function postAnnouncement(){
+  if(_posting){showToast('Already posting, please wait…','warn');return;}
+  const title=(document.getElementById('ann-title')?.value||'').trim();
+  const body=(document.getElementById('ann-body')?.value||'').trim();
+  const priority=document.getElementById('ann-priority')?.value||'normal';
+  if(!title){showToast('Please add a title.');return;}
+  if(!body){showToast('Please write a message.');return;}
+  _posting=true;
+  const btn=document.getElementById('ann-post-btn');
+  if(btn){btn.disabled=true;btn.textContent='Posting…';}
+  try{
+    await dbPost('announcements',{title,body,priority,posted_by:ME.id});
+    _posting=false;
+    showToast('Announcement posted ✓','ok');
+    setTimeout(()=>setTab('home'),800);
+  }catch(e){
+    _posting=false;
+    if(btn){btn.disabled=false;btn.textContent='Post to all staff';}
+    showToast('Error: '+e.message);
   }
 }
-
-function addCustom(itemId,gpType){
-  const n=(document.getElementById(`cn-${itemId}`).value||'').trim();
-  const c=parseFloat(document.getElementById(`cc-${itemId}`).value);
-  if(!n){alert('Please enter an ingredient name.');return;}
-  if(isNaN(c)){alert('Please enter a cost (£).');return;}
-  const item=getGP(gpType).find(i=>i.id===itemId);
-  if(item){
-    item.recipe.push({mid:null,n,c});
-    expandedId=itemId; expandedType=gpType;
-    render();
-  }
+function deleteAnn(btn,id){
+  twoTapDelete(btn,async()=>{
+    try{await dbDel('announcements',id);showToast('Deleted ✓','ok');setTimeout(()=>setTab('home'),600);}
+    catch(e){showToast('Delete failed: '+e.message);}
+  });
 }
 
-function addItem(gpType){
-  const name=(document.getElementById(`nn-${gpType}`).value||'').trim();
-  const cat=document.getElementById(`nc-${gpType}`).value;
-  const sell=parseFloat(document.getElementById(`np-${gpType}`).value);
-  if(!name||isNaN(sell)||sell<=0){alert('Enter a name and sell price.');return;}
-  if(gpType==='wet') WET_GP.push({id:nextWet++,name,cat,sell,recipe:[]});
-  else DRY_GP.push({id:nextDry++,name,cat,sell,recipe:[]});
-  render();
-}
-
-/* ════════════════════════════════════════════
-   MAIN RENDER
-   ════════════════════════════════════════════ */
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') }
-
-function setTab(t){
-  activeTab=t;
-  expandedId=null;
-  expandedType=null;
-  mFilter='';
-  render();
-}
-
-/* ════════════════════════════════════════════
-   LABOUR HELPERS
-   ════════════════════════════════════════════ */
-function shiftHours(s){
-  if(!s.start||!s.end)return 0;
-  const [sh,sm]=s.start.split(':').map(Number);
-  const [eh,em]=s.end.split(':').map(Number);
-  let mins=(eh*60+em)-(sh*60+sm);
-  if(mins<0)mins+=24*60; // midnight crossover
-  const breakMins=s.break||0;
-  return Math.max(0,(mins-breakMins)/60);
-}
-function shiftCost(s){
-  const st=STAFF.find(x=>x.id===s.staffId);
-  return st?shiftHours(s)*st.rate:0;
-}
-function weekOf(dateStr){
-  const d=new Date(dateStr), base=new Date(seasonStart);
-  return Math.max(1,Math.floor((d-base)/(7*864e5))+1);
-}
-function weekLabel(w){
-  const d=new Date(seasonStart);
-  d.setDate(d.getDate()+(w-1)*7);
-  const e=new Date(d); e.setDate(e.getDate()+6);
-  const fmt=x=>x.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  return fmt(d)+' – '+fmt(e);
-}
-function fmtDate(s){
-  if(!s)return'—';
-  return new Date(s).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-}
-function totalLabourCost(shifts){
-  return shifts.reduce((t,s)=>t+shiftCost(s),0);
-}
-function totalLabourHours(shifts){
-  return shifts.reduce((t,s)=>t+shiftHours(s),0);
-}
-
-/* ════════════════════════════════════════════
-   LABOUR RENDER
-   ════════════════════════════════════════════ */
-function renderLabour(){
-  const totalCostSeason=totalLabourCost(SHIFTS);
-  const totalHrsSeason=totalLabourHours(SHIFTS);
-
-  // This week
-  const today=new Date().toISOString().slice(0,10);
-  const thisWeek=weekOf(today);
-  const thisWeekShifts=SHIFTS.filter(s=>weekOf(s.date)===thisWeek);
-  const thisWeekCost=totalLabourCost(thisWeekShifts);
-  const thisWeekHrs=totalLabourHours(thisWeekShifts);
-
-  // Weekly average
-  const weeks=[...new Set(SHIFTS.map(s=>weekOf(s.date)))];
-  const avgWeeklyCost=weeks.length?totalCostSeason/weeks.length:0;
-
-  let h=`
-  <div class="labour-metrics">
-    <div class="metric"><div class="ml">Season labour cost</div>
-      <div class="mv">£${totalCostSeason.toFixed(2)}</div>
-      <div class="ms">${totalLabourHours(SHIFTS).toFixed(1)} total hours</div></div>
-    <div class="metric"><div class="ml">This week (Wk ${thisWeek})</div>
-      <div class="mv">£${thisWeekCost.toFixed(2)}</div>
-      <div class="ms">${thisWeekHrs.toFixed(1)} hrs · ${thisWeekShifts.length} shifts</div></div>
-    <div class="metric"><div class="ml">Weekly average</div>
-      <div class="mv">£${avgWeeklyCost.toFixed(2)}</div>
-      <div class="ms">over ${weeks.length} week${weeks.length!==1?'s':''} logged</div></div>
-    <div class="metric"><div class="ml">Staff on roster</div>
-      <div class="mv">${STAFF.length}</div>
-      <div class="ms">${STAFF.filter(s=>s.rate>0).length} paid · ${STAFF.filter(s=>s.rate===0).length} unpaid</div></div>
-  </div>
-
-  <div class="subtab-bar">
-    <button class="subtab${labourSubTab==='shifts'?' active':''}" onclick="labourSubTab='shifts';render()">📅 Shift Log</button>
-    <button class="subtab${labourSubTab==='roster'?' active':''}" onclick="labourSubTab='roster';render()">👥 Staff Roster</button>
-    <button class="subtab${labourSubTab==='summary'?' active':''}" onclick="labourSubTab='summary';render()">📊 Weekly Summary</button>
+/* ── DASHBOARD ── */
+async function renderDashboard(){
+  const today=localDate();
+  const monthStart=today.slice(0,8)+'01';
+  const [allShifts,openShifts]=await Promise.all([
+    dbGet('shifts',`clock_in=gte.${monthStart}T00:00:00Z&status=eq.completed`),
+    dbGet('shifts','status=eq.clocked_in')
+  ]);
+  const totalHrs=allShifts.reduce((s,x)=>s+(parseFloat(x.total_hours)||0),0);
+  const staffWorked=new Set(allShifts.map(x=>x.staff_id)).size;
+  const totalCost=allShifts.reduce((s,x)=>{const st=ALL_STAFF.find(m=>m.id===x.staff_id);return s+(st?(parseFloat(x.total_hours)||0)*st.hourly_rate:0);},0);
+  let h=`<div class="metric-grid">
+    <div class="metric"><div class="metric-label">On shift now</div><div class="metric-value" style="color:${openShifts.length?'var(--orange)':'var(--muted)'}">${openShifts.length}</div><div class="metric-sub">staff</div></div>
+    <div class="metric"><div class="metric-label">This month</div><div class="metric-value">£${totalCost.toFixed(0)}</div><div class="metric-sub">${totalHrs.toFixed(0)}h · ${staffWorked} staff</div></div>
+    <div class="metric"><div class="metric-label">Total staff</div><div class="metric-value">${ALL_STAFF.length}</div><div class="metric-sub">${ALL_STAFF.filter(s=>s.role==='super_admin').length} admin · ${ALL_STAFF.filter(s=>s.role==='manager').length} managers</div></div>
+    <div class="metric"><div class="metric-label">Season</div><div class="metric-value" style="font-size:16px">Apr–Sep 2026</div></div>
   </div>`;
-
-  if(labourSubTab==='roster') h+=renderRoster();
-  else if(labourSubTab==='shifts') h+=renderShifts();
-  else h+=renderLabourSummary();
-
-  return h;
-}
-
-function renderRoster(){
-  let h=`<div class="panel">
-  <div class="panel-title">Staff Roster
-    <button class="btn-teal" onclick="addStaffMember()">+ Add staff</button>
-  </div>
-  <table class="labour-table">
-    <thead><tr>
-      <th>Name</th><th>Role</th><th class="num">Rate £/hr</th>
-      <th class="num">Min wage ref</th><th class="num">Shifts logged</th><th class="num">Hours</th><th class="num">Season cost</th><th></th>
-    </tr></thead><tbody>`;
-
-  if(!STAFF.length){
-    h+=`<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">No staff added yet — click "+ Add staff" to begin</td></tr>`;
+  if(openShifts.length){
+    h+=`<div class="card"><div class="card-title">Currently On Shift</div>
+      <table class="data-table"><thead><tr><th>Staff</th><th>Clocked in</th><th>Hours so far</th></tr></thead><tbody>`;
+    openShifts.forEach(s=>{
+      const st=ALL_STAFF.find(m=>m.id===s.staff_id);
+      const hrs=s.clock_in?((Date.now()-new Date(s.clock_in))/3600000).toFixed(1):'—';
+      h+=`<tr><td>${st?st.name:'Unknown'}</td><td>${fmtTime(s.clock_in)}</td><td>${hrs}h</td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
   }
-
-  STAFF.forEach(st=>{
-    const stShifts=SHIFTS.filter(s=>s.staffId===st.id);
-    const hrs=totalLabourHours(stShifts);
-    const cost=totalLabourCost(stShifts);
-    h+=`<tr>
-      <td class="bold">${st.name}</td>
-      <td><span class="cat-badge">${st.role}</span></td>
-      <td class="num">
-        £<input style="width:60px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px"
-          type="number" step="0.01" value="${st.rate.toFixed(2)}"
-          onchange="updateStaffRate(${st.id},+this.value)">
-      </td>
-      <td class="num muted" style="font-size:11px">21+ £12.21<br>18-20 £10.18</td>
-      <td class="num">${stShifts.length}</td>
-      <td class="num">${hrs.toFixed(1)}h</td>
-      <td class="num teal-bold">£${cost.toFixed(2)}</td>
-      <td><button class="del-btn" onclick="deleteStaff(${st.id})">✕</button></td>
-    </tr>`;
-  });
-
-  h+=`</tbody></table></div>`;
   return h;
 }
 
-function renderShifts(){
-  // Sort shifts newest first
-  const sorted=[...SHIFTS].sort((a,b)=>b.date.localeCompare(a.date));
-
-  let h=`<div class="panel">
-  <div class="panel-title">Log a Shift</div>
-  <div class="shift-form">
-    <div>
-      <label>Staff member</label>
-      <select id="sf-staff" style="min-width:160px" onchange="updateShiftPreview()">
-        <option value="">— select —</option>
-        ${STAFF.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
-      </select>
+/* ── CLOCK IN/OUT ── */
+async function renderClock(){
+  const openShift=await getOpenShift(ME.id);
+  const pendingShift=await getPendingShift(ME.id);
+  const awaitingCount=await getAwaitingApprovalCount(ME.id);
+  const pendingUnclocked=await getAllPendingUnclocked(ME.id);
+  const now=new Date(),nowTime=fmtHHMM(now),todayStr=localDate(now);
+  const dateStr=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  let h=`<div class="card clock-section">
+    <div class="clock-display" id="live-clock">${nowTime}</div>
+    <div class="clock-date">${dateStr}</div>`;
+  const active=openShift||pendingShift;
+  if(active){
+    const isPending=!!pendingShift&&!openShift;
+    // Default clock-out date to the shift's start date (not today) — avoids the 63h bug
+    const shiftDate=active.clock_in?active.clock_in.slice(0,10):todayStr;
+    // Clock-out max date = tomorrow (overnight shifts can finish after midnight)
+    const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+    const tomorrowStr=localDate(tomorrow);
+    const isOldShift=shiftDate!==todayStr;
+    h+=`<div style="margin-bottom:16px">
+      <div class="clock-status">${isPending?'⏳ Pending — started at':'Clocked in at'} <strong>${fmtTime(active.clock_in)}</strong> on ${fmtDateShort(shiftDate)}</div>
+      <div class="clock-timer">${fmtElapsed(new Date(active.clock_in))} since shift started</div>
+      ${isPending?`<div style="font-size:12px;color:var(--warn);margin-top:4px">Awaiting manager approval</div>`:''}
+      ${pendingUnclocked>1?`<div style="font-size:12px;color:var(--orange);margin-top:8px;background:var(--orange-l);padding:6px 12px;border-radius:6px">⚠️ You have ${pendingUnclocked} shifts needing a clock-out — complete this one first, the next will appear automatically.</div>`:''}
     </div>
-    <div><label>Date</label>
-      <input type="date" id="sf-date" value="${new Date().toISOString().slice(0,10)}" onchange="updateShiftPreview()">
-    </div>
-    <div><label>Start</label>
-      <input type="time" id="sf-start" value="10:00" onchange="updateShiftPreview()">
-    </div>
-    <div><label>End</label>
-      <input type="time" id="sf-end" value="18:00" onchange="updateShiftPreview()">
-    </div>
-    <div><label>Unpaid break</label>
-      <select id="sf-break" onchange="updateShiftPreview()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px">
-        <option value="0">No break</option>
-        <option value="15">15 min</option>
-        <option value="20">20 min</option>
-        <option value="30">30 min</option>
-        <option value="45">45 min</option>
-        <option value="60">1 hour</option>
-      </select>
-    </div>
-    <div><label>Notes</label>
-      <input type="text" id="sf-notes" placeholder="Optional" style="width:120px">
-    </div>
-    <div>
-      <label style="opacity:0">Add</label>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="shift-preview" id="shift-preview"></span>
-        <button class="btn-teal" onclick="logShift()">Log shift</button>
+    <div style="max-width:340px;margin:0 auto 20px;text-align:left">
+      <div class="form-group">
+        <label>Finish date</label>
+        <input type="date" id="clock-out-date" value="${shiftDate}" min="${shiftDate}" max="${tomorrowStr}"
+          style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:15px">
+      </div>
+      <div class="form-group" style="margin-top:12px"><label>Your finish time</label>
+        <input type="time" id="clock-out-time" value="${nowTime}" style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:16px">
+      </div>
+      <div class="form-group" style="margin-top:12px"><label>Unpaid break</label>
+        <select id="break-select" class="break-select">
+          <option value="0">No break</option><option value="15">15 min</option>
+          <option value="20">20 min</option><option value="30">30 min</option>
+          <option value="45">45 min</option><option value="60">1 hour</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Notes <span style="font-weight:400;font-size:11px;text-transform:none;color:${isOldShift?'var(--bad)':'var(--muted)'}" id="out-notes-hint">${isOldShift?'(required — this is a past shift)':'(optional)'}</span></label>
+        <input type="text" id="clock-out-notes" placeholder="e.g. Forgot to clock out at end of shift"
+          style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px"
+          ${isOldShift?'required':''}>
       </div>
     </div>
+    <button class="clock-btn out" id="clock-out-btn" onclick="doClockOut('${active.id}','${shiftDate}')">CLOCK<br>OUT</button>
+    ${isPending?`<div style="margin-top:16px"><button class="btn-sm" style="border-color:#fca5a5;color:var(--bad)" onclick="cancelPending('${active.id}')">✕ Cancel this entry</button></div>`:''}`;
+  }else{
+    // Show banner if completed shifts are awaiting approval
+    if(awaitingCount>0){
+      h+=`<div style="background:var(--warn-bg);border:1px solid #d97706;border-radius:10px;padding:12px 16px;margin-bottom:20px;max-width:360px;margin-left:auto;margin-right:auto;text-align:left">
+        <div style="font-weight:700;color:var(--warn);margin-bottom:4px">⏳ ${awaitingCount} shift${awaitingCount>1?'s':''} awaiting approval</div>
+        <div style="font-size:12px;color:var(--warn)">Your manager will review your hours. You can still log more shifts below.</div>
+      </div>`;
+    }
+    h+=`<div style="max-width:340px;margin:0 auto 24px;text-align:left">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="clock-in-date" value="${todayStr}" max="${todayStr}"
+          style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:15px"
+          onchange="checkRotaMatch()">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Your start time</label>
+        <input type="time" id="clock-in-time" value="${nowTime}"
+          style="width:100%;height:48px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:18px;font-weight:700"
+          onchange="checkRotaMatch()">
+      </div>
+      <div class="form-group" style="margin-top:12px" id="notes-group">
+        <label id="notes-label">Notes <span style="font-weight:400;font-size:11px;text-transform:none;color:var(--muted)" id="notes-hint">(optional)</span></label>
+        <input type="text" id="clock-in-notes" placeholder="Any notes for your manager"
+          style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px">
+      </div>
+      <div id="rota-match-msg" style="font-size:12px;margin-top:6px"></div>
+    </div>
+    <button class="clock-btn in" id="clock-in-btn" onclick="doClockIn()">CLOCK<br>IN</button>
+    <div style="font-size:12px;color:var(--muted);margin-top:14px;max-width:300px;margin-left:auto;margin-right:auto">
+      You can enter shifts from 1st April onwards.<br>A manager will confirm your hours.
+    </div>`;
+  }
+  h+=`</div>`;
+  const todayShifts=await dbGet('shifts',`staff_id=eq.${ME.id}&clock_in=gte.${todayStr}T00:00:00Z&status=eq.completed&order=clock_in.desc`);
+  if(todayShifts.length){
+    h+=`<div class="card"><div class="card-title">Today's Confirmed Shifts</div>
+      <table class="data-table"><thead><tr><th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th><th>Status</th></tr></thead><tbody>`;
+    todayShifts.forEach(s=>{
+      const adj=s.adjusted_by?'<span class="badge pending">Manager edited</span>':'<span class="badge ok">✓</span>';
+      h+=`<tr><td>${fmtTime(s.clock_in)}</td><td>${fmtTime(s.clock_out)}</td><td>${s.break_minutes||0}m</td><td class="r">${parseFloat(s.total_hours||0).toFixed(2)}h</td><td>${adj}</td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }
+  return h;
+}
+function startClockTimer(){clearInterval(clockTimer);clockTimer=setInterval(()=>{const el=document.getElementById('live-clock');if(el)el.textContent=fmtHHMM(new Date());},1000);}
+/* ── Rota match check — runs when date or time changes ── */
+async function checkRotaMatch(){
+  const date=document.getElementById('clock-in-date')?.value;
+  const time=document.getElementById('clock-in-time')?.value;
+  const hint=document.getElementById('notes-hint');
+  const msg=document.getElementById('rota-match-msg');
+  const notesInput=document.getElementById('clock-in-notes');
+  if(!date||!time||!hint||!msg)return;
+
+  // Check rota for this staff member on this date
+  try{
+    const rota=await dbGet('rota',`staff_id=eq.${ME.id}&date=eq.${date}`);
+    if(!rota||!rota.length){
+      // No rota entry — note required if not today's current time
+      const isToday=date===localDate();
+      const diffMins=(Date.now()-new Date(`${date}T${time}:00`))/60000;
+      if(isToday&&diffMins<15){
+        hint.textContent='(optional)';hint.style.color='var(--muted)';
+        msg.innerHTML='';
+        notesInput.required=false;
+      }else{
+        hint.textContent='(required — no rota found for this date)';hint.style.color='var(--warn)';
+        msg.innerHTML=`<span style="color:var(--warn)">⚠️ No rota shift found for ${fmtDateShort(date)} — please add a note explaining your hours.</span>`;
+        notesInput.required=true;
+      }
+      return;
+    }
+    // Has rota — check if entered time matches within 15 mins
+    const rotaStart=rota[0].start_time.slice(0,5); // HH:MM
+    const [rh,rm]=rotaStart.split(':').map(Number);
+    const [th,tm]=time.split(':').map(Number);
+    const diffWithRota=Math.abs((th*60+tm)-(rh*60+rm));
+    if(diffWithRota<=15){
+      hint.textContent='(optional — matches your rota ✓)';hint.style.color='var(--good)';
+      msg.innerHTML=`<span style="color:var(--good)">✓ Matches your rota start time of ${rotaStart}</span>`;
+      notesInput.required=false;
+    }else{
+      hint.textContent=`(required — rota shows ${rotaStart})`;hint.style.color='var(--warn)';
+      msg.innerHTML=`<span style="color:var(--warn)">⚠️ Your rota start is ${rotaStart} — please add a note if your time differs.</span>`;
+      notesInput.required=true;
+    }
+  }catch(e){
+    // Silently fail — don't block clock in on rota check error
+    hint.textContent='(optional)';hint.style.color='var(--muted)';
+  }
+}
+
+async function doClockIn(){
+  const date=document.getElementById('clock-in-date')?.value||localDate();
+  const tv=(document.getElementById('clock-in-time')?.value||'').trim();
+  const notes=(document.getElementById('clock-in-notes')?.value||'').trim();
+  const notesRequired=document.getElementById('clock-in-notes')?.required;
+  const btn=document.getElementById('clock-in-btn');
+
+  if(!tv){showToast('Please enter your start time.');return;}
+
+  const today=localDate();
+  const entered=new Date(`${date}T${tv}:00`);
+  const now=new Date();
+
+  // Block future dates entirely
+  if(date>today){
+    showToast("You can't clock in to a future shift — please check the date.");
+    return;
+  }
+
+  // Block future times on today's date (allow up to 5 min tolerance for form-filling time)
+  if(date===today && entered.getTime()-now.getTime() > 5*60*1000){
+    showToast("That start time is in the future. Enter your actual start time — you can't clock in before your shift begins.");
+    document.getElementById('clock-in-time')?.focus();
+    return;
+  }
+
+  if(notesRequired&&!notes){
+    showToast('Please add a note explaining your hours for this shift.');
+    document.getElementById('clock-in-notes')?.focus();
+    return;
+  }
+
+  if(btn){btn.textContent='Saving…';btn.disabled=true;btn.style.opacity='.7';}
+  try{
+    await dbPost('shifts',{staff_id:ME.id,clock_in:entered.toISOString(),status:'pending_approval',notes:notes||null});
+    const isToday=date===localDate();
+    document.getElementById('content').innerHTML=`
+      <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
+        <div style="font-size:64px;margin-bottom:16px">${isToday?'🟢':'📋'}</div>
+        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">
+          ${isToday?"You're Clocked In!":'Shift Logged!'}
+        </div>
+        <div style="font-size:15px;color:var(--muted);margin-bottom:24px">
+          ${isToday?'Started at':'Shift logged for'} <strong>${isToday?tv:fmtDateShort(date)+' at '+tv}</strong><br>
+          ${notes?`Note: <em>${notes}</em><br>`:''}
+          <span style="color:var(--warn);font-weight:600">Awaiting manager approval</span>
+        </div>
+        ${isToday?`
+          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">
+            Remember to clock out at the end of your shift.
+          </div>
+          <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
+            Go to Clock Out →
+          </button>
+        `:`
+          <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:20px">
+            If you've also finished this shift, go back and log your clock-out time too.
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn-teal" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">
+              Log clock-out for this shift
+            </button>
+            <button class="btn-sm" style="font-size:14px;padding:10px 20px" onclick="setTab('clock')">
+              Log another past shift
+            </button>
+          </div>
+        `}
+      </div>`;
+  }catch(e){
+    showToast('Clock in failed: '+e.message);
+    if(btn){btn.innerHTML='CLOCK<br>IN';btn.disabled=false;btn.style.opacity='1';}
+  }
+}
+async function cancelPending(id){
+  try{await dbDel('shifts',id);render();}catch(e){showToast('Error: '+e.message);}
+}
+async function doClockOut(shiftId,fallbackDateStr){
+  const dateStr=(document.getElementById('clock-out-date')?.value||fallbackDateStr||localDate()).trim();
+  const tv=(document.getElementById('clock-out-time')?.value||'').trim();
+  const brk=parseInt(document.getElementById('break-select')?.value||'0')||0;
+  const notes=(document.getElementById('clock-out-notes')?.value||'').trim();
+  const btn=document.getElementById('clock-out-btn');
+  const isToday=dateStr===localDate();
+  if(!tv){showToast('Please enter your finish time.');return;}
+  if(!isToday&&!notes){showToast('Please add a note — e.g. "Forgot to clock out"');document.getElementById('clock-out-notes')?.focus();return;}
+  if(btn){btn.textContent='Saving…';btn.disabled=true;btn.style.opacity='.7';}
+  try{
+    const clockOut=new Date(`${dateStr}T${tv}:00`);
+    let clockIn=new Date(`${dateStr}T09:00:00`);
+    try{
+      const ctrl=new AbortController();
+      const t=setTimeout(()=>ctrl.abort(),6000);
+      const r=await fetch(`${SB.url}/rest/v1/shifts?id=eq.${shiftId}&select=clock_in`,{headers:{'apikey':SB.jwt,'Authorization':'Bearer '+SB.jwt},signal:ctrl.signal});
+      clearTimeout(t);
+      if(r.ok){const d=await r.json();if(d[0]?.clock_in)clockIn=new Date(d[0].clock_in);}
+    }catch(fe){}
+    let adjustedOut=new Date(clockOut);
+    if(adjustedOut<=clockIn)adjustedOut=new Date(adjustedOut.getTime()+86400000);
+    const totalHours=Math.max(0,((adjustedOut-clockIn)/60000-brk)/60);
+    await dbPatch('shifts',shiftId,{clock_out:clockOut.toISOString(),break_minutes:brk,total_hours:totalHours.toFixed(2),status:'pending_approval',notes:notes||null});
+    document.getElementById('content').innerHTML=`
+      <div class="card" style="text-align:center;padding:48px 24px;max-width:500px;margin:0 auto">
+        <div style="font-size:64px;margin-bottom:16px">✅</div>
+        <div style="font-size:24px;font-weight:900;color:var(--teal);margin-bottom:8px">Shift Complete!</div>
+        <div style="font-size:15px;color:var(--muted);margin-bottom:24px">
+          Clocked out at <strong>${tv}</strong><br>
+          <strong>${totalHours.toFixed(2)} hours</strong> logged — awaiting manager approval
+        </div>
+        <div style="background:var(--teal-l);border-radius:10px;padding:14px;font-size:13px;color:var(--teal);margin-bottom:24px">
+          Your hours appear in your timesheet once a manager confirms them.
+        </div>
+        <button class="btn-teal" style="font-size:15px;padding:12px 32px" onclick="setTab('clock')">
+          ${isToday?'Back to Home':'Log another shift →'}
+        </button>
+      </div>`;
+  }catch(e){
+    showToast('Clock out failed: '+e.message);
+    if(btn){btn.innerHTML='CLOCK<br>OUT';btn.disabled=false;btn.style.opacity='1';}
+  }
+}
+async function getOpenShift(sid){
+  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.clocked_in&order=clock_in.desc&limit=1`);
+  return r[0]||null;
+}
+async function getPendingShift(sid){
+  // Order by created_at desc so the most recently submitted shift shows first
+  // clock_out=is.null means only shifts that still need clocking out
+  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=is.null&order=created_at.desc&limit=1`);
+  return r[0]||null;
+}
+async function getAllPendingUnclocked(sid){
+  // Count how many shifts are awaiting a clock-out
+  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=is.null`);
+  return r?r.length:0;
+}
+async function getAwaitingApprovalCount(sid){
+  // Count fully-completed shifts still awaiting approval (has clock_out, status pending)
+  const r=await dbGet('shifts',`staff_id=eq.${sid}&status=eq.pending_approval&clock_out=not.is.null`);
+  return r?r.length:0;
+}
+
+/* ── MY SHIFTS ── */
+async function renderMyShifts(){
+  const shifts=await dbGet('shifts',`staff_id=eq.${ME.id}&status=eq.completed&order=clock_in.desc&limit=50`);
+  const totalHrs=shifts.reduce((s,x)=>s+(parseFloat(x.total_hours)||0),0);
+  const totalPay=totalHrs*(ME.hourly_rate||0);
+  let h=`<div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total hours</div><div class="metric-value">${totalHrs.toFixed(1)}</div></div>
+    <div class="metric"><div class="metric-label">My rate</div><div class="metric-value" style="font-size:22px">£${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr</div></div>
+    <div class="metric"><div class="metric-label">Season earnings</div><div class="metric-value">£${totalPay.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">Shifts</div><div class="metric-value">${shifts.length}</div></div>
   </div>
-
-  <table class="labour-table">
-    <thead><tr>
-      <th>Date</th><th>Week</th><th>Staff</th><th>Start</th><th>End</th><th>Break</th>
-      <th class="num">Hours</th><th class="num">Cost £</th><th>Notes</th><th></th>
-    </tr></thead><tbody>`;
-
-  if(!sorted.length){
-    h+=`<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">No shifts logged yet</td></tr>`;
-  }
-
-  sorted.forEach(s=>{
-    const st=STAFF.find(x=>x.id===s.staffId);
-    const hrs=shiftHours(s);
-    const cost=shiftCost(s);
-    const brk=s.break||0;
-    h+=`<tr>
-      <td>${fmtDate(s.date)}</td>
-      <td><span class="week-badge">Wk ${weekOf(s.date)}</span></td>
-      <td class="bold">${st?st.name:'Unknown'}</td>
-      <td>${s.start}</td><td>${s.end}</td>
-      <td class="muted small">${brk>0?brk+'m':'—'}</td>
-      <td class="num">${hrs.toFixed(2)}h</td>
-      <td class="num teal-bold">£${cost.toFixed(2)}</td>
-      <td class="muted small">${s.notes||''}</td>
-      <td><button class="del-btn" onclick="deleteShift(${s.id})">✕</button></td>
-    </tr>`;
-  });
-
-  h+=`</tbody></table></div>`;
-  return h;
-}
-
-function renderLabourSummary(){
-  if(!SHIFTS.length){
-    return `<div class="panel" style="text-align:center;padding:40px;color:var(--muted)">Log some shifts first to see the weekly summary.</div>`;
-  }
-
-  const weeks=[...new Set(SHIFTS.map(s=>weekOf(s.date)))].sort((a,b)=>a-b);
-
-  let h=`<div class="panel"><div class="panel-title">Weekly Breakdown — 2026 Season</div>
-  <table class="labour-table">
-    <thead><tr>
-      <th>Week</th><th>Period</th><th class="num">Shifts</th>
-      <th class="num">Hours</th><th class="num">Labour cost</th><th>Staff worked</th>
-    </tr></thead><tbody>`;
-
-  weeks.forEach(w=>{
-    const wShifts=SHIFTS.filter(s=>weekOf(s.date)===w);
-    const hrs=totalLabourHours(wShifts);
-    const cost=totalLabourCost(wShifts);
-    const staffNames=[...new Set(wShifts.map(s=>{
-      const st=STAFF.find(x=>x.id===s.staffId);
-      return st?st.name.split(' ')[0]:'?';
-    }))].join(', ');
-    h+=`<tr>
-      <td><span class="week-badge">Wk ${w}</span></td>
-      <td class="muted small">${weekLabel(w)}</td>
-      <td class="num">${wShifts.length}</td>
-      <td class="num">${hrs.toFixed(1)}h</td>
-      <td class="num teal-bold">£${cost.toFixed(2)}</td>
-      <td class="muted small">${staffNames}</td>
-    </tr>`;
-  });
-
-  // Totals row
-  h+=`<tr style="background:var(--teal-l);font-weight:700">
-    <td colspan="2">Season total (${weeks.length} weeks)</td>
-    <td class="num">${SHIFTS.length}</td>
-    <td class="num">${totalLabourHours(SHIFTS).toFixed(1)}h</td>
-    <td class="num teal-bold">£${totalLabourCost(SHIFTS).toFixed(2)}</td>
-    <td></td>
-  </tr>`;
-
-  h+=`</tbody></table>
-
-  <div style="margin-top:20px"><div class="panel-title" style="margin-bottom:12px">By Staff Member</div>
-  <table class="labour-table"><thead><tr>
-    <th>Name</th><th>Role</th><th class="num">Rate</th>
-    <th class="num">Shifts</th><th class="num">Hours</th><th class="num">Earnings</th>
-  </tr></thead><tbody>`;
-
-  STAFF.forEach(st=>{
-    const stShifts=SHIFTS.filter(s=>s.staffId===st.id);
-    if(!stShifts.length)return;
-    const hrs=totalLabourHours(stShifts);
-    const cost=totalLabourCost(stShifts);
-    h+=`<tr>
-      <td class="bold">${st.name}</td>
-      <td><span class="cat-badge">${st.role}</span></td>
-      <td class="num muted">£${st.rate.toFixed(2)}/hr</td>
-      <td class="num">${stShifts.length}</td>
-      <td class="num">${hrs.toFixed(1)}h</td>
-      <td class="num teal-bold">£${cost.toFixed(2)}</td>
-    </tr>`;
-  });
-
-  h+=`</tbody></table></div></div>`;
-  return h;
-}
-
-/* ── Labour event handlers ── */
-function addStaffMember(){
-  const name=prompt('Staff member name:');
-  if(!name||!name.trim())return;
-  const role=prompt('Role (e.g. Bar Staff, Kitchen, GM):') || 'Bar Staff';
-  const rate=parseFloat(prompt('Hourly rate £ (enter 0 if unpaid/owner):')) || 0;
-  STAFF.push({id:nextStaffId++, name:name.trim(), role:role.trim(), rate});
-  saveState();
-  render();
-}
-function updateStaffRate(id,val){
-  const st=STAFF.find(s=>s.id===id);
-  if(st){st.rate=val;saveState();}
-}
-function deleteStaff(id){
-  if(!confirm('Remove this staff member? Their shifts will remain but show as unknown.'))return;
-  STAFF=STAFF.filter(s=>s.id!==id);
-  saveState(); render();
-}
-function updateShiftPreview(){
-  const staffId=parseInt(document.getElementById('sf-staff').value);
-  const start=document.getElementById('sf-start').value;
-  const end=document.getElementById('sf-end').value;
-  const brk=parseInt(document.getElementById('sf-break')?.value||0);
-  const preview=document.getElementById('shift-preview');
-  if(!preview)return;
-  const st=STAFF.find(s=>s.id===staffId);
-  const tmp={staffId,start,end,break:brk};
-  const hrs=shiftHours(tmp);
-  const cost=st?hrs*st.rate:0;
-  preview.textContent=hrs>0?(hrs.toFixed(1)+'h'+(brk>0?' (−'+brk+'m break)':'')+(st&&cost>0?' = £'+cost.toFixed(2):'')):'';
-}
-function logShift(){
-  const staffId=parseInt(document.getElementById('sf-staff').value);
-  const date=document.getElementById('sf-date').value;
-  const start=document.getElementById('sf-start').value;
-  const end=document.getElementById('sf-end').value;
-  const brk=parseInt(document.getElementById('sf-break')?.value||0);
-  const notes=document.getElementById('sf-notes').value.trim();
-  if(!staffId){alert('Please select a staff member.');return;}
-  if(!date){alert('Please select a date.');return;}
-  if(!start||!end){alert('Please enter start and end times.');return;}
-  if(shiftHours({start,end,break:brk})<=0){alert('End time must be after start time.');return;}
-  SHIFTS.push({id:nextShiftId++,staffId,date,start,end,break:brk,notes});
-  saveState(); render();
-}
-function deleteShift(id){
-  if(!confirm('Delete this shift?'))return;
-  SHIFTS=SHIFTS.filter(s=>s.id!==id);
-  saveState(); render();
-}
-
-/* ════════════════════════════════════════════
-   CLOUD SYNC — JSONBin.io
-   ════════════════════════════════════════════ */
-const CLOUD_KEY='medley-cloud-v1';
-const BIN_API='https://api.jsonbin.io/v3/b';
-
-function loadCloudConfig(){
-  try{
-    const raw=localStorage.getItem(CLOUD_KEY);
-    if(raw) CLOUD=JSON.parse(raw);
-  }catch(e){}
-}
-
-function saveCloudConfig(){
-  if(CLOUD) localStorage.setItem(CLOUD_KEY, JSON.stringify(CLOUD));
-}
-
-function setDot(status){
-  ['sync-dot-tb','sync-dot'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.className='sync-dot '+status;}
-  });
-}
-
-async function pushToCloud(state){
-  if(!CLOUD)return;
-  try{
-    setDot('busy');
-    const r=await fetch(`${BIN_API}/${CLOUD.binId}`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':CLOUD.apiKey},
-      body:JSON.stringify(state)
+  <div class="card"><div class="card-title">Shift History</div>`;
+  if(!shifts.length){h+=`<div class="empty"><div class="empty-icon">🕐</div>No shifts yet</div>`;}
+  else{
+    h+=`<table class="data-table"><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Break</th><th class="r">Hours</th><th class="r">Pay</th><th>Status</th></tr></thead><tbody>`;
+    shifts.forEach(s=>{
+      const hrs=parseFloat(s.total_hours||0),pay=hrs*(ME.hourly_rate||0);
+      const adj=s.adjusted_by?'<span class="badge pending">Adjusted</span>':'<span class="badge ok">✓</span>';
+      h+=`<tr><td>${fmtDate(s.clock_in)}</td><td>${fmtTime(s.clock_in)}</td><td>${fmtTime(s.clock_out)}</td><td>${s.break_minutes||0}m</td><td class="r">${hrs.toFixed(2)}h</td><td class="r">£${pay.toFixed(2)}</td><td>${adj}</td></tr>`;
     });
-    setDot(r.ok?'ok':'err');
-    if(r.ok){
-      const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      const el=document.getElementById('sync-status-text');
-      if(el) el.textContent='Connected — last pushed '+t;
-    }
-  }catch(e){setDot('err');}
-}
-
-async function forceSyncFromCloud(){
-  if(!CLOUD){alert('Cloud sync not configured.');return;}
-  try{
-    setDot('busy');
-    const r=await fetch(`${BIN_API}/${CLOUD.binId}/latest`,{
-      headers:{'X-Master-Key':CLOUD.apiKey}
-    });
-    if(!r.ok){setDot('err');return;}
-    const data=await r.json();
-    const s=data.record;
-    if(!s||!s.MASTERS){setDot('err');return;}
-    MASTERS=s.MASTERS; WET_GP=s.WET_GP; DRY_GP=s.DRY_GP;
-    STAFF=s.STAFF||[]; SHIFTS=s.SHIFTS||[];
-    nextIds=s.nextIds||nextIds; nextWet=s.nextWet||nextWet;
-    nextDry=s.nextDry||nextDry; target=s.target||70;
-    nextStaffId=s.nextStaffId||nextStaffId;
-    nextShiftId=s.nextShiftId||nextShiftId;
-    saveState(); setDot('ok'); render();
-    const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    const el=document.getElementById('sync-status-text');
-    if(el) el.textContent='Synced from cloud at '+t;
-  }catch(e){setDot('err');}
-}
-
-async function setupNewCloud(){
-  const apiKey=(document.getElementById('new-api-key').value||'').trim();
-  const errEl=document.getElementById('setup-error');
-  if(!apiKey){errEl.textContent='Please enter your JSONBin Master Key.';errEl.style.display='block';return;}
-  errEl.style.display='none';
-  try{
-    setDot('busy');
-    const state=buildState();
-    const r=await fetch(BIN_API,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-Master-Key':apiKey,'X-Bin-Name':'medley-gp-data','X-Bin-Private':'true'},
-      body:JSON.stringify(state)
-    });
-    if(!r.ok){
-      const txt=await r.text();
-      errEl.textContent='Error: '+txt;errEl.style.display='block';setDot('err');return;
-    }
-    const data=await r.json();
-    CLOUD={apiKey,binId:data.metadata.id};
-    saveCloudConfig();
-    setDot('ok');
-    showSyncConnected();
-  }catch(e){
-    errEl.textContent='Connection failed: '+e.message;errEl.style.display='block';setDot('err');
+    h+=`</tbody></table>`;
   }
+  return h+'</div>';
 }
 
-async function joinCloud(){
-  const code=(document.getElementById('join-code').value||'').trim();
-  const errEl=document.getElementById('join-error');
-  if(!code){errEl.textContent='Please paste the share code.';errEl.style.display='block';return;}
-  try{
-    const parsed=JSON.parse(atob(code));
-    if(!parsed.ak||!parsed.bi)throw new Error('Invalid code');
-    CLOUD={apiKey:parsed.ak,binId:parsed.bi};
-    saveCloudConfig();
-    errEl.style.display='none';
-    await forceSyncFromCloud();
-    showSyncConnected();
-  }catch(e){
-    errEl.textContent='Invalid share code. Ask the person who set it up to resend it.';
-    errEl.style.display='block';
-  }
-}
-
-function showSyncConnected(){
-  document.getElementById('sync-setup-section').style.display='none';
-  document.getElementById('sync-status-section').style.display='block';
-  const code=CLOUD?btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId})):'';
-  const el=document.getElementById('share-code-display');
-  if(el) el.textContent=code;
-}
-
-function copyShareCode(){
-  const code=CLOUD?btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId})):'';
-  navigator.clipboard.writeText(code).then(()=>{
-    alert('Share code copied! Send it to Charlie and the head chef — they paste it in ☁️ → "Join existing sync".');
+/* ── ROTA ── */
+function getWeekDates(offset=0){
+  // Build today's date string from LOCAL parts first — avoids any UTC/BST slip
+  const n=new Date();
+  const todayStr=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  // Parse as local midnight so getDay() is definitely the local weekday
+  const today=new Date(todayStr+'T00:00:00');
+  const dow=today.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const daysSinceMonday=dow===0?6:dow-1;
+  // Monday of the target week
+  const monday=new Date(today);
+  monday.setDate(today.getDate()-daysSinceMonday+(offset*7));
+  return Array.from({length:7},(_,i)=>{
+    const d=new Date(monday);
+    d.setDate(monday.getDate()+i);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   });
 }
 
-function disconnectCloud(){
-  if(!confirm('Disconnect cloud sync? Your local data stays, but changes won\'t sync to others.'))return;
-  CLOUD=null;
-  localStorage.removeItem(CLOUD_KEY);
-  setDot('');
-  closeSyncModal();
-}
+async function renderRota(){
+  const dates=getWeekDates(rotaWeekOffset);
+  const weekLabel=`${fmtDateShort(dates[0])} – ${fmtDateShort(dates[6])}`;
+  const rota=await dbGet('rota',`date=gte.${dates[0]}&date=lte.${dates[6]}&order=start_time.asc`);
 
-function closeSyncModal(){
-  document.getElementById('sync-modal').style.display='none';
-  // Refresh sync status display
-  if(CLOUD){
-    document.getElementById('sync-setup-section').style.display='none';
-    document.getElementById('sync-status-section').style.display='block';
-    const code=btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId}));
-    const el=document.getElementById('share-code-display');
-    if(el) el.textContent=code;
-  }
-}
+  // Split staff into FOH / BOH based on team field
+  const allStaff=isManager()?ALL_STAFF:ALL_STAFF.filter(s=>s.id===ME.id);
+  const foh=allStaff.filter(s=>s.team!=='boh');
+  const boh=allStaff.filter(s=>s.team==='boh');
 
-function buildState(){
-  return {
-    v:1, savedAt:new Date().toISOString(),
-    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,
-    nextIds,nextWet,nextDry,nextStaffId,nextShiftId,target
-  };
-}
-
-function render(){
-  const labels={
-    drink:'Drink Ingredients Master',
-    food:'Food Ingredients Master',
-    ops:'Ops & Miscellaneous',
-    wet:'Wet GP — Drinks Menu',
-    dry:'Dry GP — Food Menu',
-    labour:'Labour — Staff & Shifts'
-  };
-  const subs={
-    drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',
-    food:'Prices from Arthur David & Carnevale · 03/04/26 · Compound items (green badge) are house-made batch preparations',
-    ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',
-    wet:'Click any item to expand its recipe · Select from master to link ingredients — cost auto-calculates from purchase price',
-    dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included',
-    labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync'
+  const makeTeamTable=(teamStaff,teamLabel,color)=>{
+    if(!teamStaff.length)return'';
+    let t=`<div style="font-weight:800;font-size:13px;color:#fff;background:${color};padding:8px 12px;border-radius:8px 8px 0 0;letter-spacing:.04em;text-transform:uppercase">${teamLabel}</div>
+    <div class="rota-wrap" style="margin-bottom:16px"><table class="rota-table" id="rota-tbl-${teamLabel.replace(/\s/g,'')}">
+      <thead><tr><th>Name</th>${dates.map((d,i)=>`<th>${DAYS[i]}<br><small>${d.slice(8)}</small></th>`).join('')}</tr></thead>
+      <tbody>`;
+    teamStaff.forEach(st=>{
+      t+=`<tr><td>${st.name.split(' ')[0]}</td>`;
+      dates.forEach(date=>{
+        const dayShifts=rota.filter(r=>r.staff_id===st.id&&r.date===date);
+        t+=`<td ${isManager()?`onclick="showRotaAdd('${st.id}','${date}')"`:''}">`;
+        dayShifts.forEach(r=>{
+          t+=`<div class="rota-shift" style="background:${color}"><span>${r.start_time.slice(0,5)}–${r.end_time.slice(0,5)}</span>
+            ${isManager()?`<button class="del" onclick="delRota('${r.id}',event)">×</button>`:''}
+          </div>`;
+        });
+        if(!dayShifts.length&&isManager())t+=`<div class="rota-empty">+ Add</div>`;
+        t+=`</td>`;
+      });
+      t+=`</tr>`;
+    });
+    t+=`</tbody></table></div>`;
+    return t;
   };
 
-  let html=`<div class="tab-header">
-    <div class="tab-title">${labels[activeTab]}</div>
-    <div class="tab-sub">${subs[activeTab]}</div>
+  let h=`<div class="rota-nav">
+    <button onclick="rotaWeekOffset--;setTab('rota')">← Prev</button>
+    <div class="rota-week-label">Week of ${weekLabel}</div>
+    <button onclick="rotaWeekOffset++;setTab('rota')">Next →</button>
+    ${rotaWeekOffset!==0?`<button onclick="rotaWeekOffset=0;setTab('rota')" style="margin-left:auto">Today</button>`:''}
   </div>`;
 
-  if(activeTab==='drink') html+=renderMaster('D');
-  else if(activeTab==='food') html+=renderMaster('F');
-  else if(activeTab==='ops') html+=renderMaster('O');
-  else if(activeTab==='wet') html+=renderGP('wet');
-  else if(activeTab==='dry') html+=renderGP('dry');
-  else if(activeTab==='labour') html+=renderLabour();
+  if(isManager()){
+    h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <button class="btn-teal" onclick="duplicateLastWeek()">📋 Copy last week</button>
+      <button class="btn-sm" onclick="exportRotaImage()">🖼️ Download image</button>
+      <button class="btn-sm" onclick="exportRotaPDF()">📄 Download PDF</button>
+      ${rota.length===0?`<span style="font-size:12px;color:var(--muted);margin-left:4px">No shifts this week yet — add some or copy from last week</span>`:''}
+    </div>`;
+  }
 
-  document.getElementById('content').innerHTML=html;
+  h+=`<div id="rota-export-area">`;
+  h+=`<div style="background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-weight:800;color:var(--teal)">📅 Rota — ${weekLabel}</div>
+    <div style="font-size:12px;color:var(--muted)">The Medley · Season 2026</div>
+  </div>`;
+  h+=makeTeamTable(foh,'🍸 Front of House — Bar Team','var(--teal)');
+  h+=makeTeamTable(boh,'🍕 Back of House — Kitchen Team','#c44414');
+  h+=`</div>`;
 
-  document.querySelectorAll('.navtab').forEach(b=>b.classList.remove('active'));
-  const at=document.getElementById('t-'+activeTab);
-  if(at) at.classList.add('active');
+  if(isManager()){
+    h+=`<div id="rota-add-form"></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">Tap any cell to add a shift · Tap shift × to remove · Staff team (FOH/BOH) set in Staff admin</p>`;
+  }
+  return h;
 }
 
-/* ════════════════════════════════════════════
-   PERSISTENCE — localStorage + JSON export/import
-   ════════════════════════════════════════════ */
-
-const STORAGE_KEY = 'medley-gp-v1';
-
-// ── Set your shared password here ─────────────────────────────────────────
-// All three of you (owner, GM, head chef) use this same password.
-// To change it: update the line below, save the file, share the new version.
-const ACCESS_PASSWORD = 'medley2025';
-// ──────────────────────────────────────────────────────────────────────────
-
-function saveState() {
-  try {
-    const state = buildState();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    updateSaveStatus(state.savedAt);
-    // Debounced cloud push — waits 2.5s after last change before pushing
-    clearTimeout(syncTimer);
-    syncTimer = setTimeout(()=>pushToCloud(state), 2500);
-  } catch(e) { console.warn('Save failed:', e); }
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    if (!s || !s.MASTERS) return null;
-    MASTERS  = s.MASTERS;
-    WET_GP   = s.WET_GP;
-    DRY_GP   = s.DRY_GP;
-    STAFF    = s.STAFF    || [];
-    SHIFTS   = s.SHIFTS   || [];
-    nextIds  = s.nextIds  || nextIds;
-    nextWet  = s.nextWet  || nextWet;
-    nextDry  = s.nextDry  || nextDry;
-    nextStaffId = s.nextStaffId || nextStaffId;
-    nextShiftId = s.nextShiftId || nextShiftId;
-    target   = s.target   || 70;
-    return s.savedAt;
-  } catch(e) { return null; }
-}
-
-function updateSaveStatus(isoStr) {
-  const el = document.getElementById('save-status');
-  if (!el || !isoStr) return;
-  const d    = new Date(isoStr);
-  const time = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
-  const date = d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
-  el.textContent = '💾 Saved ' + date + ' ' + time;
-  el.className = 'save-status ok';
-}
-
-function exportData() {
-  const state = {
-    v: 1,
-    exportedAt: new Date().toISOString(),
-    MASTERS, WET_GP, DRY_GP,
-    nextIds, nextWet, nextDry, target
-  };
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'medley-gp-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importData(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const s = JSON.parse(e.target.result);
-      if (!s || !s.MASTERS || !s.WET_GP) {
-        alert('Invalid file — use a Medley GP export (.json) file.');
+async function duplicateLastWeek(){
+  const lastDates=getWeekDates(rotaWeekOffset-1);
+  const thisDates=getWeekDates(rotaWeekOffset);
+  try{
+    const lastRota=await dbGet('rota',`date=gte.${lastDates[0]}&date=lte.${lastDates[6]}`);
+    if(!lastRota.length){showToast('No shifts found in last week to copy.','warn');return;}
+    // Check if this week already has shifts
+    const thisRota=await dbGet('rota',`date=gte.${thisDates[0]}&date=lte.${thisDates[6]}`);
+    if(thisRota.length>0){
+      // Use twoTap-style confirmation via a button — just show toast and require second call
+      if(!duplicateLastWeek._confirmed){
+        duplicateLastWeek._confirmed=true;
+        showToast('This week already has shifts. Tap Copy again to add on top.','warn');
+        setTimeout(()=>{duplicateLastWeek._confirmed=false;},4000);
         return;
       }
-      const exported = s.exportedAt
-        ? new Date(s.exportedAt).toLocaleString('en-GB') : 'unknown time';
-      if (!confirm(
-        'Replace all current data with file exported ' + exported + '?\n\nYour current data will be overwritten. Continue?'
-      )) { input.value=''; return; }
-      MASTERS  = s.MASTERS;
-      WET_GP   = s.WET_GP;
-      DRY_GP   = s.DRY_GP;
-      nextIds  = s.nextIds  || nextIds;
-      nextWet  = s.nextWet  || nextWet;
-      nextDry  = s.nextDry  || nextDry;
-      target   = s.target   || 70;
-      saveState();
-      render();
-      input.value = '';
-      alert('✓ Data imported and saved.');
-    } catch(err) { alert('Error reading file: ' + err.message); input.value=''; }
-  };
-  reader.readAsText(file);
+      duplicateLastWeek._confirmed=false;
+    }
+    // Map each day offset
+    let count=0;
+    for(const shift of lastRota){
+      const dayIdx=lastDates.indexOf(shift.date);
+      if(dayIdx<0)continue;
+      const newDate=thisDates[dayIdx];
+      try{
+        await dbPost('rota',{staff_id:shift.staff_id,date:newDate,start_time:shift.start_time,end_time:shift.end_time,created_by:ME.id});
+        count++;
+      }catch(e){}
+    }
+    showToast(`✓ Copied ${count} shifts from last week`,'ok');
+    setTimeout(()=>setTab('rota'),700);
+  }catch(e){showToast('Error copying rota: '+e.message);}
 }
 
-/* ════════════════════════════════════════════
-   AUTHENTICATION
-   ════════════════════════════════════════════ */
-
-function checkAuth() {
-  return sessionStorage.getItem('medley-authed') === '1';
+async function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return;}
+    const s=document.createElement('script');
+    s.src=src;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
 }
 
-function attemptLogin() {
-  const pwd = (document.getElementById('pwd-input').value || '').trim();
-  if (pwd === ACCESS_PASSWORD) {
-    sessionStorage.setItem('medley-authed', '1');
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('login-error').style.display  = 'none';
-    const savedAt = loadState();
-    if (savedAt) updateSaveStatus(savedAt);
-    else { /* first ever open — default data already loaded */ }
-    render();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('pwd-input').value = '';
-    document.getElementById('pwd-input').focus();
+async function exportRotaImage(){
+  showToast('Generating image…','ok');
+  try{
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    const el=document.getElementById('rota-export-area');
+    if(!el){showToast('Rota not found — please reload');return;}
+
+    // Temporarily remove overflow/scroll constraints so full rota captures
+    const rotaWraps=el.querySelectorAll('.rota-wrap');
+    const origStyles=[];
+    rotaWraps.forEach(w=>{
+      origStyles.push(w.style.cssText);
+      w.style.overflowX='visible';
+      w.style.width='max-content';
+    });
+    el.style.width='max-content';
+    el.style.minWidth='700px';
+
+    const canvas=await html2canvas(el,{
+      backgroundColor:'#f5f7f6',
+      scale:2,
+      useCORS:true,
+      scrollX:0,scrollY:0,
+      windowWidth:1200,
+      width:el.scrollWidth,
+      height:el.scrollHeight
+    });
+
+    // Restore styles
+    rotaWraps.forEach((w,i)=>w.style.cssText=origStyles[i]);
+    el.style.width='';el.style.minWidth='';
+
+    const a=document.createElement('a');
+    const dates=getWeekDates(rotaWeekOffset);
+    a.download=`medley-rota-${dates[0]}.png`;
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+    showToast('Image downloaded ✓','ok');
+  }catch(e){showToast('Export failed: '+e.message);}
+}
+
+async function exportRotaPDF(){
+  showToast('Generating PDF…','ok');
+  try{
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+    const el=document.getElementById('rota-export-area');
+    if(!el){showToast('Rota not found');return;}
+
+    // Expand to full width for capture
+    const rotaWraps=el.querySelectorAll('.rota-wrap');
+    const origStyles=[];
+    rotaWraps.forEach(w=>{
+      origStyles.push(w.style.cssText);
+      w.style.overflowX='visible';
+      w.style.width='max-content';
+    });
+    el.style.width='max-content';
+    el.style.minWidth='700px';
+
+    const canvas=await html2canvas(el,{
+      backgroundColor:'#f5f7f6',
+      scale:2,useCORS:true,
+      scrollX:0,scrollY:0,
+      windowWidth:1200,
+      width:el.scrollWidth,
+      height:el.scrollHeight
+    });
+
+    rotaWraps.forEach((w,i)=>w.style.cssText=origStyles[i]);
+    el.style.width='';el.style.minWidth='';
+
+    const imgData=canvas.toDataURL('image/png');
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pdfW=pdf.internal.pageSize.getWidth();
+    const pdfH=pdf.internal.pageSize.getHeight();
+    const imgH=(canvas.height*pdfW)/canvas.width;
+    // Scale down if taller than page, otherwise centre vertically
+    if(imgH<=pdfH){
+      pdf.addImage(imgData,'PNG',0,(pdfH-imgH)/2,pdfW,imgH);
+    } else {
+      // Scale to fit height instead
+      const scaledW=(canvas.width*pdfH)/canvas.height;
+      pdf.addImage(imgData,'PNG',(pdfW-scaledW)/2,0,scaledW,pdfH);
+    }
+    const dates=getWeekDates(rotaWeekOffset);
+    pdf.save(`medley-rota-${dates[0]}.pdf`);
+    showToast('PDF downloaded ✓','ok');
+  }catch(e){showToast('Export failed: '+e.message);}
+}
+
+function showRotaAdd(staffId,date){
+  const st=ALL_STAFF.find(s=>s.id===staffId);
+  const form=document.getElementById('rota-add-form');
+  if(!form)return;
+  form.innerHTML=`<div class="rota-add-form">
+    <div style="font-weight:700;color:var(--teal);margin-bottom:10px">Add shift: ${st?st.name:''} on ${fmtDateShort(date)}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px">Start</label>
+        <input type="time" id="rota-start" value="10:00" style="height:36px;border:1.5px solid var(--border);border-radius:7px;padding:0 8px;font-size:14px"></div>
+      <div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:3px">End</label>
+        <input type="time" id="rota-end" value="18:00" style="height:36px;border:1.5px solid var(--border);border-radius:7px;padding:0 8px;font-size:14px"></div>
+      <button class="btn-teal" style="height:36px" onclick="addRota('${staffId}','${date}')">Add</button>
+      <button class="btn-sm" style="height:36px" onclick="document.getElementById('rota-add-form').innerHTML=''">Cancel</button>
+    </div>
+  </div>`;
+  form.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+async function addRota(staffId,date){
+  const start=document.getElementById('rota-start').value;
+  const end=document.getElementById('rota-end').value;
+  if(!start||!end){showToast('Please enter start and end times.');return;}
+  try{
+    await dbPost('rota',{staff_id:staffId,date,start_time:start,end_time:end,created_by:ME.id});
+    showToast('Shift added ✓','ok');
+    setTimeout(()=>setTab('rota'),500);
+  }catch(e){showToast('Error: '+e.message);}
+}
+async function delRota(id,e){
+  e.stopPropagation();
+  const btn=e.target;
+  twoTapDelete(btn,async()=>{
+    try{await dbDel('rota',id);setTab('rota');}catch(e){showToast('Error: '+e.message);}
+  });
+}
+
+/* ── TIMESHEETS ── */
+async function renderTimesheets(){
+  const monthStart=new Date().toISOString().slice(0,8)+'01';
+  const [shifts,pending]=await Promise.all([
+    dbGet('shifts',`clock_in=gte.${monthStart}T00:00:00Z&status=neq.pending_approval&order=clock_in.desc`),
+    dbGet('shifts','status=eq.pending_approval&order=clock_in.desc')
+  ]);
+  let h='';
+  if(pending.length){
+    h+=`<div class="card" style="border-left:4px solid var(--orange)">
+      <div class="card-title" style="color:var(--orange)">⏳ Shifts Pending Approval (${pending.length})</div>
+      <table class="data-table"><thead><tr><th>Staff</th><th>Date</th><th>Start</th><th>Finish</th><th>Break</th><th>Hrs</th><th>Reason</th><th>Actions</th></tr></thead><tbody>`;
+    pending.forEach(s=>{
+      const st=ALL_STAFF.find(m=>m.id===s.staff_id);
+      const isEd=editingShiftId===s.id;
+      const date=s.clock_in?s.clock_in.slice(0,10):'';
+      const inT=s.clock_in?new Date(s.clock_in).toTimeString().slice(0,5):'';
+      const outT=s.clock_out?new Date(s.clock_out).toTimeString().slice(0,5):'';
+      const hrs=parseFloat(s.total_hours||0);
+      if(isEd){
+        h+=`<tr style="background:#fffbf0;border-left:3px solid var(--orange)">
+          <td><strong>${st?st.name:'?'}</strong></td>
+          <td><input type="date" id="es-date" value="${date}" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:130px"></td>
+          <td><input type="time" id="es-in" value="${inT}" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:13px;width:95px" onchange="previewHrs()"></td>
+          <td><input type="time" id="es-out" value="${outT}" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:13px;width:95px" onchange="previewHrs()"></td>
+          <td><input type="number" id="es-break" value="${s.break_minutes||0}" min="0" style="border:1px solid var(--border);border-radius:5px;padding:3px;font-size:12px;width:50px" onchange="previewHrs()">m</td>
+          <td><span id="es-prev" style="color:var(--teal);font-weight:700">${hrs.toFixed(2)}</span>h</td>
+          <td><input type="text" id="es-notes" value="${s.notes||''}" placeholder="Reason" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:120px"></td>
+          <td style="white-space:nowrap">
+            <button class="btn-teal" style="font-size:11px;padding:4px 8px" onclick="saveEdit('${s.id}','${s.staff_id}',false)">Save</button>
+            <button class="btn-teal" style="font-size:11px;padding:4px 8px;background:var(--good);margin-left:3px" onclick="saveEdit('${s.id}','${s.staff_id}',true)">Save & ✓</button>
+            <button class="btn-sm" style="margin-left:3px" onclick="editingShiftId=null;setTab('timesheets')">✕</button>
+          </td></tr>`;
+      }else{
+        h+=`<tr style="background:#fffbf0">
+          <td><strong>${st?st.name:'?'}</strong></td>
+          <td>${fmtDate(s.clock_in)}</td>
+          <td><strong>${fmtTime(s.clock_in)}</strong></td>
+          <td>${s.clock_out?`<strong>${fmtTime(s.clock_out)}</strong>`:'<span class="badge pending">Not out</span>'}</td>
+          <td>${s.break_minutes||0}m</td>
+          <td>${hrs>0?hrs.toFixed(2)+'h':'—'}</td>
+          <td style="font-size:12px;color:var(--muted);max-width:160px">${s.notes||'—'}</td>
+          <td style="white-space:nowrap">
+            <button class="btn-teal" style="font-size:11px;padding:4px 8px" onclick="approveShift('${s.id}')">✓ Approve</button>
+            <button class="btn-sm" style="margin-left:3px" onclick="editingShiftId='${s.id}';setTab('timesheets')">✏️</button>
+            <button class="btn-danger" style="margin-left:3px" id="del-ps-${s.id}" onclick="deleteShift(this,'${s.id}')">🗑️</button>
+          </td></tr>`;
+      }
+    });
+    h+=`</tbody></table><div style="font-size:11px;color:var(--muted);margin-top:8px">Trash: tap once to arm → tap again to confirm delete</div></div>`;
   }
+  const grouped={};
+  shifts.forEach(s=>{if(!grouped[s.staff_id])grouped[s.staff_id]=[];grouped[s.staff_id].push(s);});
+  let totalCost=0,totalHrs=0;
+  h+=`<div class="card"><div class="card-title">Timesheets — This Month</div>`;
+  ALL_STAFF.forEach(st=>{
+    const stShifts=grouped[st.id]||[];
+    const hrs=stShifts.reduce((s,x)=>s+(parseFloat(x.total_hours)||0),0);
+    const cost=hrs*(st.hourly_rate||0);
+    totalCost+=cost;totalHrs+=hrs;
+    if(!stShifts.length)return;
+    h+=`<div style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:2px solid var(--teal-l)">
+        <strong>${st.name}</strong>
+        <span style="font-size:12px;color:var(--muted)">${hrs.toFixed(1)}h · <span style="color:var(--teal);font-weight:700">£${cost.toFixed(2)}</span></span>
+      </div>
+      <table class="data-table"><thead><tr>
+        <th>Date</th><th>In</th><th>Out</th><th>Break</th><th class="r">Hrs</th><th class="r">Pay</th><th>Status</th>
+        ${isSuperAdmin()?'<th>Actions</th>':''}
+      </tr></thead><tbody>`;
+    stShifts.forEach(s=>{
+      const h2=parseFloat(s.total_hours||0),p=h2*(st.hourly_rate||0);
+      const isEd=isSuperAdmin()&&editingShiftId===s.id;
+      const date=s.clock_in?s.clock_in.slice(0,10):'';
+      const inT=s.clock_in?new Date(s.clock_in).toTimeString().slice(0,5):'';
+      const outT=s.clock_out?new Date(s.clock_out).toTimeString().slice(0,5):'';
+      if(isEd){
+        h+=`<tr style="background:#fffbf0;border-left:3px solid var(--orange)">
+          <td><input type="date" id="es-date" value="${date}" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:130px"></td>
+          <td><input type="time" id="es-in" value="${inT}" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:90px" onchange="previewHrs()"></td>
+          <td><input type="time" id="es-out" value="${outT}" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:90px" onchange="previewHrs()"></td>
+          <td><input type="number" id="es-break" value="${s.break_minutes||0}" min="0" style="border:1px solid var(--border);border-radius:5px;padding:3px;font-size:12px;width:50px" onchange="previewHrs()">m</td>
+          <td class="r"><span id="es-prev" style="color:var(--teal);font-weight:700">${h2.toFixed(2)}</span></td>
+          <td class="r">£${p.toFixed(2)}</td>
+          <td><input type="text" id="es-notes" value="${s.notes||''}" placeholder="Notes" style="border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;width:90px"></td>
+          <td style="white-space:nowrap">
+            <button class="btn-teal" style="font-size:11px;padding:4px 10px" onclick="saveEdit('${s.id}','${st.id}',true)">✓ Save</button>
+            <button class="btn-sm" style="margin-left:4px" onclick="editingShiftId=null;setTab('timesheets')">✕</button>
+          </td></tr>`;
+      }else{
+        const sb=s.status==='clocked_in'?'<span class="badge pending">On shift</span>':(s.adjusted_by?'<span class="badge pending">Edited</span>':'<span class="badge ok">✓</span>');
+        h+=`<tr>
+          <td>${fmtDate(s.clock_in)}</td><td>${fmtTime(s.clock_in)}</td>
+          <td>${s.clock_out?fmtTime(s.clock_out):sb}</td>
+          <td>${s.break_minutes||0}m</td>
+          <td class="r">${h2.toFixed(2)}</td><td class="r">£${p.toFixed(2)}</td>
+          <td>${s.clock_out?sb:''}</td>
+          ${isSuperAdmin()?`<td style="white-space:nowrap">
+            <button class="btn-sm" onclick="editingShiftId='${s.id}';setTab('timesheets')">✏️ Edit</button>
+            <button class="btn-danger" style="margin-left:4px" id="del-s-${s.id}" onclick="deleteShift(this,'${s.id}')">🗑️</button>
+          </td>`:''}
+        </tr>`;
+      }
+    });
+    h+=`</tbody></table></div>`;
+  });
+  h+=`<div style="padding:12px;background:var(--teal-l);border-radius:8px;display:flex;justify-content:space-between"><strong>Month total</strong><strong>${totalHrs.toFixed(1)}h · £${totalCost.toFixed(2)}</strong></div></div>`;
+  return h;
+}
+function deleteShift(btn,id){
+  twoTapDelete(btn,async()=>{
+    showToast('Deleting…','ok');
+    try{
+      const r=await fetch(`${SB.url}/rest/v1/shifts?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB.jwt,'Authorization':'Bearer '+SB.jwt,'Prefer':'return=minimal'}});
+      if(!r.ok){const tx=await r.text();throw new Error(`${r.status}: ${tx.slice(0,150)}`);}
+      if(editingShiftId===id)editingShiftId=null;
+      showToast('Shift deleted ✓','ok');
+      setTimeout(()=>setTab('timesheets'),600);
+    }catch(e){showToast('Delete failed: '+e.message);}
+  });
+}
+async function approveShift(id){
+  try{
+    const shift=(await dbGet('shifts',`id=eq.${id}`))[0];
+    let u={status:'completed',adjusted_by:ME.id};
+    if(shift.clock_in&&shift.clock_out){
+      let co=new Date(shift.clock_out),ci=new Date(shift.clock_in);
+      if(co<=ci)co=new Date(co.getTime()+86400000);
+      const mins=(co-ci)/60000-(shift.break_minutes||0);
+      u.total_hours=Math.max(0,mins/60).toFixed(2);
+    }
+    await dbPatch('shifts',id,u);
+    showToast('Approved ✓','ok');
+    setTimeout(()=>setTab('timesheets'),600);
+  }catch(e){showToast('Error: '+e.message);}
+}
+function previewHrs(){
+  const i=document.getElementById('es-in'),o=document.getElementById('es-out'),b=document.getElementById('es-break'),p=document.getElementById('es-prev');
+  if(!i||!o||!p)return;
+  const [sh,sm]=(i.value||'00:00').split(':').map(Number);
+  const [eh,em]=(o.value||'00:00').split(':').map(Number);
+  const brk=parseInt(b?.value||0);
+  p.textContent=Math.max(0,((eh*60+em)-(sh*60+sm)-brk)/60).toFixed(2);
+}
+async function saveEdit(shiftId,staffId,approve=false){
+  const date=document.getElementById('es-date').value;
+  const inT=document.getElementById('es-in').value;
+  const outT=document.getElementById('es-out').value;
+  const brk=parseInt(document.getElementById('es-break').value)||0;
+  const notes=document.getElementById('es-notes').value.trim();
+  if(!date||!inT){showToast('Date and start time required.');return;}
+  const ci=new Date(`${date}T${inT}:00`);
+  let co=outT?new Date(`${date}T${outT}:00`):null;
+  // Handle midnight crossover — if out is earlier than in, shift goes to next day
+  if(co&&co<=ci)co=new Date(co.getTime()+86400000);
+  const mins=co?(co-ci)/60000-brk:0;
+  try{
+    await dbPatch('shifts',shiftId,{clock_in:ci.toISOString(),clock_out:co?co.toISOString():null,break_minutes:brk,total_hours:Math.max(0,mins/60).toFixed(2),adjusted_by:ME.id,notes:notes||null,status:approve?'completed':'pending_approval'});
+    editingShiftId=null;showToast('Saved ✓','ok');setTimeout(()=>setTab('timesheets'),600);
+  }catch(e){showToast('Error: '+e.message);}
 }
 
-/* ── Auto-save wrapper — called after every data mutation ─────── */
-function withSave(fn) {
-  return function(...args) { fn(...args); saveState(); };
-}
-
-saveMaster    = withSave(saveMaster);
-delMaster     = withSave(delMaster);
-addMaster     = withSave(addMaster);
-setSell       = withSave(setSell);
-setQty        = withSave(setQty);
-setCost       = withSave(setCost);
-delIng        = withSave(delIng);
-delItem       = withSave(delItem);
-addFromMaster = withSave(addFromMaster);
-addCustom     = withSave(addCustom);
-addItem       = withSave(addItem);
-
-/* ════════════════════════════════════════════
-   INIT
-   ════════════════════════════════════════════ */
-
-function init() {
-  loadCloudConfig();
-  if(CLOUD) { setDot('ok'); showSyncConnected(); }
-
-  if (checkAuth()) {
-    document.getElementById('login-screen').style.display = 'none';
-    const savedAt = loadState();
-    if (savedAt) updateSaveStatus(savedAt);
-    render();
-    // Auto-sync from cloud on load so all users get latest data
-    if(CLOUD) forceSyncFromCloud();
-  } else {
-    document.getElementById('login-screen').style.display = 'flex';
+/* ── PAY PERIODS ── */
+async function renderPayPeriods(){
+  const periods=await dbGet('pay_periods','order=start_date.desc');
+  let h='';
+  if(isSuperAdmin()){
+    h+=`<div class="card"><div class="card-title">Create Pay Period</div>
+      <div class="form-grid cols2">
+        <div class="form-group"><label>Start</label><input type="date" id="pp-start"></div>
+        <div class="form-group"><label>End</label><input type="date" id="pp-end"></div>
+      </div>
+      <button class="btn-teal" onclick="createPayPeriod()" style="margin-top:10px">Create Period</button></div>`;
   }
+  if(!periods.length){h+=`<div class="empty"><div class="empty-icon">💰</div>No pay periods yet</div>`;return h;}
+  for(const p of periods){
+    const shifts=await dbGet('shifts',`clock_in=gte.${p.start_date}T00:00:00Z&clock_in=lte.${p.end_date}T23:59:59Z&status=eq.completed`);
+    const staffWorked=new Set(shifts.map(s=>s.staff_id));
+    const tipShare=staffWorked.size>0?(parseFloat(p.tips_total)||0)/staffWorked.size:0;
+    let totalPay=0;
+    shifts.forEach(s=>{const st=ALL_STAFF.find(m=>m.id===s.staff_id);totalPay+=(parseFloat(s.total_hours)||0)*(st?st.hourly_rate:0);});
+    const myS=shifts.filter(s=>s.staff_id===ME.id);
+    const myH=myS.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
+    const myP=myH*(ME.hourly_rate||0),myT=staffWorked.has(ME.id)?tipShare:0;
+    h+=`<div class="pay-card">
+      <div class="pay-card-period">${fmtDateShort(p.start_date)} – ${fmtDateShort(p.end_date)}</div>
+      <div class="pay-card-amount">£${(myP+myT).toFixed(2)}</div>
+      <div class="pay-card-detail">${myH.toFixed(1)}h × £${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr = £${myP.toFixed(2)}</div>
+      ${myT>0?`<div class="tips-badge">+ £${myT.toFixed(2)} tips</div>`:''}
+    </div>`;
+    if(isManager()){
+      h+=`<div class="card" style="margin-top:-8px;border-radius:0 0 var(--radius) var(--radius)">
+        <div style="font-size:13px;margin-bottom:10px">Total wages: <strong>£${totalPay.toFixed(2)}</strong> · Tips pot: 
+          ${isSuperAdmin()?`£<input type="number" step="0.01" value="${p.tips_total||0}" style="width:80px;border:1px solid var(--border);border-radius:5px;padding:3px 6px" onchange="updateTips('${p.id}',+this.value)">`:`<strong>£${parseFloat(p.tips_total||0).toFixed(2)}</strong>`}
+          split ${staffWorked.size} ways = £${tipShare.toFixed(2)} each
+        </div>
+        <table class="data-table" style="font-size:12px"><thead><tr><th>Staff</th><th class="r">Hrs</th><th class="r">Wages</th><th class="r">Tips</th><th class="r">Total</th></tr></thead><tbody>`;
+      ALL_STAFF.forEach(st=>{
+        const sts=shifts.filter(s=>s.staff_id===st.id);if(!sts.length)return;
+        const hrs=sts.reduce((t,s)=>t+(parseFloat(s.total_hours)||0),0);
+        const wages=hrs*(st.hourly_rate||0),tips=staffWorked.has(st.id)?tipShare:0;
+        h+=`<tr><td>${st.name}</td><td class="r">${hrs.toFixed(1)}</td><td class="r">£${wages.toFixed(2)}</td><td class="r">£${tips.toFixed(2)}</td><td class="r"><strong>£${(wages+tips).toFixed(2)}</strong></td></tr>`;
+      });
+      h+=`</tbody></table></div>`;
+    }
+  }
+  return h;
+}
+async function createPayPeriod(){
+  const s=document.getElementById('pp-start').value,e=document.getElementById('pp-end').value;
+  if(!s||!e){showToast('Please set start and end dates.');return;}
+  if(e<s){showToast('End must be after start.');return;}
+  try{await dbPost('pay_periods',{start_date:s,end_date:e,tips_total:0,status:'open'});setTab('pay');}
+  catch(e){showToast('Error: '+e.message);}
+}
+async function updateTips(id,val){try{await dbPatch('pay_periods',id,{tips_total:val});}catch(e){showToast('Error: '+e.message);}}
+
+/* ── MENU ── */
+function renderMenu(){
+  const food=[{cat:'Starters',items:[{n:'Mixed Olives',p:'£4.50'},{n:'Garlic Pizette',p:'£5.00'},{n:'Padron Peppers',p:'£6.50'}]},{cat:'Pizzas',items:[{n:'Marinara',p:'£10.00'},{n:'Margherita',p:'£12.00'},{n:'Broccoli Ricotta',p:'£14.50'},{n:'Pepperoni & Nduja',p:'£14.50'},{n:'Anchovie',p:'£14.50'}]},{cat:'Desserts',items:[{n:'Affogato',p:'£6.50'},{n:'Dough Ring',p:'£7.50'}]}];
+  const drinks=[{cat:'Cocktails',items:[{n:'Aperol Spritz (glass)',p:'£9.20'},{n:'Aperol Spritz (jug)',p:'£31.00'},{n:"Pimm's (glass)",p:'£8.25'},{n:"Pimm's (jug)",p:'£31.00'},{n:'Limoncello Spritz',p:'£8.50'},{n:'G&T Single',p:'£6.76'},{n:'G&T Double',p:'£10.00'}]},{cat:'Beer',items:[{n:'Medley Lager',p:'£6.75'},{n:'IPA',p:'£6.75'},{n:'Yabba Dabba Doo',p:'£6.90'},{n:'Stowford Press',p:'£6.50'},{n:'0% Heineken',p:'£4.20'},{n:'0% Craft',p:'£5.45'}]},{cat:'Soft Drinks',items:[{n:'Coke/Diet Coke/Lemonade',p:'£3.10'},{n:'Cordial & Soda',p:'£1.60'},{n:'Juice',p:'£2.90'}]},{cat:'Canned Cocktails',items:[{n:'Margarita Can',p:'£6.50'},{n:'Paloma Can',p:'£6.50'}]}];
+  const mkSec=(items)=>items.map(g=>`<div class="card"><div class="card-title">${g.cat}</div><table class="data-table"><tbody>${g.items.map(i=>`<tr><td>${i.n}</td><td class="r"><strong>${i.p}</strong></td></tr>`).join('')}</tbody></table></div>`).join('');
+  return`<div class="two-col"><div><div class="card-title" style="margin-bottom:12px">🍕 Food</div>${mkSec(food)}</div><div><div class="card-title" style="margin-bottom:12px">🍸 Drinks</div>${mkSec(drinks)}</div></div>`;
 }
 
+/* ── PROFILE ── */
+function renderProfile(){
+  return`<div class="card">
+    <div class="card-title">My Profile</div>
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar" id="profile-avatar-preview">${ME.avatar_url?`<img src="${ME.avatar_url}">`:(ME.name.split(' ').map(w=>w[0]).join('').slice(0,2))}</div>
+      <label class="avatar-upload">📷 Change photo<input type="file" accept="image/*" onchange="uploadAvatar(this)"></label>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Full Name</label><input id="p-name" value="${ME.name}"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="p-email" value="${ME.email||''}"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="p-phone" value="${ME.phone||''}"></div>
+      <div class="form-group"><label>Address</label><input id="p-address" value="${ME.address||''}"></div>
+    </div>
+    <button class="btn-teal" onclick="saveProfile()" style="margin-top:12px">Save Profile</button>
+    <hr class="divider">
+    <div class="card-title">Change PIN</div>
+    <div class="form-grid cols2">
+      <div class="form-group"><label>New PIN (4 digits)</label><input type="password" id="new-pin" maxlength="4" placeholder="••••"></div>
+      <div class="form-group"><label>Confirm PIN</label><input type="password" id="confirm-pin" maxlength="4" placeholder="••••"></div>
+    </div>
+    <button class="btn-teal" onclick="changePIN()" style="margin-top:10px">Update PIN</button>
+    <div id="profile-msg" style="margin-top:10px"></div>
+    <hr class="divider">
+    <div style="font-size:13px;color:var(--muted)">
+      <div>Hourly rate: <strong>£${parseFloat(ME.hourly_rate||0).toFixed(2)}/hr</strong></div>
+      <div style="margin-top:4px">Role: <strong>${ROLES[ME.role]||ME.role}</strong></div>
+    </div>
+  </div>`;
+}
+async function uploadAvatar(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){showToast('Photo must be under 5MB');return;}
+  const preview=document.getElementById('profile-avatar-preview');
+  if(preview)preview.innerHTML=`<div style="font-size:12px;color:var(--muted)">Uploading…</div>`;
+  showToast('Uploading…','ok');
+  try{
+    const ext=file.name.split('.').pop().toLowerCase()||'jpg';
+    const path=`${ME.id}.${ext}`;
+    // Try both keys — newer Supabase projects use publishable key for storage
+    let uploaded=false;
+    for(const key of [SB.key, SB.jwt]){
+      const r=await fetch(`${SB.url}/storage/v1/object/profile-pics/${path}`,{
+        method:'PUT',
+        headers:{'apikey':key,'Authorization':'Bearer '+key,'Content-Type':file.type||'image/jpeg','x-upsert':'true'},
+        body:file
+      });
+      if(r.ok){uploaded=true;break;}
+      if(key===SB.key){
+        // First key failed, log and try second
+        const tx=await r.text();
+        console.warn('Key 1 failed:',r.status,tx.slice(0,100));
+      } else {
+        const tx=await r.text();
+        throw new Error(`Upload ${r.status}: ${tx.slice(0,120)}`);
+      }
+    }
+    if(!uploaded)throw new Error('Both keys failed for upload');
+    const url=`${SB.url}/storage/v1/object/public/profile-pics/${path}?t=${Date.now()}`;
+    await dbPatch('staff',ME.id,{avatar_url:url});
+    ME.avatar_url=url;saveSession();
+    document.getElementById('tb-avatar').innerHTML=avatarHtml(ME,30);
+    if(preview)preview.innerHTML=`<img src="${url}" style="width:100px;height:100px;border-radius:50%;object-fit:cover">`;
+    const idx=ALL_STAFF.findIndex(s=>s.id===ME.id);if(idx>=0)ALL_STAFF[idx].avatar_url=url;
+    showToast('Photo updated ✓','ok');input.value='';
+  }catch(e){showToast('Upload error: '+e.message);if(preview)preview.innerHTML=avatarHtml(ME,100);}
+}
+async function saveProfile(){
+  const name=document.getElementById('p-name').value.trim();
+  const email=document.getElementById('p-email').value.trim();
+  const phone=document.getElementById('p-phone').value.trim();
+  const address=document.getElementById('p-address').value.trim();
+  if(!name){showToast('Name cannot be empty.');return;}
+  try{
+    await dbPatch('staff',ME.id,{name,email,phone,address});
+    ME={...ME,name,email,phone,address};saveSession();
+    document.getElementById('tb-name').textContent=ME.name.split(' ')[0];
+    const idx=ALL_STAFF.findIndex(s=>s.id===ME.id);if(idx>=0)ALL_STAFF[idx]={...ALL_STAFF[idx],name,email,phone,address};
+    showMsg('profile-msg','Profile saved!','ok');
+  }catch(e){showMsg('profile-msg','Error: '+e.message,'err');}
+}
+async function changePIN(){
+  const np=document.getElementById('new-pin').value,cp=document.getElementById('confirm-pin').value;
+  if(!/^\d{4}$/.test(np)){showMsg('profile-msg','PIN must be 4 digits.','err');return;}
+  if(np!==cp){showMsg('profile-msg','PINs do not match.','err');return;}
+  if(np==='0000'){showMsg('profile-msg','Choose a different PIN — 0000 is the default.','err');return;}
+  try{await dbPatch('staff',ME.id,{pin_hash:np});ME.pin_hash=np;saveSession();showMsg('profile-msg','✓ PIN updated!','ok');document.getElementById('new-pin').value='';document.getElementById('confirm-pin').value='';}
+  catch(e){showMsg('profile-msg','Error: '+e.message,'err');}
+}
+
+/* ── STAFF ADMIN ── */
+async function renderStaffAdmin(){
+  let h=`<div class="card"><div class="card-title">Add New Staff Member</div>
+    <div class="form-grid cols2">
+      <div class="form-group"><label>Full Name *</label><input id="ns-name" placeholder="First Last"></div>
+      <div class="form-group"><label>Role</label><select id="ns-role"><option value="staff">Staff</option><option value="manager">Manager</option><option value="super_admin">Super Admin</option></select></div>
+      <div class="form-group"><label>Team</label><select id="ns-team"><option value="foh">🍸 Front of House (Bar)</option><option value="boh">🍕 Back of House (Kitchen)</option></select></div>
+      <div class="form-group"><label>Email</label><input type="email" id="ns-email"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="ns-phone"></div>
+      <div class="form-group"><label>Hourly Rate £</label><input type="number" step="0.01" id="ns-rate" placeholder="12.21"></div>
+    </div>
+    <button class="btn-teal" onclick="addStaff()" style="margin-top:10px">Add Staff Member</button>
+    <div id="add-staff-msg" style="margin-top:8px"></div></div>
+  <div class="card"><div class="card-title">All Staff (${ALL_STAFF.length})</div>
+    <table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Email</th><th class="r">Rate</th><th>PIN</th><th>Active</th><th></th></tr></thead><tbody>`;
+  ALL_STAFF.forEach(st=>{
+    h+=`<tr>
+      <td><strong>${st.name}</strong></td>
+      <td><span class="badge ${st.role}">${ROLES[st.role]||st.role}</span></td>
+      <td><select style="border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:12px" onchange="updateTeam('${st.id}',this.value)">
+        <option value="foh" ${st.team!=='boh'?'selected':''}>🍸 FOH</option>
+        <option value="boh" ${st.team==='boh'?'selected':''}>🍕 BOH</option>
+      </select></td>
+      <td style="font-size:12px;color:var(--muted)">${st.email||'—'}</td>
+      <td class="r">£<input type="number" step="0.01" value="${parseFloat(st.hourly_rate||0).toFixed(2)}" style="width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px" onchange="updateRate('${st.id}',+this.value)"></td>
+      <td>${st.id===ME.id?'—':`<button class="btn-sm" onclick="resetPIN('${st.id}','${st.name.replace(/'/g,'&#39;')}')">Reset</button>`}</td>
+      <td><label style="cursor:pointer"><input type="checkbox" ${st.is_active?'checked':''} onchange="toggleActive('${st.id}',this.checked)"> ${st.is_active?'Active':'Inactive'}</label></td>
+      <td>${st.id!==ME.id?`<button class="del-btn" onclick="removeStaff('${st.id}','${st.name.replace(/'/g,'&#39;')}')">✕</button>`:''}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;return h;
+}
+async function addStaff(){
+  const name=document.getElementById('ns-name').value.trim();
+  const role=document.getElementById('ns-role').value;
+  const email=document.getElementById('ns-email').value.trim();
+  const phone=document.getElementById('ns-phone').value.trim();
+  const rate=parseFloat(document.getElementById('ns-rate').value)||0;
+  const team=document.getElementById('ns-team').value||'foh';
+  if(!name){showMsg('add-staff-msg','Name is required.','err');return;}
+  try{
+    const result=await dbPost('staff',{name,role,email,phone,hourly_rate:rate,pin_hash:'0000',is_active:true,team});
+    const newStaff=Array.isArray(result)?result[0]:result;
+    if(newStaff){ALL_STAFF.push(newStaff);ALL_STAFF.sort((a,b)=>a.name.localeCompare(b.name));}
+    showMsg('add-staff-msg',`✓ ${name} added. Default PIN is 0000.`,'ok');
+    ['ns-name','ns-email','ns-phone','ns-rate'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    setTimeout(()=>setTab('staff-admin'),800);
+  }catch(e){showMsg('add-staff-msg','Error: '+e.message,'err');}
+}
+async function updateStaffField(id, field, val){
+  try{
+    await dbPatch('staff',id,{[field]:val});
+    const st=ALL_STAFF.find(s=>s.id===id);
+    if(st)st[field]=val;
+    showToast(`✓ ${field==='hourly_rate'?'Rate':field==='role'?'Role':field==='team'?'Team':'Name'} updated`,'ok');
+  }catch(e){showToast('Error: '+e.message);}
+}
+async function updateRate(id,val){return updateStaffField(id,'hourly_rate',val);}
+async function updateTeam(id,val){return updateStaffField(id,'team',val);}
+async function archiveStaff(id,name){
+  try{
+    await dbPatch('staff',id,{is_active:false});
+    ALL_STAFF=ALL_STAFF.filter(s=>s.id!==id);
+    showToast(`${name} archived — shift history kept`,'ok');
+    setTimeout(()=>setTab('staff-admin'),600);
+  }catch(e){showToast('Error: '+e.message);}
+}
+async function restoreStaff(id,name){
+  try{
+    await dbPatch('staff',id,{is_active:true});
+    showToast(`${name} restored ✓`,'ok');
+    const fresh=await dbGet('staff','is_active=eq.true&order=name.asc');
+    ALL_STAFF=fresh;
+    setTimeout(()=>setTab('staff-admin'),600);
+  }catch(e){showToast('Error: '+e.message);}
+}
+function hardDeleteStaff(btn,id,name){
+  twoTapDelete(btn,async()=>{
+    try{
+      // Anonymise their shifts rather than deleting (keeps payroll history intact)
+      await dbPatch('staff',id,{is_active:false,name:`[Deleted] ${name}`,email:null,phone:null,pin_hash:'0000'});
+      ALL_STAFF=ALL_STAFF.filter(s=>s.id!==id);
+      showToast(`${name} permanently deleted`,'ok');
+      setTimeout(()=>setTab('staff-admin'),600);
+    }catch(e){showToast('Delete failed: '+e.message);}
+  });
+}
+async function resetPIN(id,name){
+  try{await dbPatch('staff',id,{pin_hash:'0000'});showToast(`${name}'s PIN reset to 0000`,'ok');}
+  catch(e){showToast('Error: '+e.message);}
+}
+async function toggleActive(id,active){
+  try{await dbPatch('staff',id,{is_active:active});const st=ALL_STAFF.find(s=>s.id===id);if(st)st.is_active=active;}
+  catch(e){showToast('Error: '+e.message);}
+}
+async function removeStaff(id,name){return archiveStaff(id,name);}
+
+/* ── UTILS ── */
+function fmtHHMM(d){return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+function fmtTime(iso){if(!iso)return'—';return new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
+function fmtDateShort(str){if(!str)return'—';return new Date(str+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
+function fmtElapsed(from){const mins=Math.floor((Date.now()-from)/60000),h=Math.floor(mins/60),m=mins%60;return h>0?`${h}h ${m}m`:`${m}m`;}
+function showMsg(id,msg,type){const el=document.getElementById(id);if(el)el.innerHTML=`<div class="alert ${type}">${msg}</div>`;}
+
+/* ── INIT ── */
+async function init(){
+  const saved=loadSession();
+  if(saved){
+    try{
+      ALL_STAFF=await dbGet('staff','is_active=eq.true&order=name.asc');
+      const fresh=ALL_STAFF.find(s=>s.id===saved.id);
+      ME=fresh||saved;saveSession();
+      document.getElementById('login-screen').style.display='none';
+      launchApp();return;
+    }catch(e){ME=saved;ALL_STAFF=[saved];document.getElementById('login-screen').style.display='none';launchApp();return;}
+  }
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  loadStaffList();
+}
 init();
 </script>
 </body>
