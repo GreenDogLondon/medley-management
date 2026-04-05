@@ -246,6 +246,17 @@ nav::-webkit-scrollbar{display:none}
 .subtab{border:none;background:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:.15s}
 .subtab.active{background:#fff;color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .week-badge{background:var(--teal-l);color:var(--teal);font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700}
+.wastage-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.wastage-table thead tr{background:#7f1d1d;color:#fff}
+.wastage-table thead th{padding:8px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.wastage-table th.num,.wastage-table td.num{text-align:right}
+.wastage-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.wastage-table tbody tr:hover{background:#fdeaea}
+.reason-tag{display:inline-block;background:#fdeaea;color:#7f1d1d;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700}
+.wastage-metric{background:#fff;border-radius:10px;padding:14px;box-shadow:var(--shadow);text-align:center}
+.wastage-metric .wm-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.wastage-metric .wm-val{font-size:24px;font-weight:900;color:#7f1d1d;margin:4px 0}
+.wastage-metric .wm-sub{font-size:11px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -349,6 +360,7 @@ nav::-webkit-scrollbar{display:none}
   <button class="navtab active" id="t-wet"  onclick="setTab('wet')">🍸 Wet GP</button>
   <button class="navtab" id="t-dry"   onclick="setTab('dry')">🍕 Dry GP</button>
   <button class="navtab" id="t-labour" onclick="setTab('labour')">👷 Labour</button>
+  <button class="navtab" id="t-wastage" onclick="setTab('wastage')">🗑️ Wastage</button>
 </nav>
 
 <div id="content"></div>
@@ -762,6 +774,10 @@ let nextDry = 20;
 /* ── Labour state ── */
 let STAFF = [];
 let SHIFTS = [];
+let WASTAGE = [];
+let WASTAGE_REASONS = ['Out of date','Staff food','Spoiled','Staff drink','Spilt','Dropped','Test','Over-production','Broken'];
+let nextWastageId = 1;
+let wastageWeekOffset = 0;
 let nextStaffId = 1;
 let nextShiftId = 1;
 let labourSubTab = 'shifts'; // 'roster' | 'shifts' | 'summary'
@@ -1922,8 +1938,8 @@ function closeSyncModal(){
 function buildState(){
   return {
     v:1, savedAt:new Date().toISOString(),
-    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,
-    nextIds,nextWet,nextDry,nextStaffId,nextShiftId,target
+    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,
+    nextIds,nextWet,nextDry,nextStaffId,nextShiftId,nextWastageId,target
   };
 }
 
@@ -1934,7 +1950,8 @@ function render(){
     ops:'Ops & Miscellaneous',
     wet:'Wet GP — Drinks Menu',
     dry:'Dry GP — Food Menu',
-    labour:'Labour — Staff & Shifts'
+    labour:'Labour — Staff & Shifts',
+    wastage:'Weekly Wastage Log'
   };
   const subs={
     drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',
@@ -1942,12 +1959,13 @@ function render(){
     ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',
     wet:'Click any item to expand its recipe · Select from master to link ingredients — cost auto-calculates from purchase price',
     dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included',
-    labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync'
+    labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync',
+    wastage:'Log daily wastage each week · Menu item wastage auto-calculates ingredient cost from recipe specs'
   };
 
   let html=`<div class="tab-header">
-    <div class="tab-title">${labels[activeTab]}</div>
-    <div class="tab-sub">${subs[activeTab]}</div>
+    <div class="tab-title">${labels[activeTab]||''}</div>
+    <div class="tab-sub">${subs[activeTab]||''}</div>
   </div>`;
 
   if(activeTab==='drink') html+=renderMaster('D');
@@ -1956,6 +1974,7 @@ function render(){
   else if(activeTab==='wet') html+=renderGP('wet');
   else if(activeTab==='dry') html+=renderGP('dry');
   else if(activeTab==='labour') html+=renderLabour();
+  else if(activeTab==='wastage') html+=renderWastage();
 
   document.getElementById('content').innerHTML=html;
 
@@ -1964,10 +1983,373 @@ function render(){
   if(at) at.classList.add('active');
 }
 
+
+/* ════════════════════════════════════════════
+   WASTAGE
+   ════════════════════════════════════════════ */
+
+function wastageWeekStart(offset=0){
+  const n=new Date();
+  const todayStr=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  const today=new Date(todayStr+'T00:00:00');
+  const dow=today.getDay();
+  const daysSinceMon=dow===0?6:dow-1;
+  const mon=new Date(today);
+  mon.setDate(today.getDate()-daysSinceMon+offset*7);
+  return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+}
+function wastageWeekEnd(weekStart){
+  const d=new Date(weekStart+'T00:00:00');
+  d.setDate(d.getDate()+6);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtWDate(str){
+  if(!str)return'—';
+  return new Date(str+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+
+function calcWastageCost(entry){
+  if(entry.type==='menu'){
+    const arr=entry.gpType==='wet'?WET_GP:DRY_GP;
+    const item=arr.find(i=>i.id===entry.itemId);
+    return item?totalCost(item)*(entry.portions||1):0;
+  } else {
+    // Raw ingredient
+    const m=getMaster(entry.mid);
+    if(!m)return 0;
+    return (entry.qty||0)*cpu(m);
+  }
+}
+
+function wastageTeam(entry){
+  if(entry.team)return entry.team;
+  if(entry.type==='menu'){
+    return entry.gpType==='dry'?'boh':'foh';
+  }
+  const m=getMaster(entry.mid);
+  if(!m)return'both';
+  // Garnishes → foh, food → boh, ops → ops
+  return m.type==='D'?'foh':m.type==='F'?'boh':'ops';
+}
+
+function renderWastage(){
+  const ws=wastageWeekStart(wastageWeekOffset);
+  const we=wastageWeekEnd(ws);
+  const weekEntries=WASTAGE.filter(e=>e.week===ws);
+
+  // Stats
+  const totalCostAll=weekEntries.reduce((s,e)=>s+calcWastageCost(e),0);
+  const fohCost=weekEntries.filter(e=>wastageTeam(e)==='foh').reduce((s,e)=>s+calcWastageCost(e),0);
+  const bohCost=weekEntries.filter(e=>wastageTeam(e)==='boh').reduce((s,e)=>s+calcWastageCost(e),0);
+  const topReason=weekEntries.length?
+    Object.entries(weekEntries.reduce((m,e)=>{m[e.reason]=(m[e.reason]||0)+1;return m;},{}))
+      .sort((a,b)=>b[1]-a[1])[0]?.[0]||'—'
+    :'—';
+
+  // Build all master options for searchable select
+  const masterOpts=MASTERS.map(m=>`<option value="m:${m.id}">[${m.id}] ${m.name} (${fmtCpuDisplay(m)})</option>`).join('');
+  const wetOpts=WET_GP.map(i=>`<option value="w:${i.id}:${i.id}">🍸 ${i.name}</option>`).join('');
+  const dryOpts=DRY_GP.map(i=>`<option value="d:${i.id}:${i.id}">🍕 ${i.name}</option>`).join('');
+
+  // Reasons datalist
+  const reasonsList=WASTAGE_REASONS.map(r=>`<option value="${r}">`).join('');
+
+  let h=`
+  <!-- Week nav -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="btn-sm" onclick="wastageWeekOffset--;render()">← Prev week</button>
+    <strong style="color:var(--teal);font-size:14px">${fmtWDate(ws)} – ${fmtWDate(we)}</strong>
+    <button class="btn-sm" onclick="wastageWeekOffset++;render()">Next week →</button>
+    ${wastageWeekOffset!==0?`<button class="btn-sm" onclick="wastageWeekOffset=0;render()" style="margin-left:auto">This week</button>`:''}
+  </div>
+
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+    <div class="wastage-metric"><div class="wm-label">Total wastage</div>
+      <div class="wm-val">£${totalCostAll.toFixed(2)}</div>
+      <div class="wm-sub">${weekEntries.length} items this week</div></div>
+    <div class="wastage-metric"><div class="wm-label">🍸 FOH (bar/drinks)</div>
+      <div class="wm-val">£${fohCost.toFixed(2)}</div>
+      <div class="wm-sub">${weekEntries.filter(e=>wastageTeam(e)==='foh').length} items</div></div>
+    <div class="wastage-metric"><div class="wm-label">🍕 BOH (kitchen/food)</div>
+      <div class="wm-val">£${bohCost.toFixed(2)}</div>
+      <div class="wm-sub">${weekEntries.filter(e=>wastageTeam(e)==='boh').length} items</div></div>
+    <div class="wastage-metric"><div class="wm-label">Top reason</div>
+      <div class="wm-val" style="font-size:14px">${topReason}</div>
+      <div class="wm-sub">most common this week</div></div>
+  </div>
+
+  <!-- Log form -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title" style="color:#7f1d1d">📝 Log Wastage</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <label class="form-label">Date</label>
+        <input type="date" id="w-date" value="${ws}" max="${we}" min="${ws}"
+          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
+      </div>
+      <div>
+        <label class="form-label">Team</label>
+        <select id="w-team" style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
+          <option value="auto">Auto (from item)</option>
+          <option value="foh">🍸 FOH — Bar</option>
+          <option value="boh">🍕 BOH — Kitchen</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Item type selector -->
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px">
+        <input type="radio" name="w-type" value="ingredient" checked onchange="toggleWastageType(this.value)"> Raw ingredient / stock item
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px">
+        <input type="radio" name="w-type" value="menu" onchange="toggleWastageType(this.value)"> Menu item (auto-costs from recipe)
+      </label>
+    </div>
+
+    <!-- Ingredient selector -->
+    <div id="w-ingredient-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <label class="form-label">Ingredient</label>
+        <select id="w-mid" style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px" onchange="updateWastagePreview()">
+          <option value="">— select ingredient —</option>
+          <optgroup label="Drink Master">${MASTERS.filter(m=>m.type==='D').map(m=>`<option value="${m.id}">[${m.id}] ${m.name}</option>`).join('')}</optgroup>
+          <optgroup label="Food Master">${MASTERS.filter(m=>m.type==='F').map(m=>`<option value="${m.id}">[${m.id}] ${m.name}</option>`).join('')}</optgroup>
+          <optgroup label="Ops & Misc">${MASTERS.filter(m=>m.type==='O').map(m=>`<option value="${m.id}">[${m.id}] ${m.name}</option>`).join('')}</optgroup>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Quantity</label>
+        <input type="number" id="w-qty" placeholder="e.g. 350" step="any" min="0"
+          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px"
+          oninput="updateWastagePreview()">
+      </div>
+      <div>
+        <label class="form-label">Unit</label>
+        <input type="text" id="w-unit" placeholder="g / ml / each" readonly
+          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px;background:#f9f9f9">
+      </div>
+    </div>
+
+    <!-- Menu item selector -->
+    <div id="w-menu-row" style="display:none;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <label class="form-label">Menu item</label>
+        <select id="w-gptype" style="height:28px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;margin-bottom:4px" onchange="updateMenuItemOpts()">
+          <option value="wet">🍸 Drinks (Wet GP)</option>
+          <option value="dry">🍕 Food (Dry GP)</option>
+        </select>
+        <select id="w-gpid" style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px" onchange="updateWastagePreview()">
+          <option value="">— select item —</option>
+          ${WET_GP.map(i=>`<option value="${i.id}">${i.name} — recipe cost £${totalCost(i).toFixed(2)}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Portions wasted</label>
+        <input type="number" id="w-portions" value="1" min="1" step="1"
+          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px"
+          oninput="updateWastagePreview()">
+      </div>
+      <div>
+        <label class="form-label">Cost preview</label>
+        <div id="w-menu-preview" style="height:32px;display:flex;align-items:center;font-weight:700;color:#7f1d1d;font-size:14px">—</div>
+      </div>
+    </div>
+
+    <!-- Reason + log -->
+    <datalist id="w-reasons-list">${reasonsList}</datalist>
+    <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end">
+      <div>
+        <label class="form-label">Reason <span style="font-weight:400;text-transform:none;font-size:10px">(type or pick — new reasons auto-save)</span></label>
+        <input type="text" id="w-reason" list="w-reasons-list" placeholder="e.g. Out of date"
+          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
+      </div>
+      <div>
+        <label class="form-label">Cost</label>
+        <div id="w-cost-preview" style="height:32px;display:flex;align-items:center;font-weight:700;color:#7f1d1d;font-size:14px">£0.00</div>
+      </div>
+      <button class="btn-teal" style="height:32px;background:#7f1d1d;white-space:nowrap" onclick="logWastage('${ws}')">+ Log wastage</button>
+    </div>
+  </div>
+
+  <!-- Wastage log table -->
+  <div class="card">
+    <div class="card-title" style="color:#7f1d1d">Week of ${fmtWDate(ws)} – ${fmtWDate(we)} (${weekEntries.length} items)</div>`;
+
+  if(!weekEntries.length){
+    h+=`<div class="empty"><div class="empty-icon">✅</div>No wastage logged this week</div>`;
+  } else {
+    // Group by FOH / BOH
+    const fohItems=weekEntries.filter(e=>wastageTeam(e)==='foh');
+    const bohItems=weekEntries.filter(e=>wastageTeam(e)==='boh');
+    const otherItems=weekEntries.filter(e=>!['foh','boh'].includes(wastageTeam(e)));
+
+    const renderGroup=(items,label,color)=>{
+      if(!items.length)return'';
+      let t=`<div style="font-size:11px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.05em;padding:8px 0 4px">${label}</div>`;
+      t+=`<table class="wastage-table" style="margin-bottom:12px"><thead><tr>
+        <th>Date</th><th>Item</th><th>Qty / Portions</th><th>Reason</th><th class="num">Cost £</th><th></th>
+      </tr></thead><tbody>`;
+      let groupCost=0;
+      items.forEach(e=>{
+        const cost=calcWastageCost(e);groupCost+=cost;
+        let itemName='',qtyStr='';
+        if(e.type==='menu'){
+          const arr=e.gpType==='wet'?WET_GP:DRY_GP;
+          const item=arr.find(i=>i.id===e.itemId);
+          itemName=(e.gpType==='wet'?'🍸 ':'🍕 ')+(item?item.name:'[deleted]');
+          qtyStr=`${e.portions} portion${e.portions>1?'s':''}`;
+        } else {
+          const m=getMaster(e.mid);
+          itemName=m?`[${m.id}] ${m.name}`:'[deleted]';
+          qtyStr=`${e.qty} ${e.unit||''}`;
+        }
+        t+=`<tr>
+          <td style="white-space:nowrap">${fmtWDate(e.date)}</td>
+          <td><strong>${itemName}</strong></td>
+          <td>${qtyStr}</td>
+          <td><span class="reason-tag">${e.reason}</span></td>
+          <td class="num" style="color:#7f1d1d;font-weight:700">£${cost.toFixed(2)}</td>
+          <td><button class="del-btn" onclick="deleteWastage(${e.id})">✕</button></td>
+        </tr>`;
+      });
+      t+=`<tr style="background:#fdeaea"><td colspan="4" style="font-weight:700;text-align:right">Group total</td>
+        <td class="num" style="font-weight:900;color:#7f1d1d">£${groupCost.toFixed(2)}</td><td></td></tr>`;
+      t+=`</tbody></table>`;
+      return t;
+    };
+
+    h+=renderGroup(fohItems,'🍸 Front of House — Bar & Drinks','var(--teal)');
+    h+=renderGroup(bohItems,'🍕 Back of House — Kitchen & Food','#c44414');
+    if(otherItems.length) h+=renderGroup(otherItems,'📦 Other / Ops','var(--muted)');
+
+    h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fdeaea;border-radius:8px;font-weight:700;color:#7f1d1d">
+      <span>Week total wastage</span>
+      <span style="font-size:18px">£${totalCostAll.toFixed(2)}</span>
+    </div>`;
+  }
+
+  h+=`</div>
+
+  <!-- Manage reasons -->
+  <div class="card">
+    <div class="card-title" style="color:var(--muted)">⚙️ Manage Reasons</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      ${WASTAGE_REASONS.map((r,i)=>`
+        <div style="display:flex;align-items:center;background:var(--teal-l);border-radius:16px;padding:3px 10px;font-size:12px;gap:4px">
+          ${r}<button onclick="removeReason(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 2px">✕</button>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="new-reason-input" placeholder="Add custom reason…"
+        style="flex:1;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px"
+        onkeydown="if(event.key==='Enter')addReason()">
+      <button class="btn-sm" onclick="addReason()">Add</button>
+    </div>
+  </div>`;
+
+  return h;
+}
+
+function toggleWastageType(type){
+  const ingRow=document.getElementById('w-ingredient-row');
+  const menuRow=document.getElementById('w-menu-row');
+  if(!ingRow||!menuRow)return;
+  ingRow.style.display=type==='ingredient'?'grid':'none';
+  menuRow.style.display=type==='menu'?'grid':'none';
+  updateWastagePreview();
+}
+
+function updateMenuItemOpts(){
+  const gptype=document.getElementById('w-gptype')?.value||'wet';
+  const sel=document.getElementById('w-gpid');
+  if(!sel)return;
+  const arr=gptype==='wet'?WET_GP:DRY_GP;
+  sel.innerHTML='<option value="">— select item —</option>'+
+    arr.map(i=>`<option value="${i.id}">${i.name} — recipe cost £${totalCost(i).toFixed(2)}</option>`).join('');
+  updateWastagePreview();
+}
+
+function updateWastagePreview(){
+  const type=document.querySelector('input[name="w-type"]:checked')?.value||'ingredient';
+  const costEl=document.getElementById('w-cost-preview');
+  const menuPrev=document.getElementById('w-menu-preview');
+  let cost=0;
+  if(type==='ingredient'){
+    const mid=document.getElementById('w-mid')?.value;
+    const qty=parseFloat(document.getElementById('w-qty')?.value)||0;
+    const unitEl=document.getElementById('w-unit');
+    const m=getMaster(mid);
+    if(m&&unitEl)unitEl.value=m.unit;
+    cost=m?qty*cpu(m):0;
+  } else {
+    const gptype=document.getElementById('w-gptype')?.value||'wet';
+    const gpid=parseInt(document.getElementById('w-gpid')?.value);
+    const portions=parseFloat(document.getElementById('w-portions')?.value)||1;
+    const arr=gptype==='wet'?WET_GP:DRY_GP;
+    const item=arr.find(i=>i.id===gpid);
+    cost=item?totalCost(item)*portions:0;
+    if(menuPrev)menuPrev.textContent=cost>0?`£${cost.toFixed(2)}`:'—';
+  }
+  if(costEl)costEl.textContent=`£${cost.toFixed(2)}`;
+}
+
+function logWastage(weekStart){
+  const type=document.querySelector('input[name="w-type"]:checked')?.value||'ingredient';
+  const date=document.getElementById('w-date')?.value||weekStart;
+  const reason=(document.getElementById('w-reason')?.value||'').trim();
+  const teamSel=document.getElementById('w-team')?.value||'auto';
+  if(!reason){alert('Please add a reason.');return;}
+
+  let entry={id:nextWastageId++,week:weekStart,date,reason,team:teamSel==='auto'?null:teamSel};
+
+  if(type==='ingredient'){
+    const mid=document.getElementById('w-mid')?.value;
+    const qty=parseFloat(document.getElementById('w-qty')?.value)||0;
+    const m=getMaster(mid);
+    if(!mid){alert('Please select an ingredient.');return;}
+    if(qty<=0){alert('Please enter a quantity.');return;}
+    entry.type='ingredient';entry.mid=mid;entry.qty=qty;entry.unit=m?.unit||'';
+  } else {
+    const gptype=document.getElementById('w-gptype')?.value||'wet';
+    const gpid=parseInt(document.getElementById('w-gpid')?.value);
+    const portions=parseFloat(document.getElementById('w-portions')?.value)||1;
+    if(!gpid){alert('Please select a menu item.');return;}
+    entry.type='menu';entry.gpType=gptype;entry.itemId=gpid;entry.portions=portions;
+  }
+
+  // Auto-save new reasons
+  if(reason&&!WASTAGE_REASONS.includes(reason)){
+    WASTAGE_REASONS.push(reason);
+  }
+
+  WASTAGE.push(entry);
+  saveState();render();
+}
+
+function deleteWastage(id){
+  WASTAGE=WASTAGE.filter(e=>e.id!==id);
+  saveState();render();
+}
+
+function addReason(){
+  const inp=document.getElementById('new-reason-input');
+  const r=(inp?.value||'').trim();
+  if(!r||WASTAGE_REASONS.includes(r))return;
+  WASTAGE_REASONS.push(r);
+  inp.value='';
+  saveState();render();
+}
+
+function removeReason(idx){
+  WASTAGE_REASONS.splice(idx,1);
+  saveState();render();
+}
+
 /* ════════════════════════════════════════════
    PERSISTENCE — localStorage + JSON export/import
    ════════════════════════════════════════════ */
-
 const STORAGE_KEY = 'medley-gp-v1';
 
 // ── Set your shared password here ─────────────────────────────────────────
@@ -1998,11 +2380,14 @@ function loadState() {
     DRY_GP   = s.DRY_GP;
     STAFF    = s.STAFF    || [];
     SHIFTS   = s.SHIFTS   || [];
+    WASTAGE  = s.WASTAGE  || [];
+    WASTAGE_REASONS = s.WASTAGE_REASONS || WASTAGE_REASONS;
     nextIds  = s.nextIds  || nextIds;
     nextWet  = s.nextWet  || nextWet;
     nextDry  = s.nextDry  || nextDry;
-    nextStaffId = s.nextStaffId || nextStaffId;
-    nextShiftId = s.nextShiftId || nextShiftId;
+    nextStaffId  = s.nextStaffId  || nextStaffId;
+    nextShiftId  = s.nextShiftId  || nextShiftId;
+    nextWastageId= s.nextWastageId|| nextWastageId;
     target   = s.target   || 70;
     return s.savedAt;
   } catch(e) { return null; }
