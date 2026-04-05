@@ -562,7 +562,7 @@ async function launchApp(){
     {id:'home',label:'📢 Home'},
     {id:'clock',label:'🕐 Clock In/Out'},
     {id:'my-shifts',label:'📊 My Shifts'},
-    {id:'rota',label:'📅 My Rota'},
+    {id:'rota',label:'📅 Rota'},
     ...(hasGPAccess(ME.id)?[{id:'gp-access',label:'📊 GP'}]:[]),
     {id:'menu',label:'🍕 Menu'},
     {id:'profile',label:'👤 My Profile'},
@@ -590,7 +590,7 @@ async function render(){
       case 'my-shifts':  c.innerHTML=await renderMyShifts();break;
       case 'rota':
         c.innerHTML=await renderRota();
-        if(isManager()) initRotaTouchDrag();
+        initRotaTouchDrag(); // all staff can drag to swap shifts
         break;
       case 'timesheets': c.innerHTML=await renderTimesheets();break;
       case 'pay':        c.innerHTML=await renderPayPeriods();break;
@@ -985,7 +985,7 @@ async function renderRota(){
   const weekLabel=`${fmtDateShort(dates[0])} – ${fmtDateShort(dates[6])}`;
   const rota=await dbGet('rota',`date=gte.${dates[0]}&date=lte.${dates[6]}&order=start_time.asc`);
 
-  const allStaff=isManager()?ALL_STAFF:ALL_STAFF.filter(s=>s.id===ME.id);
+  const allStaff=ALL_STAFF; // everyone sees the full team rota
   const foh=allStaff.filter(s=>s.team!=='boh');
   const boh=allStaff.filter(s=>s.team==='boh');
 
@@ -1030,17 +1030,20 @@ async function renderRota(){
     ${rotaWeekOffset!==0?`<button onclick="rotaWeekOffset=0;setTab('rota')" style="margin-left:auto">Today</button>`:''}
   </div>`;
 
-  if(isManager()){
-    // Mobile drag hint — only visible on small screens via CSS
-    h+=`<div class="rota-drag-hint">👆 Long-press any shift to drag it to a new day or person</div>`;
+  // Drag hint — show on mobile for all users (everyone can drag to swap)
+  h+=`<div class="rota-drag-hint">👆 Long-press any shift to drag and swap it with someone</div>`;
 
-    h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
-      <button class="btn-teal" onclick="duplicateLastWeek()">📋 Copy last week</button>
-      <button class="btn-sm" onclick="exportRotaImage()">🖼️ Download image</button>
-      <button class="btn-sm" onclick="exportRotaPDF()">📄 Download PDF</button>
-      ${rota.length===0?`<span style="font-size:12px;color:var(--muted);margin-left:4px">No shifts this week yet — add some or copy from last week</span>`:''}
-    </div>`;
+  // Action bar — downloads for everyone, copy+add for managers only
+  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">`;
+  if(isManager()){
+    h+=`<button class="btn-teal" onclick="duplicateLastWeek()">📋 Copy last week</button>`;
   }
+  h+=`<button class="btn-sm" onclick="exportRotaImage()">🖼️ Download image</button>
+      <button class="btn-sm" onclick="exportRotaPDF()">📄 Download PDF</button>`;
+  if(isManager()&&rota.length===0){
+    h+=`<span style="font-size:12px;color:var(--muted);margin-left:4px">No shifts this week yet — add some or copy from last week</span>`;
+  }
+  h+=`</div>`;
 
   h+=`<div id="rota-export-area">`;
   h+=`<div style="background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
@@ -1053,7 +1056,9 @@ async function renderRota(){
 
   if(isManager()){
     h+=`<div id="rota-add-form"></div>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px">Tap any cell to add a shift · Tap × to remove · Long-press a shift to drag it on mobile</p>`;
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">Tap any cell to add a shift · Tap × to remove · Long-press a shift to drag it · <strong>Staff can also drag to swap shifts</strong></p>`;
+  } else {
+    h+=`<p style="font-size:11px;color:var(--muted);margin-top:8px">📱 Long-press any shift to drag and swap it · Use the buttons above to download the rota</p>`;
   }
   return h;
 }
