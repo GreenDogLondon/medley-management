@@ -289,20 +289,20 @@ async function dbPost(t,d){return sbFetch('POST',t,{data:d});}
 async function dbPatch(t,id,d){return sbFetch('PATCH',t,{query:'id=eq.'+id,data:d});}
 async function dbDel(t,id){return sbFetch('DELETE',t,{query:'id=eq.'+id});}
 
-/* ── GP ACCESS SETTINGS (stored in app_data table) ── */
+/* ── GP ACCESS SETTINGS (stored in medley_settings table) ── */
 async function loadGPSettings(){
   try{
-    const rows=await dbGet('app_data','key=in.(gp_password,gp_access_ids,gp_sync_code)');
+    const rows=await dbGet('medley_settings','key=in.(gp_password,gp_access_ids,gp_sync_code)');
     (rows||[]).forEach(r=>{
       if(r.key==='gp_password'&&r.value)GP_SETTINGS.password=r.value;
       if(r.key==='gp_sync_code'&&r.value)GP_SETTINGS.syncCode=r.value;
       if(r.key==='gp_access_ids'){try{GP_SETTINGS.accessIds=JSON.parse(r.value);}catch(e){}}
     });
-  }catch(e){/* use defaults — app_data may be empty */}
+  }catch(e){/* use defaults — medley_settings may be empty on first run */}
 }
 async function saveAppData(key,value){
   // Use PostgREST upsert — requires key to have a unique/primary constraint
-  const url=`${SB.url}/rest/v1/app_data`;
+  const url=`${SB.url}/rest/v1/medley_settings`;
   let lastErr=null;
   for(const authKey of [SB.jwt,SB.key]){
     try{
@@ -337,7 +337,7 @@ async function saveAppData(key,value){
       if(authKey===SB.key)throw lastErr;
     }
   }
-  throw lastErr||new Error('Save failed — check app_data table permissions');
+  throw lastErr||new Error('Save failed — check medley_settings table in Supabase');
 }
 async function toggleGPAccess(staffId,grant){
   const chk=document.getElementById(`gp-chk-${staffId}`);
@@ -437,7 +437,7 @@ let GP_SETTINGS={
   password:'medley2025',
   accessIds:[],
   syncCode:'eyJhayI6IiQyYSQxMCQzb2NZejZvRXRoQ1RVQy5iM3ROYmplOVZBSDdLdTBBUktmMUpkd3JUc0t4L3NYQWd4MmdacSIsImJpIjoiNjlkMGUxYTFhYWJhODgyMTk3YzM2ZmQ3In0='
-}; // loaded from app_data on launch
+}; // loaded from medley_settings on launch
 const ROLES={super_admin:'Super Admin',manager:'Manager',staff:'Staff'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
