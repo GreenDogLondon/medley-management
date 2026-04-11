@@ -897,10 +897,14 @@ function renderGP(gpType){
       <td class="num">£${cost.toFixed(2)}</td>
       <td class="num" style="color:${gpVal>=0?'var(--teal)':'var(--bad)'}">£${gpVal.toFixed(2)}</td>
       <td class="num">${gpPill(pct)}</td>
-      <td>
+      <td onclick="event.stopPropagation()">
         ${item.active===false
-          ?`<button class="btn-sm" style="font-size:10px;padding:2px 6px;color:var(--teal);border-color:var(--teal)" onclick="restoreItem(\${item.id},'\${gpType}',event)" title="Restore to active menu">↩ Restore</button>`
-          :`<button class="del-btn" onclick="archiveItem(\${item.id},'\${gpType}',event)" title="Archive this item">📥</button>`
+          ?`<button class="btn-sm" style="font-size:11px;padding:3px 8px;color:var(--teal);border-color:var(--teal)"
+              onclick="event.stopPropagation();restoreItem(this,\${item.id},'\${gpType}')"
+              title="Restore to active menu">↩ Restore</button>`
+          :`<button class="btn-sm" style="font-size:11px;padding:3px 8px;color:var(--muted);border-color:var(--border)"
+              onclick="event.stopPropagation();archiveItem(this,\${item.id},'\${gpType}')"
+              title="Archive this item">📥 Archive</button>`
         }
       </td>
     </tr>`;
@@ -1023,19 +1027,36 @@ function setCost(id,type,idx,val){const item=getGP(type).find(i=>i.id===id);if(i
 function delIng(id,type,idx,e){e.stopPropagation();const item=getGP(type).find(i=>i.id===id);if(item){item.recipe.splice(idx,1);render();}}
 function delItem(id,type,e){
   // Legacy — now archives instead of deletes
-  archiveItem(id,type,e);
-}
-function archiveItem(id,type,e){
   e.stopPropagation();
-  const item=getGP(type).find(i=>i.id===id);
-  if(!item)return;
-  item.active=false;
-  if(expandedId===id){expandedId=null;expandedType=null;}
-  if(gpViewMode==='active'){}  // stay on active view — item disappears
-  saveState();render();
 }
-function restoreItem(id,type,e){
-  e.stopPropagation();
+function archiveItem(btn,id,type){
+  if(btn.dataset.confirm){
+    // Second tap — confirmed
+    const item=getGP(type).find(i=>i.id===id);
+    if(!item)return;
+    item.active=false;
+    if(expandedId===id){expandedId=null;expandedType=null;}
+    saveState();
+    render();
+  } else {
+    // First tap — ask for confirmation
+    btn.dataset.confirm='1';
+    btn.textContent='✓ Confirm archive';
+    btn.style.background='#7f1d1d';
+    btn.style.color='#fff';
+    btn.style.borderColor='#7f1d1d';
+    setTimeout(()=>{
+      if(btn&&btn.dataset.confirm){
+        delete btn.dataset.confirm;
+        btn.textContent='📥 Archive';
+        btn.style.background='';
+        btn.style.color='var(--muted)';
+        btn.style.borderColor='var(--border)';
+      }
+    },3000);
+  }
+}
+function restoreItem(btn,id,type){
   const item=getGP(type).find(i=>i.id===id);
   if(!item)return;
   item.active=true;
