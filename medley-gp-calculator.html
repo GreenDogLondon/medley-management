@@ -471,7 +471,7 @@ let MASTERS = [
   {id:'FM20',type:'F',name:'Cherry Vine Tomatoes',sup:'Arthur David',cat:'Produce',pack:'3kg box · £18.50',cost:18.50,size:3000,unit:'g'},
   {id:'FM21',type:'F',name:'Tinned Tomatoes (for sauce batches)',sup:'Various',cat:'Produce',pack:'2.5kg tin · £3.42',cost:3.42,size:2500,unit:'g'},
   {id:'FM25',type:'F',name:'Garlic (peeled)',sup:'Arthur David',cat:'Produce',pack:'Per kg · £8.16',cost:8.16,size:1000,unit:'g'},
-  {id:'FM26',type:'F',name:'Padron Peppers',sup:'Arthur David',cat:'Produce',pack:'Per kg · £9.54',cost:9.54,size:1000,unit:'g'},
+  {id:'FM26',type:'F',name:'Padron Peppers',active:true,sup:'Arthur David',cat:'Produce',pack:'Per kg · £9.54',cost:9.54,size:1000,unit:'g'},
   {id:'FM27',type:'F',name:'Broccoli',sup:'Arthur David',cat:'Produce',pack:'Per kg · £4.00',cost:4.00,size:1000,unit:'g'},
   {id:'FM28',type:'F',name:'Aubergine (raw)',sup:'Various',cat:'Produce',pack:'Box ≈5kg · £14.50',cost:14.50,size:5000,unit:'g'},
   {id:'FM29',type:'F',name:'Red Chillies',sup:'Arthur David',cat:'Produce',pack:'3kg box · £31.35',cost:31.35,size:3000,unit:'g'},
@@ -501,6 +501,12 @@ let MASTERS = [
   {id:'FM62',type:'F',name:'Egg White (pasteurised)',sup:'Various',cat:'Dairy',pack:'Per kg · £5.41',cost:5.41,size:1000,unit:'g'},
   {id:'FM63',type:'F',name:'Espresso Coffee (beans)',sup:'Various',cat:'Hot Drinks',pack:'Per kg · £22.55',cost:22.55,size:1000,unit:'g'},
   {id:'FM80',type:'F',name:'Extra Thick Mayonnaise',sup:'Various',cat:'Condiments',pack:'Per kg · approx £3.00',cost:3.00,size:1000,unit:'g'},
+  {id:'FM81',type:'F',name:'Maple Syrup',sup:'Arthur David',cat:'Dry Goods',pack:'Per kg · £8.50 est.',cost:8.50,size:1000,unit:'g'},
+  {id:'FM82',type:'F',name:'Double Cream',sup:'Various',cat:'Dairy',pack:'Per kg · £3.20 est.',cost:3.20,size:1000,unit:'g'},
+  {id:'FM83',type:'F',name:'Dark Chocolate 54% (Callebaut)',sup:'Various',cat:'Dry Goods',pack:'Per kg · £9.00 est.',cost:9.00,size:1000,unit:'g'},
+  {id:'FM84',type:'F',name:'Dark Chocolate 70% (Callebaut)',sup:'Various',cat:'Dry Goods',pack:'Per kg · £10.50 est.',cost:10.50,size:1000,unit:'g'},
+  {id:'FM85',type:'F',name:'Rapeseed Oil',sup:'Various',cat:'Dry Goods',pack:'Per litre · £2.50 est.',cost:2.50,size:1000,unit:'ml'},
+  {id:'FM86',type:'F',name:'Rice Flour (GF)',sup:'Arthur David',cat:'Dry Goods',pack:'Per kg · £3.00 est.',cost:3.00,size:1000,unit:'g'},
 
   /* COMPOUND / BATCH — house-made preparations. Update batch cost here, all GP recipes auto-recalculate */
   {id:'FM70',type:'F',name:'Pizza Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'15kg flour batch · £22.43 total · ≈93 balls',cost:22.43,size:93,unit:'each'},
@@ -531,62 +537,62 @@ let MASTERS = [
 
 /* ═══════════════════ WET GP ═══════════════════ */
 let WET_GP = [
-  {id:1,name:'Margarita (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[{mid:'DM40',qty:1},{mid:null,n:'Ice & presentation',c:0.05}]},
-  {id:2,name:'Paloma (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[{mid:'DM41',qty:1},{mid:null,n:'Ice & presentation',c:0.05}]},
-  {id:3,name:'G&T — Single',cat:'Cocktails',sell:6.76,recipe:[{mid:'DM04',qty:25},{mid:'DM50',qty:200},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:4,name:'G&T — Double',cat:'Cocktails',sell:10.00,recipe:[{mid:'DM04',qty:50},{mid:'DM51',qty:200},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:5,name:'Aperol Spritz (glass)',cat:'Cocktails',sell:9.20,recipe:[{mid:'DM01',qty:50},{mid:'DM56',qty:125},{mid:'DM16',qty:50},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
-  {id:6,name:'Aperol Spritz (jug)',cat:'Cocktails',sell:31.00,recipe:[{mid:'DM01',qty:200},{mid:'DM56',qty:500},{mid:'DM16',qty:200},{mid:'DM67',qty:4},{mid:'DM70',qty:4}]},
-  {id:7,name:"Pimm's (glass)",cat:'Cocktails',sell:8.25,recipe:[{mid:'DM02',qty:50},{mid:'DM53',qty:225},{mid:'DM69',qty:1},{mid:'DM65',qty:1},{mid:'DM66',qty:1},{mid:'DM68',qty:1},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
-  {id:8,name:"Pimm's (jug)",cat:'Cocktails',sell:31.00,recipe:[{mid:'DM02',qty:200},{mid:'DM53',qty:900},{mid:'DM69',qty:4},{mid:'DM65',qty:4},{mid:'DM66',qty:4},{mid:'DM68',qty:4},{mid:'DM67',qty:4},{mid:'DM70',qty:4}]},
-  {id:9,name:'Limoncello Spritz',cat:'Cocktails',sell:8.50,recipe:[{mid:'DM03',qty:50},{mid:'DM53',qty:125},{mid:'DM16',qty:50},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:10,name:'Medley Lager (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM30',qty:1}]},
-  {id:11,name:'IPA (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM33',qty:1}]},
-  {id:12,name:'Yabba Dabba Doo (pint)',cat:'Beers',sell:6.90,recipe:[{mid:'DM32',qty:1}]},
-  {id:13,name:'Stowford Press (pint)',cat:'Beers',sell:6.50,recipe:[{mid:'DM31',qty:1}]},
-  {id:14,name:'0% Heineken',cat:'Beers',sell:4.20,recipe:[{mid:'DM35',qty:1}]},
-  {id:15,name:'0% Craft Tap Social',cat:'Beers',sell:5.45,recipe:[{mid:'DM36',qty:1}]},
-  {id:16,name:'Coke',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM54',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:17,name:'Diet Coke',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM55',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:18,name:'Lemonade',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM53',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:19,name:'Cordial & Soda',cat:'Soft Drinks',sell:1.60,recipe:[{mid:'DM56',qty:300},{mid:null,n:'Cordial 50ml (Rocks / Belvoir)',c:0.08},{mid:'DM66',qty:1},{mid:'DM70',qty:1}]},
-  {id:20,name:'Juice',cat:'Soft Drinks',sell:2.90,recipe:[{mid:null,n:'Juice 300ml (OJ / Apple)',c:0.45},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
-  {id:21,name:'House White — 125ml',cat:'Wine',sell:5.00,recipe:[{mid:'DM10',qty:125}]},
-  {id:22,name:'House White — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM10',qty:175}]},
-  {id:23,name:'House White — 250ml',cat:'Wine',sell:8.00,recipe:[{mid:'DM10',qty:250}]},
-  {id:24,name:'House White — Bottle',cat:'Wine',sell:28.00,recipe:[{mid:'DM10',qty:750}]},
-  {id:25,name:'French SB — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM11',qty:175}]},
-  {id:26,name:'NZ SB — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM12',qty:175}]},
-  {id:27,name:'Vinho Verde — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM17',qty:175}]},
-  {id:28,name:'House Rosé — 175ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM18',qty:175}]},
-  {id:29,name:'Provence Rosé — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM19',qty:175}]},
-  {id:30,name:'House Red — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM13',qty:175}]},
-  {id:31,name:'Tempranillo — 175ml',cat:'Wine',sell:7.50,recipe:[{mid:'DM14',qty:175}]},
-  {id:32,name:'Primitivo — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM15',qty:175}]},
-  {id:33,name:'Prosecco — 125ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM16',qty:125}]},
-  {id:34,name:'Prosecco — Bottle',cat:'Wine',sell:35.00,recipe:[{mid:'DM16',qty:750}]},
-  {id:35,name:'Champagne — Bottle',cat:'Wine',sell:50.00,recipe:[{mid:'DM20',qty:750}]},
+  {id:1,active:true,name:'Margarita (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[{mid:'DM40',qty:1},{mid:null,n:'Ice & presentation',c:0.05}]},
+  {id:2,active:true,name:'Paloma (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[{mid:'DM41',qty:1},{mid:null,n:'Ice & presentation',c:0.05}]},
+  {id:3,active:true,name:'G&T — Single',cat:'Cocktails',sell:6.76,recipe:[{mid:'DM04',qty:25},{mid:'DM50',qty:200},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:4,active:true,name:'G&T — Double',cat:'Cocktails',sell:10.00,recipe:[{mid:'DM04',qty:50},{mid:'DM51',qty:200},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:5,active:true,name:'Aperol Spritz (glass)',cat:'Cocktails',sell:9.20,recipe:[{mid:'DM01',qty:50},{mid:'DM56',qty:125},{mid:'DM16',qty:50},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
+  {id:6,active:true,name:'Aperol Spritz (jug)',cat:'Cocktails',sell:31.00,recipe:[{mid:'DM01',qty:200},{mid:'DM56',qty:500},{mid:'DM16',qty:200},{mid:'DM67',qty:4},{mid:'DM70',qty:4}]},
+  {id:7,active:true,name:"Pimm's (glass)",cat:'Cocktails',sell:8.25,recipe:[{mid:'DM02',qty:50},{mid:'DM53',qty:225},{mid:'DM69',qty:1},{mid:'DM65',qty:1},{mid:'DM66',qty:1},{mid:'DM68',qty:1},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
+  {id:8,active:true,name:"Pimm's (jug)",cat:'Cocktails',sell:31.00,recipe:[{mid:'DM02',qty:200},{mid:'DM53',qty:900},{mid:'DM69',qty:4},{mid:'DM65',qty:4},{mid:'DM66',qty:4},{mid:'DM68',qty:4},{mid:'DM67',qty:4},{mid:'DM70',qty:4}]},
+  {id:9,active:true,name:'Limoncello Spritz',cat:'Cocktails',sell:8.50,recipe:[{mid:'DM03',qty:50},{mid:'DM53',qty:125},{mid:'DM16',qty:50},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:10,active:true,name:'Medley Lager (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM30',qty:1}]},
+  {id:11,active:true,name:'IPA (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM33',qty:1}]},
+  {id:12,active:true,name:'Yabba Dabba Doo (pint)',cat:'Beers',sell:6.90,recipe:[{mid:'DM32',qty:1}]},
+  {id:13,active:true,name:'Stowford Press (pint)',cat:'Beers',sell:6.50,recipe:[{mid:'DM31',qty:1}]},
+  {id:14,active:true,name:'0% Heineken',cat:'Beers',sell:4.20,recipe:[{mid:'DM35',qty:1}]},
+  {id:15,active:true,name:'0% Craft Tap Social',cat:'Beers',sell:5.45,recipe:[{mid:'DM36',qty:1}]},
+  {id:16,active:true,name:'Coke',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM54',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:17,active:true,name:'Diet Coke',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM55',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:18,active:true,name:'Lemonade',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM53',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:19,active:true,name:'Cordial & Soda',cat:'Soft Drinks',sell:1.60,recipe:[{mid:'DM56',qty:300},{mid:null,n:'Cordial 50ml (Rocks / Belvoir)',c:0.08},{mid:'DM66',qty:1},{mid:'DM70',qty:1}]},
+  {id:20,active:true,name:'Juice',cat:'Soft Drinks',sell:2.90,recipe:[{mid:null,n:'Juice 300ml (OJ / Apple)',c:0.45},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
+  {id:21,active:true,name:'House White — 125ml',cat:'Wine',sell:5.00,recipe:[{mid:'DM10',qty:125}]},
+  {id:22,active:true,name:'House White — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM10',qty:175}]},
+  {id:23,active:true,name:'House White — 250ml',cat:'Wine',sell:8.00,recipe:[{mid:'DM10',qty:250}]},
+  {id:24,active:true,name:'House White — Bottle',cat:'Wine',sell:28.00,recipe:[{mid:'DM10',qty:750}]},
+  {id:25,active:true,name:'French SB — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM11',qty:175}]},
+  {id:26,active:true,name:'NZ SB — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM12',qty:175}]},
+  {id:27,active:true,name:'Vinho Verde — 175ml',cat:'Wine',sell:7.00,recipe:[{mid:'DM17',qty:175}]},
+  {id:28,active:true,name:'House Rosé — 175ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM18',qty:175}]},
+  {id:29,active:true,name:'Provence Rosé — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM19',qty:175}]},
+  {id:30,active:true,name:'House Red — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM13',qty:175}]},
+  {id:31,active:true,name:'Tempranillo — 175ml',cat:'Wine',sell:7.50,recipe:[{mid:'DM14',qty:175}]},
+  {id:32,active:true,name:'Primitivo — 175ml',cat:'Wine',sell:8.50,recipe:[{mid:'DM15',qty:175}]},
+  {id:33,active:true,name:'Prosecco — 125ml',cat:'Wine',sell:6.50,recipe:[{mid:'DM16',qty:125}]},
+  {id:34,active:true,name:'Prosecco — Bottle',cat:'Wine',sell:35.00,recipe:[{mid:'DM16',qty:750}]},
+  {id:35,active:true,name:'Champagne — Bottle',cat:'Wine',sell:50.00,recipe:[{mid:'DM20',qty:750}]},
 ];
 
 /* ═══════════════════ DRY GP ═══════════════════ */
 let DRY_GP = [
-  {id:1,name:'Mixed Olives',cat:'Starters',sell:4.50,recipe:[{mid:'FM52',qty:80},{mid:null,n:'Olive oil drizzle',c:0.04},{mid:'OM01',qty:1}]},
-  {id:2,name:'Garlic Pizette',cat:'Starters',sell:5.00,recipe:[{mid:'FM70',qty:0.5},{mid:'FM25',qty:2},{mid:'FM06',qty:6}]},
-  {id:3,name:'Padron Peppers',cat:'Starters',sell:6.50,recipe:[{mid:'FM26',qty:100},{mid:'FM12',qty:20},{mid:'FM75',qty:20},{mid:'FM05',qty:2}]},
-  {id:4,name:'Marinara',cat:'Pizza',sell:10.00,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:105},{mid:'FM22',qty:2.5},{mid:'FM20',qty:50},{mid:'FM06',qty:6},{mid:'FM25',qty:2}]},
-  {id:5,name:'Margherita',cat:'Pizza',sell:12.00,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:70},{mid:'FM22',qty:2.5},{mid:'FM06',qty:10},{mid:'FM10',qty:50}]},
-  {id:6,name:'Anchovie',cat:'Pizza',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:70},{mid:'FM22',qty:2.5},{mid:'FM10',qty:50},{mid:'FM06',qty:6},{mid:'FM25',qty:2},{mid:'FM51',qty:27},{mid:'FM40',qty:10},{mid:'FM50',qty:7},{mid:'FM74',qty:17}]},
-  {id:7,name:'Pepperoni & Nduja',cat:'Pizza',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:70},{mid:'FM22',qty:2.5},{mid:'FM10',qty:50},{mid:'FM42',qty:36},{mid:'FM41',qty:20}]},
-  {id:8,name:'Broccoli Ricotta',cat:'Pizza',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM14',qty:80},{mid:'FM10',qty:75},{mid:'FM27',qty:100},{mid:'FM12',qty:20},{mid:null,n:'Chilli flakes',c:0.03},{mid:'FM54',qty:15}]},
-  {id:9,name:'Wood Fired Aubergine',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:70},{mid:'FM22',qty:2.5},{mid:'FM10',qty:50},{mid:'FM76',qty:65},{mid:'FM20',qty:50},{mid:'FM13',qty:4}]},
-  {id:10,name:'Cavolo Nero',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM06',qty:15},{mid:'FM10',qty:50},{mid:'FM11',qty:50},{mid:'FM77',qty:70},{mid:'FM44',qty:80},{mid:'FM75',qty:20}]},
-  {id:11,name:'Genovese Pesto',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM73',qty:55},{mid:'FM10',qty:50},{mid:'FM20',qty:55},{mid:'FM15',qty:1},{mid:'FM12',qty:3}]},
-  {id:12,name:'Caprese',cat:'Sides — May Menu',sell:7.00,recipe:[{mid:'FM20',qty:200},{mid:'FM22',qty:5},{mid:'FM74',qty:15},{mid:'FM15',qty:1}]},
-  {id:13,name:'Aubergine Parmigiana',cat:'Sides — May Menu',sell:6.67,recipe:[{mid:'FM78',qty:1},{mid:null,n:'Tomato sauce (1.5 ladle)',c:0.15},{mid:'FM22',qty:1},{mid:'FM12',qty:3},{mid:'FM70',qty:0.25}]},
-  {id:14,name:'Broccoli (side)',cat:'Sides — May Menu',sell:5.00,recipe:[{mid:'FM27',qty:165},{mid:'FM75',qty:20},{mid:'FM06',qty:10}]},
-  {id:15,name:'Affogato',cat:'Desserts',sell:6.50,recipe:[{mid:'FM63',qty:16},{mid:'FM59',qty:150}]},
-  {id:16,name:'Dough Ring',cat:'Desserts',sell:7.50,recipe:[{mid:'FM70',qty:0.25},{mid:null,n:'Chocolate filling 30g',c:0.40},{mid:'FM14',qty:50},{mid:'FM59',qty:100}]},
-  {id:17,name:'Tiramisu (per serving, 1/24)',cat:'Desserts',sell:6.00,recipe:[{mid:null,n:'Lady fingers (⅞ of 2 packs ÷ 24)',c:0.25},{mid:'FM61',qty:10.4},{mid:'FM62',qty:16.7},{mid:'FM55',qty:15.6},{mid:'FM16',qty:83.3},{mid:'FM63',qty:4}]},
+  {id:1,active:true,name:'Mixed Olives',cat:'Starters',sell:4.50,recipe:[{mid:'FM52',qty:150},{mid:'OM00',qty:1}]},
+  {id:2,active:true,name:'Garlic Pizette',cat:'Starters',sell:5.00,recipe:[{mid:'FM70',qty:0.5},{mid:'FM25',qty:2},{mid:'FM06',qty:6}]},
+  {id:3,active:true,name:'Padron Peppers',active:true,cat:'Starters',sell:6.50,recipe:[{mid:'FM26',qty:100},{mid:'FM12',qty:20},{mid:'FM75',qty:20},{mid:'FM05',qty:2}]},
+  {id:4,active:true,name:'Marinara',cat:'Pizza',sell:10.00,active:true,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:80},{mid:'FM20',qty:120},{mid:null,n:'Garlic oil (½ tsp)',c:0.05},{mid:'FM22',qty:2}]},
+  {id:5,active:true,name:'Margherita',cat:'Pizza',sell:12.00,active:true,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:50},{mid:'FM10',qty:50},{mid:'FM22',qty:2}]},
+  {id:6,active:true,name:'Anchovie',cat:'Pizza',sell:14.50,active:true,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:80},{mid:'FM10',qty:50},{mid:null,n:'Garlic oil (½ tsp)',c:0.05},{mid:'FM51',qty:20},{mid:'FM40',qty:10},{mid:'FM50',qty:5},{mid:'FM22',qty:2}]},
+  {id:7,active:true,name:'Pepperoni & Nduja',cat:'Pizza',sell:14.50,active:true,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:80},{mid:'FM10',qty:50},{mid:'FM42',qty:35},{mid:'FM41',qty:18}]},
+  {id:8,active:true,name:'Broccoli Ricotta',cat:'Pizza',sell:14.50,active:true,recipe:[{mid:'FM70',qty:1},{mid:'FM14',qty:60},{mid:'FM10',qty:35},{mid:'FM27',qty:45},{mid:null,n:'Chipotle flakes (5g)',c:0.08}]},
+  {id:9,active:true,name:'Wood Fired Aubergine',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:70},{mid:'FM22',qty:2.5},{mid:'FM10',qty:50},{mid:'FM76',qty:65},{mid:'FM20',qty:50},{mid:'FM13',qty:4}]},
+  {id:10,active:true,name:'Cavolo Nero',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM06',qty:15},{mid:'FM10',qty:50},{mid:'FM11',qty:50},{mid:'FM77',qty:70},{mid:'FM44',qty:80},{mid:'FM75',qty:20}]},
+  {id:11,active:true,name:'Genovese Pesto',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM73',qty:55},{mid:'FM10',qty:50},{mid:'FM20',qty:55},{mid:'FM15',qty:1},{mid:'FM12',qty:3}]},
+  {id:12,active:true,name:'Caprese',cat:'Sides — May Menu',sell:7.00,recipe:[{mid:'FM20',qty:200},{mid:'FM22',qty:5},{mid:'FM74',qty:15},{mid:'FM15',qty:1}]},
+  {id:13,active:true,name:'Aubergine Parmigiana',cat:'Sides — May Menu',sell:6.67,recipe:[{mid:'FM78',qty:1},{mid:null,n:'Tomato sauce (1.5 ladle)',c:0.15},{mid:'FM22',qty:1},{mid:'FM12',qty:3},{mid:'FM70',qty:0.25}]},
+  {id:14,active:true,name:'Broccoli (side)',cat:'Sides — May Menu',sell:5.00,recipe:[{mid:'FM27',qty:165},{mid:'FM75',qty:20},{mid:'FM06',qty:10}]},
+  {id:15,active:true,name:'Affogato',cat:'Desserts',sell:6.50,recipe:[{mid:'FM63',qty:16},{mid:'FM59',qty:150}]},
+  {id:16,active:true,name:'Dough Ring',cat:'Desserts',sell:7.50,recipe:[{mid:'FM70',qty:0.25},{mid:null,n:'Chocolate filling 30g',c:0.40},{mid:'FM14',qty:50},{mid:'FM59',qty:100}]},
+  {id:17,active:true,name:'Tiramisu (per serving, 1/24)',cat:'Desserts',sell:6.00,recipe:[{mid:null,n:'Lady fingers (⅞ of 2 packs ÷ 24)',c:0.25},{mid:'FM61',qty:10.4},{mid:'FM62',qty:16.7},{mid:'FM55',qty:15.6},{mid:'FM16',qty:83.3},{mid:'FM63',qty:4}]},
 ];
 
 /* ═══════════════════ STATE ═══════════════════ */
@@ -611,6 +617,7 @@ let wastageWeekOffset = 0;
 let nextStaffId = 1;
 let nextShiftId = 1;
 let labourSubTab = 'shifts';
+let gpViewMode = 'active'; // 'active', 'archived', 'all'
 let seasonStart = '2026-04-01';
 /* ── Cloud credentials hardcoded — no setup needed on any device ── */
 let CLOUD = {
@@ -815,7 +822,10 @@ function addMaster(type){
 
 /* ═══════════════════ GP RENDER ═══════════════════ */
 function renderGP(gpType){
-  const items=getGP(gpType);
+  const allItems=getGP(gpType);
+  const items=gpViewMode==='active'?allItems.filter(i=>i.active!==false):
+              gpViewMode==='archived'?allItems.filter(i=>i.active===false):
+              allItems;
   const avgGP=items.length?items.reduce((s,i)=>s+gpPct(i),0)/items.length:0;
   const totalSellInc=items.reduce((s,i)=>s+i.sell,0);
   const totalSellEx=totalSellInc/1.2;
@@ -824,7 +834,14 @@ function renderGP(gpType){
   const best=items.length?items.reduce((a,b)=>gpPct(a)>gpPct(b)?a:b):null;
   const col=avgGP>=target?'var(--good)':avgGP>=target-10?'var(--mid)':'var(--bad)';
 
-  let h=`
+  const activeCount=allItems.filter(i=>i.active!==false).length;
+  const archivedCount=allItems.filter(i=>i.active===false).length;
+  let h=`<div style="display:flex;gap:6px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
+    <button onclick="gpViewMode='active';render()" style="border:none;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;${gpViewMode==='active'?'background:var(--teal);color:#fff':'background:var(--teal-l);color:var(--teal)'}">● Active (${activeCount})</button>
+    <button onclick="gpViewMode='archived';render()" style="border:none;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;${gpViewMode==='archived'?'background:#7f1d1d;color:#fff':'background:#fdeaea;color:#7f1d1d'}">◌ Archived (${archivedCount})</button>
+    <button onclick="gpViewMode='all';render()" style="border:none;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;${gpViewMode==='all'?'background:var(--muted);color:#fff':'background:var(--bg);color:var(--muted)'}">All</button>
+    ${gpViewMode==='archived'?'<span style="font-size:11px;color:var(--muted);margin-left:4px">Archived items don't count toward averages or appear on the active menu</span>':''}
+  </div>
   <div class="metrics">
     <div class="metric"><div class="ml">Average GP%</div><div class="mv" style="color:${col}">${avgGP.toFixed(1)}%</div><div class="ms">Target ${target}% · ex VAT</div></div>
     <div class="metric"><div class="ml">Menu sell (inc VAT)</div><div class="mv">£${totalSellInc.toFixed(2)}</div><div class="ms">Ex VAT: £${totalSellEx.toFixed(2)}</div></div>
@@ -875,7 +892,12 @@ function renderGP(gpType){
       <td class="num">£${cost.toFixed(2)}</td>
       <td class="num" style="color:${gpVal>=0?'var(--teal)':'var(--bad)'}">£${gpVal.toFixed(2)}</td>
       <td class="num">${gpPill(pct)}</td>
-      <td><button class="del-btn" onclick="delItem(${item.id},'${gpType}',event)">✕</button></td>
+      <td>
+        ${item.active===false
+          ?`<button class="btn-sm" style="font-size:10px;padding:2px 6px;color:var(--teal);border-color:var(--teal)" onclick="restoreItem(\${item.id},'\${gpType}',event)" title="Restore to active menu">↩ Restore</button>`
+          :`<button class="del-btn" onclick="archiveItem(\${item.id},'\${gpType}',event)" title="Archive this item">📥</button>`
+        }
+      </td>
     </tr>`;
 
     if(isExp){
@@ -995,12 +1017,24 @@ function setQty(id,type,idx,val){const item=getGP(type).find(i=>i.id===id);if(it
 function setCost(id,type,idx,val){const item=getGP(type).find(i=>i.id===id);if(item&&item.recipe[idx]){item.recipe[idx].c=val;render();}}
 function delIng(id,type,idx,e){e.stopPropagation();const item=getGP(type).find(i=>i.id===id);if(item){item.recipe.splice(idx,1);render();}}
 function delItem(id,type,e){
+  // Legacy — now archives instead of deletes
+  archiveItem(id,type,e);
+}
+function archiveItem(id,type,e){
   e.stopPropagation();
-  if(!confirm('Remove this menu item?'))return;
-  if(type==='wet')WET_GP=WET_GP.filter(i=>i.id!==id);
-  else DRY_GP=DRY_GP.filter(i=>i.id!==id);
+  const item=getGP(type).find(i=>i.id===id);
+  if(!item)return;
+  item.active=false;
   if(expandedId===id){expandedId=null;expandedType=null;}
-  render();
+  if(gpViewMode==='active'){}  // stay on active view — item disappears
+  saveState();render();
+}
+function restoreItem(id,type,e){
+  e.stopPropagation();
+  const item=getGP(type).find(i=>i.id===id);
+  if(!item)return;
+  item.active=true;
+  saveState();render();
 }
 
 /* ── Ingredient picker portal ── */
@@ -1112,8 +1146,8 @@ function addItem(gpType){
   const cat=document.getElementById(`nc-${gpType}`).value;
   const sell=parseFloat(document.getElementById(`np-${gpType}`).value);
   if(!name||isNaN(sell)||sell<=0){alert('Enter a name and sell price.');return;}
-  if(gpType==='wet')WET_GP.push({id:nextWet++,name,cat,sell,recipe:[]});
-  else DRY_GP.push({id:nextDry++,name,cat,sell,recipe:[]});
+  if(gpType==='wet')WET_GP.push({id:nextWet++,name,cat,sell,active:true,recipe:[]});
+  else DRY_GP.push({id:nextDry++,name,cat,sell,active:true,recipe:[]});
   render();
 }
 
@@ -1438,8 +1472,21 @@ function closeSyncModal(){
 }
 
 /* ═══════════════════ BATCHES ═══════════════════ */
+/* ── Yield helpers ── */
+function ingUsableQty(ri){
+  // How much of a purchased ingredient is actually usable after prep/wastage
+  return ri.qty * ((ri.yieldPct??100)/100);
+}
+function batchEffectiveYield(b){
+  // If autoYield, sum usable qty of all ingredients; otherwise use manually set yieldQty
+  if(b.autoYield){
+    return (b.ingredients||[]).reduce((s,r)=>s+ingUsableQty(r),0);
+  }
+  return b.yieldQty||0;
+}
+
 function batchIngCost(b){return(b.ingredients||[]).reduce((s,r)=>{const m=getMaster(r.mid);return s+(m?r.qty*cpu(m):0);},0);}
-function batchCostPerUnit(b){if(!b.yieldQty||b.yieldQty<=0)return 0;return batchIngCost(b)/b.yieldQty;}
+function batchCostPerUnit(b){const y=batchEffectiveYield(b);if(!y||y<=0)return 0;return batchIngCost(b)/y;}
 function batchCostPerPortion(b){
   if(!b.portions||!b.portions.count||b.portions.count<=0)return 0;
   const ingCost=batchIngCost(b);let containerCost=0;
@@ -1453,14 +1500,33 @@ function syncAllBatchMasters(){
     if(hasPortion&&b.portions.containerMid){const m=getMaster(b.portions.containerMid);if(m)containerCost=cpu(m)*b.portions.count;}
     const totalBatchCost=ingCost+(hasPortion?containerCost:0);
     const unit=hasPortion?'each':b.yieldUnit||'g';
-    const size=hasPortion?b.portions.count:b.yieldQty||1;
+    const effYield=batchEffectiveYield(b);
+    const size=hasPortion?b.portions.count:effYield||b.yieldQty||1;
     const costPerPart=hasPortion?batchCostPerPortion(b):batchCostPerUnit(b);
     const portLabel=b.portions?.label||'portion';
-    const packDesc=hasPortion?`Batch: ${b.portions.count} × ${portLabel} · £${totalBatchCost.toFixed(2)} total · £${costPerPart.toFixed(4)} each`:`${b.yieldQty}${unit} batch · £${ingCost.toFixed(2)} total`;
+    const packDesc=hasPortion
+      ?`Batch yield: ${b.portions.count} × ${portLabel} (${b.yieldUnit||'g'}) · £${totalBatchCost.toFixed(2)} total · £${costPerPart.toFixed(4)} each`
+      :`${(effYield||b.yieldQty||0).toFixed(0)}${unit} yield · £${ingCost.toFixed(2)} total · £${costPerPart.toFixed(4)}/${unit}`;
     const masterName=b.name+(hasPortion?` (per ${portLabel})`:'');
+
+    // ── Register as BM master (always) ──
     const existing=MASTERS.find(m=>m.id===existingId);
-    if(existing){existing.name=masterName;existing.pack=packDesc;existing.cost=totalBatchCost;existing.size=size;existing.unit=unit;}
+    if(existing){existing.name=masterName;existing.pack=packDesc;existing.cost=totalBatchCost;existing.size=size;existing.unit=unit;existing.sup='House — Batch';}
     else{MASTERS.push({id:existingId,type:'F',name:masterName,sup:'House — Batch',cat:'Batch Production',pack:packDesc,cost:totalBatchCost,size,unit});}
+
+    // ── LINKED MASTER: push cost+size to an FM/DM ingredient ──
+    // This is the "live link" — change ingredients in the batch,
+    // the linked FM master (used in recipes) auto-updates instantly.
+    if(b.linkedMasterId){
+      const linked=getMaster(b.linkedMasterId);
+      if(linked){
+        linked.cost=totalBatchCost;
+        linked.size=size;
+        linked.unit=unit;
+        linked.pack=`[Batch: ${b.name}] · ${packDesc}`;
+        linked.sup='House — Batch (auto)';
+      }
+    }
   });
 }
 
@@ -1473,7 +1539,7 @@ function renderBatches(){
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
     <div style="font-size:12px;color:var(--muted)">Each batch registers as a <strong>[BM…]</strong> master ingredient — link it directly in any GP recipe.</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      ${!BATCHES.length?`<button class="btn-sm" style="background:#f3f0ff;color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="importBibleBatches()">📖 Import from Food Bible</button>`:''}
+      <button class="btn-sm" style="background:#f3f0ff;color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="importBibleBatches()">📖 Import / update from Food Bible</button>
       <button class="btn-teal" style="background:#7c3aed" onclick="newBatch()">+ New batch recipe</button>
     </div>
   </div>`;
@@ -1497,8 +1563,16 @@ function renderBatchCard(b){
       <div>
         <div style="font-size:15px;font-weight:800;color:#7c3aed">${b.name}
           <span style="font-size:10px;font-weight:600;background:#f3f0ff;color:#7c3aed;border-radius:10px;padding:2px 8px;margin-left:6px">[BM${b.id}]</span>
+          ${b.linkedMasterId?`<span style="font-size:10px;font-weight:600;background:#fef3c7;color:#92400e;border-radius:10px;padding:2px 8px;margin-left:4px">🔗 → [${b.linkedMasterId}]</span>`:''}
         </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px">${b.ingredients.length} ingredients · ${b.yieldQty||'?'} ${b.yieldUnit||'g'} yield${b.notes?` · ${b.notes}`:''}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">
+        ${b.ingredients.length} ingredients ·
+        ${b.autoYield
+          ?`<span style="color:var(--teal);font-weight:600">${batchEffectiveYield(b).toFixed(0)}${b.yieldUnit||'g'} yield</span> <span style="font-size:10px">(auto from yields)</span>`
+          :`${b.yieldQty||'?'} ${b.yieldUnit||'g'} yield`
+        }
+        ${b.notes?` · ${b.notes}`:''}
+      </div>
       </div>
       <div style="text-align:right;flex-shrink:0"><div style="font-size:20px;font-weight:900;color:#7c3aed">£${ingCost.toFixed(2)}</div><div style="font-size:11px;color:var(--muted)">ingredient cost</div></div>
     </div>
@@ -1537,11 +1611,14 @@ function renderBatchEdit(b){
     <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px">
       <thead><tr>
         <th style="text-align:left;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Ingredient</th>
-        <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Qty</th>
+        <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Buy (qty)</th>
         <th style="padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Unit</th>
+        <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Yield %</th>
+        <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted);background:#e8f4f1">Usable</th>
         <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Cost</th><th></th>
       </tr></thead><tbody>
       ${b.ingredients.map((r,i)=>{const m=getMaster(r.mid);const rc=m?r.qty*cpu(m):0;
+        const yp=r.yieldPct??100; const usable=(r.qty*(yp/100)).toFixed(1);
         return `<tr style="border-bottom:1px solid var(--border)">
           <td style="padding:5px 6px"><strong>${m?`[${m.id}] ${m.name}`:'[deleted]'}</strong></td>
           <td style="padding:5px 6px;text-align:right">
@@ -1550,6 +1627,13 @@ function renderBatchEdit(b){
               oninput="updateBatchIngQty(${b.id},${i},+this.value)">
           </td>
           <td style="padding:5px 6px;color:var(--muted)">${m?m.unit:''}</td>
+          <td style="padding:5px 6px;text-align:right">
+            <input type="number" step="0.1" min="0" max="100" value="${yp}"
+              style="width:52px;border:1px solid var(--border);border-radius:5px;padding:2px 4px;text-align:right;background:${yp<100?'#fffbea':'#fff'}"
+              title="% of purchased qty that is usable after prep/wastage"
+              oninput="updateBatchIngYield(${b.id},${i},+this.value)">%
+          </td>
+          <td style="padding:5px 6px;text-align:right;background:#e8f4f1;font-weight:700;color:var(--teal);font-size:12px">${usable}${m?m.unit:''}</td>
           <td style="padding:5px 6px;text-align:right;color:#7c3aed;font-weight:700">£${rc.toFixed(3)}</td>
           <td style="padding:5px 6px"><button class="del-btn" onclick="removeBatchIng(${b.id},${i})">✕</button></td>
         </tr>`;}).join('')}
@@ -1572,10 +1656,23 @@ function renderBatchEdit(b){
       <button class="btn-sm btn-teal" onclick="addBatchIng(${b.id})">+ Add</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div><label class="form-label">Total yield quantity</label>
+      <div>
+        <label class="form-label">Yield calculation</label>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+            <input type="radio" name="yield-mode-${b.id}" value="manual" ${!b.autoYield?'checked':''} onchange="updateBatchField(${b.id},'autoYield',false)">
+            Manual yield qty
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+            <input type="radio" name="yield-mode-${b.id}" value="auto" ${b.autoYield?'checked':''} onchange="updateBatchField(${b.id},'autoYield',true)">
+            Auto (sum of usable qtys)
+          </label>
+        </div>
         <input type="number" value="${b.yieldQty||0}" min="0" step="any"
-          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px"
-          oninput="updateBatchField(${b.id},'yieldQty',+this.value)">
+          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px;${b.autoYield?'opacity:0.4;pointer-events:none':''}"
+          oninput="updateBatchField(${b.id},'yieldQty',+this.value)"
+          placeholder="${b.autoYield?'Auto: '+batchEffectiveYield(b).toFixed(0)+b.yieldUnit:'Enter yield'}">
+        ${b.autoYield?`<div style="font-size:11px;color:var(--teal);margin-top:3px">✓ Auto-calculated: ${batchEffectiveYield(b).toFixed(1)} ${b.yieldUnit||'g'}</div>`:''}
       </div>
       <div><label class="form-label">Yield unit (g / ml / each)</label>
         <input type="text" value="${b.yieldUnit||'g'}"
@@ -1610,11 +1707,33 @@ function renderBatchEdit(b){
         ${containerMaster?`<div style="font-size:11px;color:var(--teal);margin-top:3px">✓ £${cpu(containerMaster).toFixed(4)} each</div>`:''}
       </div>
     </div>
+    <!-- ── Link to master ingredient ── -->
+    <div style="background:#fff8e1;border:1.5px solid #f59e0b;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#92400e;margin-bottom:6px">
+        🔗 Link to ingredient — keep recipes in sync
+      </div>
+      <div style="font-size:12px;color:#78350f;margin-bottom:8px">
+        When linked, <strong>saving this batch automatically updates the chosen ingredient's price and size</strong>.
+        Any recipe using that ingredient recalculates instantly. Perfect for batch preparations used in GP recipes.
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="be-linked-${b.id}"
+          style="flex:1;height:34px;border:1.5px solid #f59e0b;border-radius:6px;padding:0 8px;font-size:12px;min-width:200px"
+          onchange="updateBatchField(${b.id},'linkedMasterId',this.value||null)">
+          <option value="">— No link (use [BM${b.id}] in recipes directly) —</option>
+          ${MASTERS.filter(m=>!m.id.startsWith('BM')).map(m=>`<option value="${m.id}"${b.linkedMasterId===m.id?' selected':''}>[${m.id}] ${m.name}</option>`).join('')}
+        </select>
+        ${b.linkedMasterId?`<span style="font-size:12px;background:#fef3c7;padding:3px 8px;border-radius:5px;color:#92400e">✓ Updating [${b.linkedMasterId}] on save</span>`:''}
+      </div>
+      ${!b.linkedMasterId?`<div style="font-size:11px;color:#92400e;margin-top:6px">Or use this batch directly in recipes as <strong>[BM${b.id}]</strong> — searchable in any recipe ingredient picker.</div>`:''}
+    </div>
+
     <div style="background:#f3f0ff;border-radius:8px;padding:12px;font-size:13px;margin-bottom:12px">
       <strong style="color:#7c3aed">Cost summary:</strong> Ingredients £${ingCost.toFixed(2)}
-      ${b.yieldQty?` · £${cpu_.toFixed(4)} per ${b.yieldUnit||'g'}`:''}
+      ${b.yieldQty||b.autoYield?` · £${cpu_.toFixed(4)} per ${b.yieldUnit||'g'}`:''}
       ${hasPortion?` · <strong>£${cpp.toFixed(4)} per ${b.portions.label||'portion'}</strong>`:''}
       · Registers as <strong>[BM${b.id}]</strong>
+      ${b.linkedMasterId?` · Also updates <strong>[${b.linkedMasterId}]</strong> on save`:''}
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn-teal" style="background:#7c3aed" onclick="saveBatch(${b.id})">✓ Save batch</button>
@@ -1625,24 +1744,204 @@ function renderBatchEdit(b){
 
 function importBibleBatches(){
   if(BATCHES.length&&!confirm('This will add Food Bible batches to your existing list. Continue?'))return;
-  const bibleBatches=[
-    {name:'Pizza Dough',team:'boh',notes:'~97 balls · ball at 250–160g · prove overnight',yieldQty:97,yieldUnit:'each',portions:null,ingredients:[{mid:'FM02',qty:15000},{mid:'FM04',qty:5},{mid:'FM05',qty:375},{mid:'FM06',qty:50}]},
-    {name:'Tomato Sauce (batch)',team:'boh',notes:'12 tins · 15g salt per tin · blend until smooth · yield ~36 ladles',yieldQty:36,yieldUnit:'each',portions:null,ingredients:[{mid:'FM21',qty:12},{mid:'FM05',qty:180}]},
-    {name:'Garlic Dip',team:'boh',notes:'Blend all in 10L tub · yields 303 × 2oz dip pots',yieldQty:11770,yieldUnit:'g',portions:{count:303,label:'dip pot',containerMid:'OM00'},ingredients:[{mid:'FM25',qty:350},{mid:'FM06',qty:120},{mid:'FM80',qty:10000},{mid:'FM53',qty:800},{mid:'FM23',qty:50}]},
-    {name:'Genovese Pesto',team:'boh',notes:'2kg batch · thin layer of olive oil to stop oxidation',yieldQty:1880,yieldUnit:'g',portions:null,ingredients:[{mid:'FM22',qty:600},{mid:'FM25',qty:60},{mid:'FM12',qty:400},{mid:'FM13',qty:200},{mid:'FM06',qty:500},{mid:'FM05',qty:20}]},
-    {name:'Chilli Dip & Dressing',team:'boh',notes:'Large batch · pot half into 2oz dips · rest into squeezy tubes',yieldQty:7080,yieldUnit:'g',portions:{count:150,label:'dip pot',containerMid:'OM00'},ingredients:[{mid:'FM29',qty:4000},{mid:'FM25',qty:400},{mid:'FM54',qty:1000},{mid:'FM53',qty:240},{mid:'FM06',qty:1000},{mid:'FM05',qty:100},{mid:'FM55',qty:40}]},
-    {name:'Parsley & Garlic Dressing',team:'boh',notes:'Pulse until combined but not over-blended · fridge 10 days',yieldQty:500,yieldUnit:'g',portions:null,ingredients:[{mid:'FM23',qty:100},{mid:'FM25',qty:30},{mid:'FM53',qty:60},{mid:'FM54',qty:30},{mid:'FM06',qty:90},{mid:'FM05',qty:5}]},
-    {name:'Tiramisu',team:'boh',notes:'Set 12h+ overnight · 18 portions per batch',yieldQty:18,yieldUnit:'each',portions:null,ingredients:[{mid:'FM60',qty:8},{mid:'FM61',qty:250},{mid:'FM55',qty:495},{mid:'FM62',qty:400},{mid:'FM16',qty:2000},{mid:'FM63',qty:100}]},
-    {name:'Aubergine Topping (roasted)',team:'boh',notes:'Diced 20mm · roast until golden · one box yield ~3.28kg prepped',yieldQty:3280,yieldUnit:'g',portions:null,ingredients:[{mid:'FM28',qty:4000},{mid:'FM06',qty:100},{mid:'FM05',qty:10},{mid:'FM57',qty:5}]},
-    {name:'Cavolo Nero (wilted & prepped)',team:'boh',notes:'Blanch 20 sec max · ice bath · one box yield ~2.05kg',yieldQty:2050,yieldUnit:'g',portions:null,ingredients:[{mid:'FM30',qty:3000},{mid:'FM06',qty:60},{mid:'FM05',qty:10}]},
-  ];
-  bibleBatches.forEach(b=>{BATCHES.push({id:nextBatchId++,...b});});
-  syncAllBatchMasters();saveState();render();
-  alert(`✅ Imported ${bibleBatches.length} batch recipes from the Food Bible.`);
+  const batches=getBibleBatches();
+  batches.forEach(b=>{BATCHES.push({id:nextBatchId++,...b});});
+  syncAllBatchMasters();
+  saveState();render();
+  alert('✅ Imported '+batches.length+' batch recipes from the Food Bible. Prices draw from Food Ingredients — update supplier prices there and batches auto-recalculate.');
 }
 
+function getBibleBatches(){
+  return [
+  // ── MIXED OLIVES (1 tub 3kg → 17 portions × 150g in 2oz dip pots) ──
+  {name:'Mixed Olives (portioned)',team:'foh',autoYield:false,
+   notes:'1 × 3kg tub · drained from tub · 17 × 150g portions per tub · potted with 2oz pot & lid',
+   linkedMasterId:null,
+   yieldQty:17,yieldUnit:'each',portions:{count:17,label:'150g olive pot',containerMid:'OM00'},
+   ingredients:[
+    {mid:'FM52',qty:3000,yieldPct:85},    // 3kg tub → ~2550g usable (17×150g = 85% yield). Remaining is brine/oil drained off.
+   ]},
+
+  // ── PIZZA DOUGH (15kg flour batch → ~97 balls) ──
+  {name:'Pizza Dough',team:'boh',autoYield:false,linkedMasterId:'FM70',
+   notes:'15kg flour batch · prove overnight · 240-260g balls · ~97 per batch',
+   yieldQty:97,yieldUnit:'each',portions:null,
+   ingredients:[
+    {mid:'FM02',qty:15000,yieldPct:100},  // Caputo 15kg bag
+    {mid:'FM04',qty:5,yieldPct:100},       // Fresh yeast ~5g avg (0.5-7g range)
+    {mid:'FM05',qty:375,yieldPct:100},     // Salt
+    {mid:'FM06',qty:50,yieldPct:100},      // Olive oil (squeeze)
+   ]},
+
+  // ── TOMATO SAUCE (12 tins → ~29kg sauce) ──
+  {name:'Tomato Sauce',team:'boh',autoYield:false,linkedMasterId:'FM72',
+   notes:'12 tins · blend with 15g salt per tin until smooth · update FM21 price when Carnevale invoices change',
+   yieldQty:29000,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM21',qty:12,yieldPct:100},      // 12 × 2.5kg tins
+    {mid:'FM05',qty:180,yieldPct:100},     // 15g salt × 12 tins
+   ]},
+
+  // ── GENOVESE PESTO (2kg batch → 1880g yield) ──
+  {name:'Genovese Pesto',team:'boh',autoYield:false,linkedMasterId:'FM73',
+   notes:'2kg batch · add 200ml cold water when using fresh batch · thin oil layer to stop oxidation · fridge',
+   yieldQty:1880,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM22',qty:600,yieldPct:100},     // Basil 600g with stems (all goes in)
+    {mid:'FM25',qty:60,yieldPct:100},      // Garlic cloves
+    {mid:'FM12',qty:400,yieldPct:100},     // Parmesan
+    {mid:'FM13',qty:200,yieldPct:100},     // Pecorino
+    {mid:'FM06',qty:500,yieldPct:100},     // Extra virgin olive oil
+    {mid:'FM05',qty:20,yieldPct:100},      // Salt
+   ]},
+
+  // ── CHILLI DRESSING & DIP (3kg batch → 4650g yield · 103 dip pots) ──
+  {name:'Chilli Dressing & Dip',team:'boh',autoYield:false,linkedMasterId:'FM75',
+   notes:'3kg chilies (wastage ~1/6 = 2.5kg usable) · yields 4.65kg / 103 dip pots · half into 2oz pots, rest into squeezy tubes',
+   yieldQty:4650,yieldUnit:'g',portions:{count:103,label:'dip pot',containerMid:'OM00'},
+   ingredients:[
+    {mid:'FM29',qty:3000,yieldPct:83.3},   // 3kg chillies → ~2.5kg after wastage (1/6 loss)
+    {mid:'FM25',qty:300,yieldPct:83.3},    // Garlic (same wastage proportion)
+    {mid:'FM54',qty:666,yieldPct:100},     // Fresh lemon juice 0.666L
+    {mid:'FM53',qty:160,yieldPct:100},     // White wine vinegar
+    {mid:'FM06',qty:666,yieldPct:100},     // Extra virgin olive oil
+    {mid:'FM05',qty:66,yieldPct:100},      // Salt (to taste)
+    {mid:'FM55',qty:60,yieldPct:100},      // Caster sugar (30+30g)
+    {mid:'FM81',qty:112,yieldPct:100},     // Maple syrup
+   ]},
+
+  // ── GARLIC DIP (10L mayo batch → 300 dip pots) ──
+  {name:'Garlic Dip',team:'boh',autoYield:false,
+   notes:'Blend all in 10L tub · yields 300 × 2oz dip pots · use hand blender until liquefied',
+   yieldQty:11750,yieldUnit:'g',portions:{count:300,label:'dip pot',containerMid:'OM00'},
+   ingredients:[
+    {mid:'FM25',qty:350,yieldPct:100},     // Garlic cloves
+    {mid:'FM06',qty:120,yieldPct:100},     // Extra virgin olive oil
+    {mid:'FM80',qty:10000,yieldPct:100},   // Extra thick mayo 10kg
+    {mid:'FM53',qty:800,yieldPct:100},     // White wine vinegar
+    {mid:'FM23',qty:180,yieldPct:100},     // 1 bunch flat-leaf parsley
+   ]},
+
+  // ── PARSLEY DRESSING (per 1x batch → 462g yield incl. oil layer) ──
+  {name:'Parsley & Garlic Dressing',team:'boh',autoYield:false,linkedMasterId:'FM74',
+   notes:'Pulse until combined but not over-blended · oil layer on top stops oxidation · fridge 10 days · 1x batch = 462g',
+   yieldQty:462,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM23',qty:360,yieldPct:100},     // 2 large bunches flat-leaf parsley ~360g
+    {mid:'FM25',qty:30,yieldPct:100},      // 6 garlic cloves ~30g
+    {mid:'FM53',qty:60,yieldPct:100},      // 4 tbsp white wine vinegar ~60ml
+    {mid:'FM54',qty:30,yieldPct:100},      // 2 tbsp fresh lemon juice ~30ml
+    {mid:'FM06',qty:90,yieldPct:100},      // 6 tbsp extra virgin olive oil ~90ml (incl. oil layer)
+    {mid:'FM05',qty:5,yieldPct:100},       // 1 tsp salt
+   ]},
+
+  // ── BROCCOLI PREP (2.83kg raw → 1.29kg yield · 45.6% yield) ──
+  {name:'Broccoli (prepped — pizza topping)',team:'boh',autoYield:true,
+   notes:'2.83kg raw broccoli → 1.56kg wastage (ends/stalks) → 1.29kg yield (45.6%). Change purchase qty and yield auto-updates.',
+   yieldQty:1290,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM27',qty:2830,yieldPct:45.6},   // 2.83kg broccoli → 45.6% yield
+   ]},
+
+  // ── BASIL PREP (95g bunch → 54g picked leaves · 56.8% yield) ──
+  {name:'Basil (prepped — picked leaves)',team:'boh',autoYield:true,
+   notes:'1 bunch ≈95g → 46g wastage (stems) → 54g usable leaves (56.8%). Change bunch size and yield auto-updates.',
+   yieldQty:54,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM22',qty:95,yieldPct:56.8},     // 95g bunch → 54g yield
+   ]},
+
+  // ── AUBERGINE TOPPING (1 box 5kg → 3.28kg roasted yield) ──
+  {name:'Aubergine Topping (roasted, diced)',team:'boh',autoYield:false,linkedMasterId:'FM76',
+   notes:'1 box ≈5kg raw · diced 20mm · roast until golden · yield ~3.28kg (65.6%)',
+   yieldQty:3280,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM28',qty:5000,yieldPct:65.6},   // 1 box aubergine ~5kg
+    {mid:'FM06',qty:100,yieldPct:100},     // Extra virgin olive oil
+    {mid:'FM05',qty:10,yieldPct:100},      // Salt
+    {mid:'FM57',qty:5,yieldPct:100},       // Black pepper
+   ]},
+
+  // ── CAVOLO NERO (1 box 4.5kg → 2.05kg blanched yield) ──
+  {name:'Cavolo Nero (blanched & prepped)',team:'boh',autoYield:false,linkedMasterId:'FM77',
+   notes:'1 box ≈4.5kg raw · blanch 20 sec max · ice bath · chop 3-4cm · toast in wood oven · yield ~2.05kg (45.6%)',
+   yieldQty:2050,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM30',qty:4500,yieldPct:45.6},   // 1 box cavolo nero ~4.5kg
+    {mid:'FM06',qty:60,yieldPct:100},      // Extra virgin olive oil
+    {mid:'FM05',qty:10,yieldPct:100},      // Sea salt
+   ]},
+
+  // ── TIRAMISU (1 gastro → 18 portions) ──
+  {name:'Tiramisu',team:'boh',autoYield:false,
+   notes:'Set 12h+ overnight · 150mm clear 1/1 gastro · 18 portions per batch · serve with cocoa dust',
+   yieldQty:18,yieldUnit:'each',portions:null,
+   ingredients:[
+    {mid:'FM63',qty:80,yieldPct:100},      // 10 double shots coffee ≈80g beans
+    {mid:'FM60',qty:8,yieldPct:100},       // 8 packs lady fingers
+    {mid:'FM61',qty:250,yieldPct:100},     // Egg yolk 250g
+    {mid:'FM55',qty:495,yieldPct:100},     // Sugar 375g+120g
+    {mid:'FM62',qty:400,yieldPct:100},     // Egg white 400g
+    {mid:'FM16',qty:2000,yieldPct:100},    // Mascarpone 2kg
+   ]},
+
+  // ── CHOCOLATE MOUSSE (→ 20 portions) ──
+  {name:'Chocolate Mousse',team:'boh',autoYield:false,
+   notes:'Blast chill in ice bath · set 12h+ overnight · 20 portions · DO NOT stop stirring during ice bath stage',
+   yieldQty:20,yieldUnit:'each',portions:null,
+   ingredients:[
+    {mid:'FM83',qty:600,yieldPct:100},     // Dark chocolate 54% (600g)
+    {mid:'FM84',qty:200,yieldPct:100},     // Dark chocolate 70% (200g)
+    {mid:'FM06',qty:420,yieldPct:100},     // Olive oil 420g
+    {mid:'FM61',qty:460,yieldPct:100},     // Egg yolk 460g
+    {mid:'FM62',qty:720,yieldPct:100},     // Egg white 720g
+    {mid:'FM55',qty:300,yieldPct:100},     // Sugar 180g+120g
+    {mid:'FM82',qty:400,yieldPct:100},     // Double cream 400g
+   ]},
+
+  // ── AUBERGINE PARMIGIANA (1 full gastro → 18 portions) ──
+  {name:'Aubergine Parmigiana',team:'boh',autoYield:false,
+   notes:'1 box aubergine + extras · fried in rapeseed oil · 5 layers · cook 30-45 min in coolest part of oven · 18 portions',
+   yieldQty:18,yieldUnit:'each',portions:null,
+   ingredients:[
+    {mid:'FM28',qty:5000,yieldPct:65.6},   // 1 box+ aubergine
+    {mid:'FM85',qty:500,yieldPct:100},     // Rapeseed oil (for frying)
+    {mid:'FM86',qty:200,yieldPct:100},     // Rice flour (GF coating)
+    {mid:'FM72',qty:3600,yieldPct:100},    // 1.2 tins tomato sauce → 3000g sauce from FM72 batch
+    {mid:'FM11',qty:300,yieldPct:100},     // Provola (smoked mozz)
+    {mid:'FM10',qty:300,yieldPct:100},     // Mozzarella
+    {mid:'FM12',qty:100,yieldPct:100},     // Parmesan
+    {mid:'FM22',qty:30,yieldPct:100},      // Basil
+   ]},
+
+  // ── SALSICCIA / FENNEL SAUSAGE (2kg → ~1.8kg cooked) ──
+  {name:'Salsiccia (cooked)',team:'boh',autoYield:false,
+   notes:'2kg salsiccia · break apart · roast in wood oven until golden · probe 75°C for 30s · label 5 days',
+   yieldQty:1800,yieldUnit:'g',portions:null,
+   ingredients:[
+    {mid:'FM44',qty:2000,yieldPct:90},     // Fennel sausage 2kg → ~1.8kg cooked (10% moisture loss)
+   ]},
+
+  // ── NDUJA BALLS (250g pack → ~12 balls at 18-20g each) ──
+  {name:'Nduja Balls (portioned)',team:'boh',autoYield:false,
+   notes:'Roll 18-20g balls · coat in semolina · micro scales required · from 250g pack',
+   yieldQty:12,yieldUnit:'each',portions:null,
+   ingredients:[
+    {mid:'FM41',qty:250,yieldPct:100},     // Nduja 250g pack → ~12 × 20g balls
+   ]},
+];}
+
 function newBatch(){const id=nextBatchId++;BATCHES.push({id,name:'New batch',team:'boh',ingredients:[],yieldQty:0,yieldUnit:'g',portions:null,notes:''});editingBatchId=id;saveState();render();}
-function saveBatch(id){const b=BATCHES.find(x=>x.id===id);if(!b)return;b.name=document.getElementById('be-name')?.value.trim()||b.name;b.team=document.getElementById('be-team')?.value||b.team;syncAllBatchMasters();editingBatchId=null;saveState();render();}
+function saveBatch(id){
+  const b=BATCHES.find(x=>x.id===id);if(!b)return;
+  b.name=document.getElementById('be-name')?.value.trim()||b.name;
+  b.team=document.getElementById('be-team')?.value||b.team;
+  // linkedMasterId is already updated via updateBatchField when dropdown changes
+  syncAllBatchMasters();  // pushes cost to linked FM master instantly
+  editingBatchId=null;
+  saveState();
+  render();
+}
 function deleteBatch(btn,id){
   if(btn.dataset.confirm){MASTERS=MASTERS.filter(m=>m.id!=='BM'+id);BATCHES=BATCHES.filter(b=>b.id!==id);saveState();render();}
   else{btn.dataset.confirm='1';btn.textContent='Tap again to confirm';setTimeout(()=>{if(btn){delete btn.dataset.confirm;btn.textContent='🗑️ Delete';}},3000);}
@@ -1650,6 +1949,7 @@ function deleteBatch(btn,id){
 function updateBatchField(id,field,val){const b=BATCHES.find(x=>x.id===id);if(b){b[field]=val;}}
 function updateBatchPortions(id,field,val){const b=BATCHES.find(x=>x.id===id);if(!b)return;if(!b.portions)b.portions={count:0,label:'',containerMid:''};b.portions[field]=val;}
 function updateBatchIngQty(batchId,idx,val){const b=BATCHES.find(x=>x.id===batchId);if(b&&b.ingredients[idx])b.ingredients[idx].qty=val;}
+function updateBatchIngYield(batchId,idx,val){const b=BATCHES.find(x=>x.id===batchId);if(b&&b.ingredients[idx])b.ingredients[idx].yieldPct=Math.min(100,Math.max(0,val));}
 function removeBatchIng(batchId,idx){const b=BATCHES.find(x=>x.id===batchId);if(b){b.ingredients.splice(idx,1);editingBatchId=batchId;saveState();render();}}
 function addBatchIng(batchId){
   const mid=document.getElementById(`be-ing-mid-${batchId}`)?.value;
@@ -1714,7 +2014,7 @@ document.addEventListener('click',e=>{
 function buildState(){
   return {
     v:1,savedAt:new Date().toISOString(),
-    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,BATCHES,
+    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,BATCHES,gpViewMode,
     nextIds,nextWet,nextDry,nextStaffId,nextShiftId,nextWastageId,nextBatchId,target
   };
 }
