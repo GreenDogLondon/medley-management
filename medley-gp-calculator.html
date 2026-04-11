@@ -105,40 +105,167 @@ nav::-webkit-scrollbar{display:none}
 .form-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;font-weight:600}
 .ing-preview{font-size:12px;font-weight:700;color:var(--teal);min-width:70px}
 @media(max-width:768px){
+  /* ── Topbar ── */
   .topbar{padding:7px 10px;flex-wrap:nowrap;gap:4px;min-height:44px}
   .brand{font-size:13px;white-space:nowrap;flex-shrink:0}
   .brand em{display:none}
   .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
-  .topbar-right button,.topbar-right .tb-import{font-size:10px;padding:3px 7px;height:26px;white-space:nowrap}
-  .inv-badge{display:none}
-  nav{padding:0;top:44px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;touch-action:pan-x;}
+  .topbar-right button,.topbar-right .tb-import{font-size:10px;padding:3px 7px;height:28px;white-space:nowrap}
+  .inv-badge,.save-status{display:none}
+
+  /* ── Nav ── */
+  nav{padding:0;top:44px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;touch-action:pan-x}
   nav::-webkit-scrollbar{display:none}
-  .navtab{padding:10px 11px;font-size:11px;flex-shrink:0}
+  .navtab{padding:10px 10px;font-size:11px;flex-shrink:0}
+
+  /* ── Content ── */
   #content{padding:8px;max-width:100vw;overflow-x:hidden}
-  .master-bar{flex-direction:column;align-items:stretch;gap:6px}
-  .master-bar input{width:100%;height:40px;font-size:15px}
-  .master-bar select{width:100%;height:40px;font-size:14px}
-  .master-bar button{width:100%;height:40px;font-size:14px}
-  .master-table{font-size:12px}
-  .master-table thead th{padding:6px 5px;font-size:10px}
-  .master-table td{padding:8px 5px}
-  .master-table td:nth-child(3),.master-table th:nth-child(3),
-  .master-table td:nth-child(4),.master-table th:nth-child(4){display:none}
-  .master-table .del-btn{width:32px;height:32px;font-size:16px}
-  .gp-table{font-size:12px}
-  .gp-table thead th{padding:6px 4px;font-size:10px}
-  .gp-table td{padding:8px 4px}
-  .gp-table td:nth-child(4),.gp-table th:nth-child(4){display:none}
-  .sell-in{width:55px;font-size:12px}
-  .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
-  .metric-val,.mv{font-size:20px}
-  .wastage-metric .wm-val{font-size:18px}
-  .subtab-bar{flex-wrap:nowrap;overflow-x:auto;gap:2px;scrollbar-width:none}
-  .subtab-bar::-webkit-scrollbar{display:none}
-  .subtab-btn{font-size:11px;padding:5px 10px;white-space:nowrap}
   .tab-title{font-size:14px}
   .tab-sub{font-size:11px}
+
+  /* ── Metrics 2-col ── */
+  .metrics,.labour-metrics{grid-template-columns:repeat(2,1fr);gap:8px}
+  .mv{font-size:19px}
+  .wastage-metric .wm-val{font-size:18px}
+
+  /* ── Target row ── */
+  .target-row{flex-wrap:wrap;gap:8px;margin-bottom:10px}
+
+  /* ── Subtabs ── */
+  .subtab-bar{flex-wrap:nowrap;overflow-x:auto;gap:2px;scrollbar-width:none}
+  .subtab-bar::-webkit-scrollbar{display:none}
+  .subtab{font-size:11px;padding:6px 10px;white-space:nowrap}
+
+  /* ════ GP TABLE → CARD LAYOUT on mobile ════ */
+  .gp-table{display:block;border-radius:8px;overflow:hidden}
+  .gp-table thead{display:none} /* hide column headers */
+  .gp-table tbody{display:block}
+  .gp-table colgroup{display:none}
+
+  /* Each item row = a horizontal card */
+  .gp-table tbody tr.gp-row{
+    display:flex;align-items:center;gap:6px;
+    padding:12px 10px;border-bottom:2px solid var(--border);
+    background:#fff;cursor:pointer;
+  }
+  .gp-table tbody tr.gp-row.expanded{background:var(--teal-l)}
+  .gp-table tbody tr.gp-row td{display:block;padding:0;border:none}
+  /* Col 1: name (with expand arrow) — takes all available space */
+  .gp-table tbody tr.gp-row td:nth-child(1){
+    flex:1;min-width:0;font-size:14px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .drag-handle{display:none} /* no drag on mobile */
+  /* Col 2: category badge — HIDE */
+  .gp-table tbody tr.gp-row td:nth-child(2){display:none}
+  /* Col 3: sell price — keep, bigger input */
+  .gp-table tbody tr.gp-row td:nth-child(3){flex-shrink:0}
+  /* Col 4: ex-VAT — HIDE */
+  .gp-table tbody tr.gp-row td:nth-child(4){display:none}
+  /* Col 5: cost — HIDE */
+  .gp-table tbody tr.gp-row td:nth-child(5){display:none}
+  /* Col 6: GP £ — HIDE */
+  .gp-table tbody tr.gp-row td:nth-child(6){display:none}
+  /* Col 7: GP% pill — keep */
+  .gp-table tbody tr.gp-row td:nth-child(7){flex-shrink:0}
+  /* Col 8: delete — keep */
+  .gp-table tbody tr.gp-row td:nth-child(8){flex-shrink:0}
+
+  .sell-in{width:65px;height:38px;font-size:14px;font-weight:700}
+  .del-btn{width:32px;height:32px;font-size:18px}
+
+  /* Expand row — full width */
+  .gp-table tbody tr.expand-row{display:block}
+  .gp-table tbody tr.expand-row td{display:block;padding:0}
+
+  /* ════ RECIPE PANEL → STACKED CARDS ════ */
+  .recipe-panel{padding:10px 8px}
+  .recipe-header{font-size:12px;margin-bottom:10px}
+  .recipe-table{display:block}
+  .recipe-table thead{display:none}
+  .recipe-table tbody{display:block}
+  /* Each ingredient = a mini card */
+  .recipe-table tbody tr{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    padding:9px 4px;border-bottom:1px solid #e0ece9;
+  }
+  .recipe-table tbody tr td{display:block;padding:0;border:none}
+  /* 1: ingredient name */
+  .recipe-table tbody tr td:nth-child(1){
+    flex:1;min-width:140px;font-size:13px;font-weight:600;order:1;
+  }
+  /* 2: master ID tag — show below name */
+  .recipe-table tbody tr td:nth-child(2){
+    width:100%;font-size:11px;order:2;color:var(--muted);margin-bottom:2px;
+  }
+  /* 3: qty input */
+  .recipe-table tbody tr td:nth-child(3){order:3;flex-shrink:0}
+  /* 4: cost */
+  .recipe-table tbody tr td:nth-child(4){
+    order:4;flex-shrink:0;font-weight:700;color:var(--teal);font-size:13px;
+  }
+  /* 5: delete */
+  .recipe-table tbody tr td:nth-child(5){order:5;flex-shrink:0}
+  /* Total row */
+  .recipe-table tbody tr.recipe-total{display:flex;justify-content:space-between;align-items:center;background:rgba(26,107,90,.08);padding:8px 4px;border-radius:4px;margin-top:4px}
+  .recipe-table tbody tr.recipe-total td{display:block;padding:0}
+
+  .qty-in{width:70px;height:36px;font-size:14px;text-align:right}
+  .cost-in{width:70px;height:36px;font-size:14px}
+
+  /* ── Add ingredient section ── */
+  .add-ing-section{padding-top:12px}
+  .add-ing-row{flex-direction:column;align-items:stretch;gap:8px}
+  .add-ing-row > div{width:100%}
+  .add-ing-row input[type=text],.add-ing-row input[type=number]{
+    width:100% !important;height:42px !important;font-size:14px !important;
+  }
+  .add-ing-row .btn-sm{width:100%;height:42px;font-size:14px}
+  .add-ing-row .muted{display:none}
+  .ing-preview{font-size:13px}
+
+  /* ── Master tables ── */
+  .master-bar{flex-direction:column;align-items:stretch;gap:8px}
+  .master-bar input,.master-bar select,.master-bar button{
+    width:100%;height:42px;font-size:14px;
+  }
+  /* Master table: show only Name + Cost/unit + Actions */
+  .master-table{font-size:13px}
+  .master-table thead th,.master-table td{padding:8px 6px}
+  .master-table th:nth-child(2),.master-table td:nth-child(2),
+  .master-table th:nth-child(3),.master-table td:nth-child(3),
+  .master-table th:nth-child(4),.master-table td:nth-child(4),
+  .master-table th:nth-child(5),.master-table td:nth-child(5),
+  .master-table th:nth-child(6),.master-table td:nth-child(6),
+  .master-table th:nth-child(7),.master-table td:nth-child(7){display:none}
+
+  /* ── Wastage ── */
+  .wastage-table{font-size:12px}
+  .wastage-table th,.wastage-table td{padding:6px 6px}
+  /* Hide date col on mobile to save space */
+  .wastage-table th:nth-child(1),.wastage-table td:nth-child(1){display:none}
+  /* Hide qty col */
+  .wastage-table th:nth-child(3),.wastage-table td:nth-child(3){display:none}
+  .reason-tag{font-size:10px;padding:2px 5px}
+  .wastage-metric{padding:10px 8px}
+  .wastage-metric .wm-val{font-size:20px}
+
+  /* ── Labour ── */
+  .shift-form{gap:6px}
+  .shift-form > div{min-width:calc(50% - 6px)}
   .labour-table{font-size:12px}
+  .labour-table th,.labour-table td{padding:6px 5px}
+
+  /* ── Panels ── */
+  .panel{padding:12px}
+  .card{padding:12px}
+
+  /* ── Portion standards bar ── */
+  #content > div[style*="background:#e8f4f1"]{flex-direction:column;align-items:flex-start}
+
+  /* ── New item form ── */
+  #ngf-wet > div, #ngf-dry > div{flex-direction:column;align-items:stretch}
+  #ngf-wet input, #ngf-dry input, #ngf-wet select, #ngf-dry select{width:100% !important;height:42px !important}
 }
 #login-screen{position:fixed;inset:0;background:var(--teal);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
 .login-box{background:#fff;border-radius:16px;padding:40px 44px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
@@ -217,7 +344,7 @@ nav::-webkit-scrollbar{display:none}
 <div class="modal-overlay" id="sync-modal" style="display:none" onclick="if(event.target===this)closeSyncModal()">
   <div class="modal-box">
     <div class="modal-title">☁️ Cloud Sync Setup</div>
-    <div class="modal-sub">Sync data live between all three of you — owner, GM, head chef</div>
+    <div class="modal-sub">Always-on sync — every device auto-connects. No setup needed.</div>
     <div class="modal-section" id="sync-status-section" style="display:none">
       <div class="sync-status-row">
         <span class="sync-dot ok" id="sync-dot"></span>
@@ -234,27 +361,8 @@ nav::-webkit-scrollbar{display:none}
         <button class="btn-sm" onclick="closeSyncModal()" style="margin-left:auto">Close</button>
       </div>
     </div>
-    <div id="sync-setup-section">
-      <div class="modal-section">
-        <div style="display:flex;gap:6px;margin-bottom:10px"><span class="step-num">1</span><span style="font-size:13px">Go to <a href="https://jsonbin.io/signup" target="_blank" style="color:var(--teal)">jsonbin.io/signup</a> and create a free account</span></div>
-        <div style="display:flex;gap:6px;margin-bottom:10px"><span class="step-num">2</span><span style="font-size:13px">In the JSONBin dashboard, click <strong>API Keys</strong> → copy your <strong>Master Key</strong></span></div>
-        <div style="display:flex;gap:6px"><span class="step-num">3</span><span style="font-size:13px">Paste it below — takes about 10 seconds to set up</span></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-label">Option A — New setup (first person to configure)</div>
-        <label class="modal-label" style="margin-top:10px">JSONBin Master Key</label>
-        <input class="modal-input" type="password" id="new-api-key" placeholder="$2a$10$...">
-        <div class="modal-row"><button class="btn-sm btn-teal" onclick="setupNewCloud()">Create cloud storage →</button></div>
-        <div id="setup-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-label">Option B — Join existing (Charlie / head chef joining GM's setup)</div>
-        <label class="modal-label" style="margin-top:10px">Share Code (from the person who set it up)</label>
-        <input class="modal-input" type="text" id="join-code" placeholder="Paste share code here...">
-        <div class="modal-row"><button class="btn-sm btn-teal" onclick="joinCloud()">Connect →</button></div>
-        <div id="join-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
-      </div>
-      <div style="text-align:right"><button class="btn-sm" onclick="closeSyncModal()">Cancel</button></div>
+    <div id="sync-setup-section" style="display:none">
+      <!-- Hardcoded — setup not needed -->
     </div>
   </div>
 </div>
@@ -276,7 +384,7 @@ nav::-webkit-scrollbar{display:none}
   <div class="brand">THE MEDLEY <em>GP & Cost Calculator</em></div>
   <div class="topbar-right">
     <span class="save-status" id="save-status">Not saved yet</span>
-    <button class="tb-btn" onclick="document.getElementById('sync-modal').style.display='flex'" title="Cloud sync settings">
+    <button class="tb-btn" onclick="openSyncModal()" title="Cloud sync settings">
       <span class="sync-dot" id="sync-dot-tb"></span>☁️ Sync
     </button>
     <button class="tb-btn" onclick="exportData()" title="Download your data as a JSON backup file">↓ Export</button>
@@ -394,10 +502,10 @@ let MASTERS = [
   {id:'FM63',type:'F',name:'Espresso Coffee (beans)',sup:'Various',cat:'Hot Drinks',pack:'Per kg · £22.55',cost:22.55,size:1000,unit:'g'},
   {id:'FM80',type:'F',name:'Extra Thick Mayonnaise',sup:'Various',cat:'Condiments',pack:'Per kg · approx £3.00',cost:3.00,size:1000,unit:'g'},
 
-  /* COMPOUND / BATCH — FM72 now uses portionUnit + yieldGrams so ladle size is globally controlled */
+  /* COMPOUND / BATCH — house-made preparations. Update batch cost here, all GP recipes auto-recalculate */
   {id:'FM70',type:'F',name:'Pizza Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'15kg flour batch · £22.43 total · ≈93 balls',cost:22.43,size:93,unit:'each'},
   {id:'FM71',type:'F',name:'GF Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'3.6kg batch · £18.60 · 12 balls',cost:18.60,size:12,unit:'each'},
-  {id:'FM72',type:'F',name:'Tomato Sauce',sup:'House',cat:'Compound — Batch',pack:'2.5kg tin batch · £3.59',cost:3.59,size:36,unit:'each',portionUnit:'ladle',yieldGrams:2520},
+  {id:'FM72',type:'F',name:'Tomato Sauce',sup:'House',cat:'Compound — Batch',pack:'2.5kg tin batch · £3.59 · ~36 ladle portions at 70g each',cost:3.59,size:36,unit:'each'},
   {id:'FM73',type:'F',name:'House Pesto',sup:'House',cat:'Compound — Batch',pack:'1880g batch · £30.97 → £16.48/kg',cost:30.97,size:1880,unit:'g'},
   {id:'FM74',type:'F',name:'Parsley Sauce',sup:'House',cat:'Compound — Batch',pack:'650g batch · £5.68 → £8.74/kg',cost:5.68,size:650,unit:'g'},
   {id:'FM75',type:'F',name:'Chilli Dip',sup:'House',cat:'Compound — Batch',pack:'3.1kg batch · £22.93 → £7.40/kg',cost:22.93,size:3100,unit:'g'},
@@ -499,25 +607,20 @@ let nextBatchId = 1;
 let WASTAGE_REASONS = ['Out of date','Staff food','Spoiled','Staff drink','Spilt','Dropped','Test','Over-production','Broken'];
 let nextWastageId = 1;
 let wastageWeekOffset = 0;
-/* ── NEW: Global portion unit sizes — change once, updates everywhere ── */
-let PORTION_UNITS = { ladle: 70 }; // grams per named portion (e.g. 1 ladle = 70g)
+
 let nextStaffId = 1;
 let nextShiftId = 1;
 let labourSubTab = 'shifts';
 let seasonStart = '2026-04-01';
-let CLOUD = null;
+/* ── Cloud credentials hardcoded — no setup needed on any device ── */
+let CLOUD = {
+  apiKey: '$2a$10$3ocYz6oEthCTUC.b3tNbje9VAH7Ku0ARKf1JdwrTsKx/sXAgx2gZq',
+  binId:  '69d0e1a1aaba882197c36fd7'
+};
 let syncTimer = null;
 
 /* ═══════════════════ HELPERS ═══════════════════ */
 function getMaster(id){ return MASTERS.find(m=>m.id===id) }
-
-/* NEW: For portion-unit ingredients (e.g. ladle), auto-calculates size from batch yield */
-function getEffectiveSize(m){
-  if(m.portionUnit && m.yieldGrams && PORTION_UNITS[m.portionUnit]>0){
-    return m.yieldGrams / PORTION_UNITS[m.portionUnit];
-  }
-  return m.size;
-}
 
 function cpu(m){
   if(!m) return 0;
@@ -525,9 +628,8 @@ function cpu(m){
     const parent=getMaster(m.parentId);
     if(parent) return cpu(parent)/m.portions;
   }
-  const size=getEffectiveSize(m);
-  if(!size) return 0;
-  return m.cost/size;
+  if(!m.size) return 0;
+  return m.cost/m.size;
 }
 
 function ingCost(ri){
@@ -560,11 +662,6 @@ function fmtCpuDisplay(m){
     const parent=getMaster(m.parentId);
     if(parent){const c=cpu(parent)/m.portions;return `£${c.toFixed(3)} each`;}
   }
-  /* NEW: Portion-unit items show "£X per ladle (70g)" */
-  if(m.portionUnit && PORTION_UNITS[m.portionUnit]){
-    const c=cpu(m);
-    return `£${c.toFixed(3)} per ${m.portionUnit} (${PORTION_UNITS[m.portionUnit]}g)`;
-  }
   const c=cpu(m);
   if(m.unit==='ml'){if(c>=0.001)return `£${(c*1000).toFixed(2)}/L`;return `£${(c*100).toFixed(3)}/100ml`;}
   if(m.unit==='g')return `£${(c*1000).toFixed(2)}/kg`;
@@ -580,29 +677,7 @@ function renderMaster(type){
     :all;
   const cats=[...new Set(all.map(m=>m.cat))].sort();
 
-  /* ── NEW: Portion Standards panel — Food tab only ── */
-  let portionStandardsHtml='';
-  if(type==='F'){
-    portionStandardsHtml=`<div style="background:#e8f4f1;border:1.5px solid var(--teal);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <strong style="color:var(--teal);font-size:12px;white-space:nowrap">⚖️ Portion Standards</strong>
-      <span style="font-size:11px;color:var(--muted)">Change a size once → cost updates instantly across every recipe using that unit</span>
-      ${Object.entries(PORTION_UNITS).map(([k,v])=>`<label style="display:flex;align-items:center;gap:5px;font-size:13px;background:#fff;padding:4px 10px;border-radius:6px;border:1px solid var(--border)">
-        <strong style="color:var(--teal)">${k}</strong> =
-        <input type="number" value="${v}" min="1" step="1"
-          style="width:52px;height:26px;border:1px solid var(--border);border-radius:5px;padding:0 5px;text-align:right;font-size:13px;font-weight:700;color:var(--teal)"
-          onchange="updatePortionUnit('${k}',+this.value)">
-        <span style="color:var(--muted);font-size:11px">g</span>
-        <button onclick="removePortionUnit('${k}')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:12px;padding:0 2px;line-height:1" title="Remove">✕</button>
-      </label>`).join('')}
-      <div style="display:flex;align-items:center;gap:5px">
-        <input type="text" id="new-pu-name" placeholder="unit name…" style="width:80px;height:28px;border:1px solid var(--border);border-radius:5px;padding:0 6px;font-size:12px">
-        <input type="number" id="new-pu-grams" placeholder="g" style="width:50px;height:28px;border:1px solid var(--border);border-radius:5px;padding:0 5px;font-size:12px">
-        <button class="btn-sm" onclick="addPortionUnit()" style="white-space:nowrap">+ Add</button>
-      </div>
-    </div>`;
-  }
-
-  let h=portionStandardsHtml+`<div class="master-bar">
+  let h=`<div class="master-bar">
     <input type="text" placeholder="Search name, category, supplier… (press Enter)" value="${mFilter}"
       id="master-search-input"
       onkeydown="if(event.key==='Enter'){mFilter=this.value;render();}"
@@ -665,12 +740,9 @@ function renderMaster(type){
         </td></tr>`;
     } else {
       const isDerived=!!(m.parentId && m.portions);
-      /* NEW: show portion unit info in pack column */
-      const portionInfo=m.portionUnit?
-        ` · 1 ${m.portionUnit}=${PORTION_UNITS[m.portionUnit]||'?'}g → ${Math.round(getEffectiveSize(m))} portions/batch`:'';
       const packDisplay=isDerived
         ?`<span style="color:var(--teal);font-size:10px;font-weight:700">⬡ Derived</span> <span class="muted small">from ${getMaster(m.parentId)?.name||m.parentId} ÷ ${m.portions}</span>`
-        :`<span class="muted small">${m.pack}${portionInfo}</span>`;
+        :`<span class="muted small">${m.pack}</span>`;
       h+=`<tr>
         <td class="bold">${m.name}</td>
         <td class="muted">${m.sup}</td>
@@ -739,21 +811,6 @@ function addMaster(type){
   const id=prefix+nextIds[type]++;
   MASTERS.push({id,type,name:'New ingredient',sup:'',cat:'',pack:'',cost:0,size:1,unit:'g'});
   editingMId=id;mFilter='';render();
-}
-
-/* NEW: Portion Unit CRUD */
-function updatePortionUnit(key,val){
-  if(val>0){PORTION_UNITS[key]=val;saveState();render();}
-}
-function addPortionUnit(){
-  const name=(document.getElementById('new-pu-name')?.value||'').trim().toLowerCase();
-  const grams=parseFloat(document.getElementById('new-pu-grams')?.value);
-  if(!name||!grams||grams<=0)return;
-  PORTION_UNITS[name]=grams;
-  saveState();render();
-}
-function removePortionUnit(key){
-  delete PORTION_UNITS[key];saveState();render();
 }
 
 /* ═══════════════════ GP RENDER ═══════════════════ */
@@ -1264,8 +1321,8 @@ function deleteShift(id){
 /* ═══════════════════ CLOUD SYNC ═══════════════════ */
 const CLOUD_KEY='medley-cloud-v1';
 const BIN_API='https://api.jsonbin.io/v3/b';
-function loadCloudConfig(){try{const raw=localStorage.getItem(CLOUD_KEY);if(raw)CLOUD=JSON.parse(raw);}catch(e){}}
-function saveCloudConfig(){if(CLOUD)localStorage.setItem(CLOUD_KEY,JSON.stringify(CLOUD));}
+function loadCloudConfig(){/* no-op — credentials hardcoded */}
+function saveCloudConfig(){/* no-op — credentials hardcoded */}
 function setDot(status){['sync-dot-tb','sync-dot'].forEach(id=>{const el=document.getElementById(id);if(el){el.className='sync-dot '+status;}});}
 
 async function pushToCloud(state){
@@ -1319,7 +1376,6 @@ async function forceSyncFromCloud(){
     MASTERS=s.MASTERS;WET_GP=s.WET_GP;DRY_GP=s.DRY_GP;
     STAFF=s.STAFF||[];target=s.target||70;
     nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;nextStaffId=s.nextStaffId||nextStaffId;
-    PORTION_UNITS=s.PORTION_UNITS||PORTION_UNITS;
     SHIFTS=merged.SHIFTS||s.SHIFTS||[];
     WASTAGE=merged.WASTAGE||s.WASTAGE||[];
     WASTAGE_REASONS=merged.WASTAGE_REASONS||s.WASTAGE_REASONS||WASTAGE_REASONS;
@@ -1369,8 +1425,7 @@ function copyShareCode(){
   navigator.clipboard.writeText(code).then(()=>{alert('Share code copied! Send it to Charlie and the head chef.');});
 }
 function disconnectCloud(){
-  if(!confirm('Disconnect cloud sync? Your local data stays, but changes won\'t sync to others.'))return;
-  CLOUD=null;localStorage.removeItem(CLOUD_KEY);setDot('');closeSyncModal();
+  alert('Cloud sync is built-in — no disconnection needed. Every device auto-connects.');
 }
 function closeSyncModal(){
   document.getElementById('sync-modal').style.display='none';
@@ -1659,7 +1714,7 @@ document.addEventListener('click',e=>{
 function buildState(){
   return {
     v:1,savedAt:new Date().toISOString(),
-    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,BATCHES,PORTION_UNITS,
+    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,BATCHES,
     nextIds,nextWet,nextDry,nextStaffId,nextShiftId,nextWastageId,nextBatchId,target
   };
 }
@@ -1667,7 +1722,7 @@ function buildState(){
 /* ═══════════════════ RENDER ═══════════════════ */
 function render(){
   const labels={drink:'Drink Ingredients Master',food:'Food Ingredients Master',ops:'Ops & Miscellaneous',wet:'Wet GP — Drinks Menu',dry:'Dry GP — Food Menu',labour:'Labour — Staff & Shifts',wastage:'Weekly Wastage Log',batches:'Batch Recipes & Production'};
-  const subs={drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',food:'Prices from Arthur David & Carnevale · 03/04/26 · Compound items (green badge) are house-made batch preparations',ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',wet:'Click any item to expand its recipe · Select from master to link ingredients — cost auto-calculates from purchase price',dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included',labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync',wastage:'Log daily wastage each week · Menu item wastage auto-calculates ingredient cost from recipe specs',batches:'Build batch recipes from master ingredients · Set yield and portioning · Cost-per-portion auto-registers for use in GP recipes'};
+  const subs={drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',food:'Prices from Arthur David & Carnevale · 03/04/26 · Compound items (green badge) are house-made batch preparations',ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',wet:'Tap any item to expand and edit ingredient quantities · Add or remove ingredients from any recipe',dry:'Tap any item to expand and edit ingredient quantities · All costs recalculate instantly · Prices from 03/04/26',labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync',wastage:'Log daily wastage each week · Menu item wastage auto-calculates ingredient cost from recipe specs',batches:'Build batch recipes from master ingredients · Set yield and portioning · Cost-per-portion auto-registers for use in GP recipes'};
   let html=`<div class="tab-header"><div class="tab-title">${labels[activeTab]||''}</div><div class="tab-sub">${subs[activeTab]||''}</div></div>`;
   if(activeTab==='drink')html+=renderMaster('D');
   else if(activeTab==='food')html+=renderMaster('F');
@@ -1982,7 +2037,7 @@ function loadState(){
     STAFF=s.STAFF||[];SHIFTS=s.SHIFTS||[];WASTAGE=s.WASTAGE||[];
     WASTAGE_REASONS=s.WASTAGE_REASONS||WASTAGE_REASONS;
     BATCHES=s.BATCHES||[];
-    PORTION_UNITS=s.PORTION_UNITS||PORTION_UNITS;  /* NEW */
+
     nextBatchId=s.nextBatchId||nextBatchId;
     nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;
     nextStaffId=s.nextStaffId||nextStaffId;nextShiftId=s.nextShiftId||nextShiftId;
@@ -2000,7 +2055,7 @@ function updateSaveStatus(isoStr){
 }
 
 function exportData(){
-  const state={v:1,exportedAt:new Date().toISOString(),MASTERS,WET_GP,DRY_GP,PORTION_UNITS,nextIds,nextWet,nextDry,target};
+  const state={v:1,exportedAt:new Date().toISOString(),MASTERS,WET_GP,DRY_GP,nextIds,nextWet,nextDry,target};
   const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download='medley-gp-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
@@ -2016,8 +2071,7 @@ function importData(input){
       const exported=s.exportedAt?new Date(s.exportedAt).toLocaleString('en-GB'):'unknown time';
       if(!confirm('Replace all current data with file exported '+exported+'?\n\nYour current data will be overwritten. Continue?')){input.value='';return;}
       MASTERS=s.MASTERS;WET_GP=s.WET_GP;DRY_GP=s.DRY_GP;
-      PORTION_UNITS=s.PORTION_UNITS||PORTION_UNITS;
-      nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;target=s.target||70;
+        nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;target=s.target||70;
       saveState();render();input.value='';alert('✓ Data imported and saved.');
     }catch(err){alert('Error reading file: '+err.message);input.value='';}
   };
@@ -2048,9 +2102,19 @@ delIng=withSave(delIng);delItem=withSave(delItem);addFromMaster=withSave(addFrom
 addCustom=withSave(addCustom);addItem=withSave(addItem);
 
 /* ═══════════════════ INIT ═══════════════════ */
+function openSyncModal(){
+  // Always show connected state — credentials are hardcoded
+  document.getElementById('sync-status-section').style.display='block';
+  document.getElementById('sync-setup-section').style.display='none';
+  const code=btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId}));
+  const el=document.getElementById('share-code-display');if(el)el.textContent=code;
+  document.getElementById('sync-modal').style.display='flex';
+}
+
 function init(){
-  loadCloudConfig();
-  if(CLOUD){setDot('ok');showSyncConnected();}
+  // Credentials are hardcoded — always connected, no localStorage needed
+  setDot('ok');
+  showSyncConnected();
   if(checkAuth()){
     document.getElementById('login-screen').style.display='none';
     const savedAt=loadState();if(savedAt)updateSaveStatus(savedAt);
