@@ -384,11 +384,13 @@ nav::-webkit-scrollbar{display:none}
   <div class="brand">THE MEDLEY <em>GP & Cost Calculator</em></div>
   <div class="topbar-right">
     <span class="save-status" id="save-status">Not saved yet</span>
-    <button class="tb-btn" onclick="openSyncModal()" title="Cloud sync settings">
-      <span class="sync-dot" id="sync-dot-tb"></span>☁️ Sync
+    <button class="tb-btn" id="cloud-save-btn" onclick="manualCloudSave()" title="Save all changes to cloud — syncs to all devices"
+      style="background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5);font-weight:800">
+      <span class="sync-dot" id="sync-dot-tb"></span>💾 Save
     </button>
-    <button class="tb-btn" onclick="exportData()" title="Download your data as a JSON backup file">↓ Export</button>
-    <div class="tb-btn tb-import" title="Import a previously exported JSON file">↑ Import<input type="file" accept=".json" onchange="importData(this)"></div>
+    <button class="tb-btn" onclick="openSyncModal()" title="Cloud sync settings" style="font-size:10px">☁️</button>
+    <button class="tb-btn" onclick="exportData()" title="Download backup">↓ Export</button>
+    <div class="tb-btn tb-import" title="Import backup">↑ Import<input type="file" accept=".json" onchange="importData(this)"></div>
   </div>
 </div>
 
@@ -611,6 +613,7 @@ let WASTAGE = [];
 let BATCHES = [];
 let nextBatchId = 1;
 let WASTAGE_REASONS = ['Out of date','Staff food','Spoiled','Staff drink','Spilt','Dropped','Test','Over-production','Broken'];
+let WASTAGE_DELETED = []; // IDs of deleted entries — prevents cloud merge from resurrecting them
 let nextWastageId = 1;
 let wastageWeekOffset = 0;
 
@@ -1383,9 +1386,13 @@ async function mergeWithCloud(localState){
     if(!r.ok)return localState;
     const data=await r.json();const cloud=data.record;
     if(!cloud||!cloud.MASTERS)return localState;
+    // Merge deleted IDs from both cloud and local — union, never shrink
+    const allDeleted=[...new Set([...(cloud.WASTAGE_DELETED||[]),...(localState.WASTAGE_DELETED||[])])];
     const wasteMap=new Map();
     (cloud.WASTAGE||[]).forEach(e=>wasteMap.set(e.id,e));
     (localState.WASTAGE||[]).forEach(e=>wasteMap.set(e.id,e));
+    // Remove any entry that was deleted on any device
+    allDeleted.forEach(id=>wasteMap.delete(id));
     const mergedWastage=[...wasteMap.values()].sort((a,b)=>a.id-b.id);
     const shiftMap=new Map();
     (cloud.SHIFTS||[]).forEach(s=>shiftMap.set(s.id,s));
@@ -1394,7 +1401,7 @@ async function mergeWithCloud(localState){
     const mergedReasons=[...new Set([...(cloud.WASTAGE_REASONS||[]),...(localState.WASTAGE_REASONS||[])])];
     const mergedNextWastageId=Math.max(localState.nextWastageId||1,cloud.nextWastageId||1,mergedWastage.length?Math.max(...mergedWastage.map(e=>e.id))+1:1);
     const mergedNextShiftId=Math.max(localState.nextShiftId||1,cloud.nextShiftId||1);
-    return {...localState,WASTAGE:mergedWastage,SHIFTS:mergedShifts,WASTAGE_REASONS:mergedReasons,nextWastageId:mergedNextWastageId,nextShiftId:mergedNextShiftId};
+    return {...localState,WASTAGE:mergedWastage,WASTAGE_DELETED:allDeleted,SHIFTS:mergedShifts,WASTAGE_REASONS:mergedReasons,nextWastageId:mergedNextWastageId,nextShiftId:mergedNextShiftId};
   }catch(e){return localState;}
 }
 
@@ -1412,6 +1419,7 @@ async function forceSyncFromCloud(){
     nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;nextStaffId=s.nextStaffId||nextStaffId;
     SHIFTS=merged.SHIFTS||s.SHIFTS||[];
     WASTAGE=merged.WASTAGE||s.WASTAGE||[];
+    WASTAGE_DELETED=merged.WASTAGE_DELETED||s.WASTAGE_DELETED||[];
     WASTAGE_REASONS=merged.WASTAGE_REASONS||s.WASTAGE_REASONS||WASTAGE_REASONS;
     nextWastageId=merged.nextWastageId||s.nextWastageId||nextWastageId;
     nextShiftId=merged.nextShiftId||s.nextShiftId||nextShiftId;
@@ -2014,7 +2022,7 @@ document.addEventListener('click',e=>{
 function buildState(){
   return {
     v:1,savedAt:new Date().toISOString(),
-    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,BATCHES,gpViewMode,
+    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_DELETED,WASTAGE_REASONS,BATCHES,gpViewMode,
     nextIds,nextWet,nextDry,nextStaffId,nextShiftId,nextWastageId,nextBatchId,target
   };
 }
@@ -2305,7 +2313,11 @@ function logWastage(weekStart){
 /* NEW: Two-tap delete — no confirm() which is also blocked in iframes */
 function deleteWastage(btn,id){
   if(btn.dataset.confirm){
-    WASTAGE=WASTAGE.filter(e=>e.id!==id);saveState();render();
+    WASTAGE=WASTAGE.filter(e=>e.id!==id);
+    if(!WASTAGE_DELETED.includes(id)) WASTAGE_DELETED.push(id);
+    saveState();
+    pushToCloud(buildState()); // push deletion immediately so cloud can't resurrect it
+    render();
   } else {
     btn.dataset.confirm='1';btn.textContent='✓ sure?';btn.style.color='var(--bad)';
     setTimeout(()=>{if(btn){delete btn.dataset.confirm;btn.textContent='✕';btn.style.color='';}},3000);
@@ -2319,13 +2331,39 @@ function removeReason(idx){WASTAGE_REASONS.splice(idx,1);saveState();render();}
 const STORAGE_KEY='medley-gp-v1';
 const ACCESS_PASSWORD='Medley2026';
 
+async function manualCloudSave(){
+  const btn=document.getElementById('cloud-save-btn');
+  if(btn){btn.textContent='💾 Saving…';btn.style.opacity='.7';}
+  const state=buildState();
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  try{
+    setDot('busy');
+    const r=await fetch(`${BIN_API}/${CLOUD.binId}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':CLOUD.apiKey},
+      body:JSON.stringify(state)
+    });
+    if(r.ok){
+      setDot('ok');
+      updateSaveStatus(state.savedAt);
+      if(btn){btn.innerHTML='<span class="sync-dot ok"></span>💾 Saved';setTimeout(()=>{if(btn)btn.innerHTML='<span class="sync-dot ok" id="sync-dot-tb"></span>💾 Save';},2000);}
+    } else {
+      setDot('err');
+      if(btn){btn.textContent='❌ Failed — retry';}
+    }
+  }catch(e){
+    setDot('err');
+    if(btn){btn.textContent='❌ Failed — retry';}
+  }
+}
+
 function saveState(){
   try{
     const state=buildState();
     localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
     updateSaveStatus(state.savedAt);
-    clearTimeout(syncTimer);
-    syncTimer=setTimeout(()=>pushToCloud(state),2500);
+    // Cloud push is now MANUAL via 💾 Save button — no background auto-push
+    // (prevents deleted entries from being resurrected by stale cloud data)
   }catch(e){console.warn('Save failed:',e);}
 }
 
@@ -2350,7 +2388,7 @@ function loadState(){
 function updateSaveStatus(isoStr){
   const el=document.getElementById('save-status');if(!el||!isoStr)return;
   const d=new Date(isoStr);
-  el.textContent='💾 Saved '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  el.textContent='📱 Local: '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
   el.className='save-status ok';
 }
 
@@ -2420,11 +2458,9 @@ function init(){
     const savedAt=loadState();if(savedAt)updateSaveStatus(savedAt);
     render();
     if(CLOUD){
-      forceSyncFromCloud().then(()=>{
-        setInterval(()=>{if(CLOUD&&document.visibilityState==='visible')forceSyncFromCloud();},5*60*1000);
-      });
+      // Pull from cloud once on load only — no background auto-sync to avoid overwriting local changes
+      forceSyncFromCloud();
     }
-    document.addEventListener('visibilitychange',()=>{if(CLOUD&&document.visibilityState==='visible')forceSyncFromCloud();});
   } else {
     document.getElementById('login-screen').style.display='flex';
   }
