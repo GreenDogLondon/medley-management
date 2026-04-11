@@ -899,12 +899,8 @@ function renderGP(gpType){
       <td class="num">${gpPill(pct)}</td>
       <td onclick="event.stopPropagation()">
         ${item.active===false
-          ?`<button class="btn-sm" style="font-size:11px;padding:3px 8px;color:var(--teal);border-color:var(--teal)"
-              onclick="event.stopPropagation();restoreItem(this,\${item.id},'\${gpType}')"
-              title="Restore to active menu">↩ Restore</button>`
-          :`<button class="btn-sm" style="font-size:11px;padding:3px 8px;color:var(--muted);border-color:var(--border)"
-              onclick="event.stopPropagation();archiveItem(this,\${item.id},'\${gpType}')"
-              title="Archive this item">📥 Archive</button>`
+          ?('<button class="btn-sm" style="font-size:11px;padding:3px 8px;color:var(--teal);border-color:var(--teal)" onclick="event.stopPropagation();restoreItem(this,'+item.id+',\''+gpType+'\')">↩ Restore</button>')
+          :('<button class="btn-sm" style="font-size:11px;padding:3px 8px;color:var(--muted);border-color:var(--border)" onclick="event.stopPropagation();archiveItem(this,'+item.id+',\''+gpType+'\')">📥 Archive</button>')
         }
       </td>
     </tr>`;
