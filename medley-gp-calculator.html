@@ -16,29 +16,19 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
-
-/* ── Top bar ── */
 .topbar{background:var(--teal);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .brand{font-weight:800;font-size:17px;letter-spacing:0.04em}
 .brand em{color:#a8d9cf;font-style:normal;font-weight:400;font-size:13px;margin-left:10px}
 .inv-badge{background:rgba(255,255,255,.15);font-size:11px;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
-
-/* ── Nav tabs ── */
 nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 16px;position:sticky;top:45px;z-index:99;overflow-x:auto;-webkit-overflow-scrolling:touch}
 nav::-webkit-scrollbar{display:none}
 .navtab{border:none;background:none;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.15s}
 .navtab:hover{color:var(--teal)}
 .navtab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
-
-/* ── Content ── */
 #content{padding:16px 20px;max-width:1200px;margin:0 auto}
-
-/* ── Tab header ── */
 .tab-header{margin-bottom:14px}
 .tab-title{font-size:16px;font-weight:800;color:var(--teal)}
 .tab-sub{font-size:11px;color:var(--muted);margin-top:3px;display:block}
-
-/* ── Master table ── */
 .master-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .master-bar input,.master-bar select{height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;color:var(--text)}
 .master-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
@@ -58,8 +48,6 @@ nav::-webkit-scrollbar{display:none}
 .bold{font-weight:600}
 .muted{color:var(--muted)}
 .small{font-size:11px}
-
-/* ── Buttons ── */
 .btn-teal{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
 .btn-teal:hover{background:var(--teal-d)}
 .btn-sm{border:1px solid var(--border);background:#fff;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:11px;color:var(--text)}
@@ -69,8 +57,6 @@ nav::-webkit-scrollbar{display:none}
 .del-btn{border:none;background:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
 .del-btn:hover{color:var(--bad)}
 .actions{display:flex;gap:4px;justify-content:flex-end;white-space:nowrap}
-
-/* ── GP Metrics ── */
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .metric{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px}
 .ml{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
@@ -80,10 +66,7 @@ nav::-webkit-scrollbar{display:none}
 .target-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--muted)}
 .target-row input[type=range]{width:140px;accent-color:var(--teal)}
 .tv{font-weight:700;color:var(--teal);min-width:36px}
-
-/* ── GP table ── */
 .gp-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.gp-table colgroup col{}
 .gp-table thead tr{background:var(--teal);color:#fff}
 .gp-table thead th{padding:8px 10px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
 .gp-table th.num,.gp-table td.num{text-align:right}
@@ -103,8 +86,6 @@ nav::-webkit-scrollbar{display:none}
 .pill.good{background:var(--good-bg);color:var(--good)}
 .pill.mid{background:var(--mid-bg);color:var(--mid)}
 .pill.bad{background:var(--bad-bg);color:var(--bad)}
-
-/* ── Recipe panel ── */
 .expand-row td{background:#f0f7f5;padding:0 !important;border-bottom:2px solid var(--teal)}
 .recipe-panel{padding:14px 20px}
 .recipe-header{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
@@ -118,126 +99,47 @@ nav::-webkit-scrollbar{display:none}
 .master-tag.custom{background:var(--orange-l);color:var(--orange)}
 .qty-in{width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px}
 .cost-in{width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px}
-
-/* ── Add ingredient ── */
 .add-ing-section{margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)}
 .add-ing-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .add-ing-row select,.add-ing-row input{height:28px;border:1px solid var(--border);border-radius:5px;padding:0 8px;font-size:12px;color:var(--text)}
 .form-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;font-weight:600}
 .ing-preview{font-size:12px;font-weight:700;color:var(--teal);min-width:70px}
-
-/* ── Responsive ── */
 @media(max-width:768px){
-  /* Topbar — compact single row, no wrapping */
   .topbar{padding:7px 10px;flex-wrap:nowrap;gap:4px;min-height:44px}
   .brand{font-size:13px;white-space:nowrap;flex-shrink:0}
   .brand em{display:none}
   .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
   .topbar-right button,.topbar-right .tb-import{font-size:10px;padding:3px 7px;height:26px;white-space:nowrap}
-  .inv-badge{display:none} /* hide save badge on mobile */
-
-  /* Nav — horizontal scroll only, frozen in place, no vertical movement */
-  nav{
-    padding:0;
-    top:44px; /* matches compact topbar height */
-    overflow-x:auto;
-    overflow-y:hidden; /* prevent vertical scroll on nav */
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-    flex-shrink:0;
-    /* Prevent nav from being part of page scroll */
-    touch-action:pan-x;
-  }
+  .inv-badge{display:none}
+  nav{padding:0;top:44px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;touch-action:pan-x;}
   nav::-webkit-scrollbar{display:none}
   .navtab{padding:10px 11px;font-size:11px;flex-shrink:0}
-
-  /* Content — full width, no horizontal overflow */
   #content{padding:8px;max-width:100vw;overflow-x:hidden}
-
-  /* Master bar — stack vertically, full width */
   .master-bar{flex-direction:column;align-items:stretch;gap:6px}
   .master-bar input{width:100%;height:40px;font-size:15px}
   .master-bar select{width:100%;height:40px;font-size:14px}
   .master-bar button{width:100%;height:40px;font-size:14px}
-
-  /* Master table — horizontal scroll, hide less critical columns */
   .master-table{font-size:12px}
   .master-table thead th{padding:6px 5px;font-size:10px}
   .master-table td{padding:8px 5px}
   .master-table td:nth-child(3),.master-table th:nth-child(3),
   .master-table td:nth-child(4),.master-table th:nth-child(4){display:none}
   .master-table .del-btn{width:32px;height:32px;font-size:16px}
-
-  /* GP table — horizontal scroll, hide ex-VAT col to save space */
   .gp-table{font-size:12px}
   .gp-table thead th{padding:6px 4px;font-size:10px}
   .gp-table td{padding:8px 4px}
-  /* On mobile hide ex-VAT column (col 4) to reduce width */
   .gp-table td:nth-child(4),.gp-table th:nth-child(4){display:none}
   .sell-in{width:55px;font-size:12px}
-
-  /* Metrics grid — 2 cols */
   .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
   .metric-val,.mv{font-size:20px}
-
-  /* Wastage metrics */
   .wastage-metric .wm-val{font-size:18px}
-
-  /* Subtab bar */
   .subtab-bar{flex-wrap:nowrap;overflow-x:auto;gap:2px;scrollbar-width:none}
   .subtab-bar::-webkit-scrollbar{display:none}
   .subtab-btn{font-size:11px;padding:5px 10px;white-space:nowrap}
-
-  /* Tab header */
   .tab-title{font-size:14px}
   .tab-sub{font-size:11px}
-
-  /* Labour table */
   .labour-table{font-size:12px}
 }
-
-  /* Master bar — stack vertically */
-  .master-bar{flex-direction:column;align-items:stretch;gap:6px}
-  .master-bar input{width:100%;height:38px;font-size:14px}
-  .master-bar select{width:100%;height:38px;font-size:14px}
-  .master-bar button{width:100%;height:38px;font-size:13px}
-
-  /* Master table — hide less important columns, make readable */
-  .master-table{font-size:12px}
-  .master-table thead th{padding:6px 6px;font-size:10px}
-  .master-table td{padding:8px 6px}
-  /* Hide Pack Size column on mobile — it's in the cost/unit anyway */
-  .master-table td:nth-child(3),.master-table th:nth-child(3),
-  .master-table td:nth-child(4),.master-table th:nth-child(4){display:none}
-  /* Keep: Name, Category, Pack£, Unit, Cost/unit, Actions */
-
-  /* Make Edit/Delete buttons bigger for touch */
-  .master-table .btn-edit{padding:5px 10px;font-size:12px}
-  .master-table .del-btn{width:28px;height:28px;font-size:14px}
-
-  /* GP tables */
-  .gp-table{font-size:11px}
-  .gp-table thead th{padding:5px 4px;font-size:9px}
-  .gp-table td{padding:6px 4px}
-
-  /* Metrics grid — 2 cols on mobile */
-  .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
-  .metric-val{font-size:20px}
-
-  /* Subtab bar */
-  .subtab-bar{flex-wrap:nowrap;overflow-x:auto;gap:2px}
-  .subtab-bar::-webkit-scrollbar{display:none}
-  .subtab-btn{font-size:11px;padding:5px 10px;white-space:nowrap}
-
-  /* Tab header */
-  .tab-title{font-size:14px}
-
-  /* Forms in edit rows — stack on mobile */
-  .editing-row td{display:block;width:100%;border:none;padding:4px 8px}
-  .editing-row td input,.editing-row td select{width:100%;margin-bottom:4px}
-}
-
-/* ── Login screen ── */
 #login-screen{position:fixed;inset:0;background:var(--teal);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
 .login-box{background:#fff;border-radius:16px;padding:40px 44px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
 .login-logo{font-size:26px;font-weight:900;color:var(--teal);letter-spacing:.05em;margin-bottom:4px}
@@ -250,8 +152,6 @@ nav::-webkit-scrollbar{display:none}
 .login-btn:hover{background:var(--teal-d)}
 .login-error{color:var(--bad);font-size:12px;margin-top:8px;display:none}
 .login-hint{font-size:11px;color:var(--muted);margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
-
-/* ── Topbar enhancements ── */
 .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .save-status{font-size:11px;color:rgba(255,255,255,.7);white-space:nowrap}
 .save-status.ok{color:#a8d9cf}
@@ -263,8 +163,6 @@ nav::-webkit-scrollbar{display:none}
 .sync-dot.ok{background:#4ade80}.sync-dot.busy{background:#fbbf24;animation:pulse .8s infinite}
 .sync-dot.err{background:#f87171}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
-/* ── Cloud sync modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8000;display:flex;align-items:center;justify-content:center}
 .modal-box{background:#fff;border-radius:14px;padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25)}
 .modal-title{font-size:16px;font-weight:800;color:var(--teal);margin-bottom:4px}
@@ -279,8 +177,6 @@ nav::-webkit-scrollbar{display:none}
 .share-code-box:after{content:'Click to copy';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);font-family:sans-serif}
 .sync-status-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:10px 14px;background:var(--bg);border-radius:8px}
 .step-num{background:var(--teal);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
-
-/* ── Labour tab ── */
 .labour-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
 .labour-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px}
@@ -309,16 +205,19 @@ nav::-webkit-scrollbar{display:none}
 .wastage-metric .wm-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
 .wastage-metric .wm-val{font-size:24px;font-weight:900;color:#7f1d1d;margin:4px 0}
 .wastage-metric .wm-sub{font-size:11px;color:var(--muted)}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px}
+.card-title{font-size:12px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:10px}
 </style>
 </head>
 <body>
 
-<!-- ── Cloud Sync Modal ── -->
+<!-- Cloud Sync Modal -->
 <div class="modal-overlay" id="sync-modal" style="display:none" onclick="if(event.target===this)closeSyncModal()">
   <div class="modal-box">
     <div class="modal-title">☁️ Cloud Sync Setup</div>
     <div class="modal-sub">Sync data live between all three of you — owner, GM, head chef</div>
-
     <div class="modal-section" id="sync-status-section" style="display:none">
       <div class="sync-status-row">
         <span class="sync-dot ok" id="sync-dot"></span>
@@ -335,55 +234,38 @@ nav::-webkit-scrollbar{display:none}
         <button class="btn-sm" onclick="closeSyncModal()" style="margin-left:auto">Close</button>
       </div>
     </div>
-
     <div id="sync-setup-section">
       <div class="modal-section">
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <span class="step-num">1</span>
-          <span style="font-size:13px">Go to <a href="https://jsonbin.io/signup" target="_blank" style="color:var(--teal)">jsonbin.io/signup</a> and create a free account</span>
-        </div>
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <span class="step-num">2</span>
-          <span style="font-size:13px">In the JSONBin dashboard, click <strong>API Keys</strong> → copy your <strong>Master Key</strong></span>
-        </div>
-        <div style="display:flex;gap:6px">
-          <span class="step-num">3</span>
-          <span style="font-size:13px">Paste it below — takes about 10 seconds to set up</span>
-        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px"><span class="step-num">1</span><span style="font-size:13px">Go to <a href="https://jsonbin.io/signup" target="_blank" style="color:var(--teal)">jsonbin.io/signup</a> and create a free account</span></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px"><span class="step-num">2</span><span style="font-size:13px">In the JSONBin dashboard, click <strong>API Keys</strong> → copy your <strong>Master Key</strong></span></div>
+        <div style="display:flex;gap:6px"><span class="step-num">3</span><span style="font-size:13px">Paste it below — takes about 10 seconds to set up</span></div>
       </div>
       <div class="modal-section">
         <div class="modal-label">Option A — New setup (first person to configure)</div>
         <label class="modal-label" style="margin-top:10px">JSONBin Master Key</label>
         <input class="modal-input" type="password" id="new-api-key" placeholder="$2a$10$...">
-        <div class="modal-row">
-          <button class="btn-sm btn-teal" onclick="setupNewCloud()">Create cloud storage →</button>
-        </div>
+        <div class="modal-row"><button class="btn-sm btn-teal" onclick="setupNewCloud()">Create cloud storage →</button></div>
         <div id="setup-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
       </div>
       <div class="modal-section">
         <div class="modal-label">Option B — Join existing (Charlie / head chef joining GM's setup)</div>
         <label class="modal-label" style="margin-top:10px">Share Code (from the person who set it up)</label>
         <input class="modal-input" type="text" id="join-code" placeholder="Paste share code here...">
-        <div class="modal-row">
-          <button class="btn-sm btn-teal" onclick="joinCloud()">Connect →</button>
-        </div>
+        <div class="modal-row"><button class="btn-sm btn-teal" onclick="joinCloud()">Connect →</button></div>
         <div id="join-error" style="display:none;color:var(--bad);font-size:12px;margin-top:6px"></div>
       </div>
-      <div style="text-align:right">
-        <button class="btn-sm" onclick="closeSyncModal()">Cancel</button>
-      </div>
+      <div style="text-align:right"><button class="btn-sm" onclick="closeSyncModal()">Cancel</button></div>
     </div>
   </div>
 </div>
 
-<!-- ── Login Screen ── -->
+<!-- Login Screen -->
 <div id="login-screen" style="display:none">
   <div class="login-box">
     <div class="login-logo">THE MEDLEY<span>.</span></div>
     <div class="login-sub">GP &amp; Operations Calculator · Management Access</div>
     <label class="login-label">Password</label>
-    <input class="login-input" type="password" id="pwd-input" placeholder="Enter password"
-      onkeydown="if(event.key==='Enter')attemptLogin()">
+    <input class="login-input" type="password" id="pwd-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')attemptLogin()">
     <button class="login-btn" onclick="attemptLogin()">Enter</button>
     <div class="login-error" id="login-error">Incorrect password. Try again.</div>
     <div class="login-hint">Access restricted to Medley management team.<br>Contact Charlie to request access.</div>
@@ -398,10 +280,7 @@ nav::-webkit-scrollbar{display:none}
       <span class="sync-dot" id="sync-dot-tb"></span>☁️ Sync
     </button>
     <button class="tb-btn" onclick="exportData()" title="Download your data as a JSON backup file">↓ Export</button>
-    <div class="tb-btn tb-import" title="Import a previously exported JSON file">
-      ↑ Import
-      <input type="file" accept=".json" onchange="importData(this)">
-    </div>
+    <div class="tb-btn tb-import" title="Import a previously exported JSON file">↑ Import<input type="file" accept=".json" onchange="importData(this)"></div>
   </div>
 </div>
 
@@ -419,55 +298,34 @@ nav::-webkit-scrollbar{display:none}
 <div id="content"></div>
 
 <script>
-/* ═══════════════════════════════════════════
-   MASTER INGREDIENT DATA
-   ═══════════════════════════════════════════
-   Each entry: {id, type('D'/'F'/'O'), name, sup, cat, pack, cost, size, unit}
-   costPerUnit = cost / size  (auto-calculated everywhere)
-*/
+/* ═══════════════════ MASTER DATA ═══════════════════ */
 let MASTERS = [
-
-  /* ── DRINK MASTER (type D) ──────────────────── */
-
-  // Spirits & Liqueurs
+  // DRINK MASTER
   {id:'DM01',type:'D',name:'Aperol',sup:'Booker',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:11.99,size:700,unit:'ml'},
   {id:'DM02',type:'D',name:"Pimm's No 1",sup:'Booker',cat:'Spirits & Liqueurs',pack:'70cl bottle (case price)',cost:13.28,size:700,unit:'ml'},
   {id:'DM03',type:'D',name:'Limoncello',sup:'Various',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:15.10,size:700,unit:'ml'},
   {id:'DM04',type:'D',name:'House Gin',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:20.00,size:700,unit:'ml'},
   {id:'DM05',type:'D',name:'Triple Sec',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:12.00,size:700,unit:'ml'},
   {id:'DM06',type:'D',name:'Tequila',sup:'— update supplier —',cat:'Spirits & Liqueurs',pack:'70cl bottle',cost:19.94,size:700,unit:'ml'},
-
-  // Wine — White
   {id:'DM10',type:'D',name:'Jean Didier Blanc (House White)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:7.74,size:750,unit:'ml'},
   {id:'DM11',type:'D',name:'La Barbe SB / Vermentino (French SB)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:8.58,size:750,unit:'ml'},
   {id:'DM12',type:'D',name:'Pa Road Sauvignon Blanc (NZ)',sup:'Grape Minds',cat:'Wine — White',pack:'750ml bottle',cost:10.80,size:750,unit:'ml'},
   {id:'DM17',type:'D',name:'Vinho Verde',sup:'— update supplier —',cat:'Wine — White',pack:'750ml bottle',cost:8.00,size:750,unit:'ml'},
-  // Wine — Rosé
   {id:'DM18',type:'D',name:'House Rosé',sup:'— update supplier —',cat:'Wine — Rosé',pack:'750ml bottle',cost:8.00,size:750,unit:'ml'},
   {id:'DM19',type:'D',name:'Provence Rosé',sup:'— update supplier —',cat:'Wine — Rosé',pack:'750ml bottle',cost:11.00,size:750,unit:'ml'},
-  // Wine — Red
   {id:'DM13',type:'D',name:'Jean Didier Rouge (House Red)',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:7.74,size:750,unit:'ml'},
   {id:'DM14',type:'D',name:'Perdido Tinto (Tempranillo)',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:8.58,size:750,unit:'ml'},
   {id:'DM15',type:'D',name:'Zensa Primitivo',sup:'Grape Minds',cat:'Wine — Red',pack:'750ml bottle',cost:10.68,size:750,unit:'ml'},
-  // Wine — Sparkling
   {id:'DM16',type:'D',name:'A Borga Extra Dry DOC (Prosecco)',sup:'Grape Minds',cat:'Wine — Sparkling',pack:'750ml bottle',cost:10.32,size:750,unit:'ml'},
   {id:'DM20',type:'D',name:'Champagne',sup:'— update supplier —',cat:'Wine — Sparkling',pack:'750ml bottle',cost:22.00,size:750,unit:'ml'},
-
-  // Draught Beer — size = pints per keg (50L ÷ 0.568L × 0.93 wastage ≈ 82 pints)
   {id:'DM30',type:'D',name:'Medley Lager (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:127.75,size:82,unit:'pint'},
   {id:'DM31',type:'D',name:'Stowford Press Cider (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:93.98,size:82,unit:'pint'},
   {id:'DM32',type:'D',name:'Yabba Dabba Doo (keg)',sup:'Various',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:153.13,size:82,unit:'pint'},
   {id:'DM33',type:'D',name:'IPA (keg)',sup:'— update supplier —',cat:'Draught Beer',pack:'50L keg · 7% wastage → 82 pints',cost:130.00,size:82,unit:'pint'},
-
-  // Bottled / Canned Beer
   {id:'DM35',type:'D',name:'0% Heineken',sup:'Various',cat:'Bottled Beer',pack:'Per bottle',cost:0.88,size:1,unit:'each'},
   {id:'DM36',type:'D',name:'0% Craft Tap Social',sup:'Various',cat:'Bottled Beer',pack:'Per bottle/pint',cost:0.88,size:1,unit:'each'},
-
-  // Canned Cocktails
   {id:'DM40',type:'D',name:'Margarita (Can)',sup:'Various',cat:'Canned Cocktails',pack:'Per can',cost:1.80,size:1,unit:'each'},
   {id:'DM41',type:'D',name:'Paloma (Can)',sup:'Various',cat:'Canned Cocktails',pack:'Per can',cost:1.80,size:1,unit:'each'},
-
-  // Mixers — BIBs use effective ml after dilution
   {id:'DM50',type:'D',name:'Fever Tree Light Tonic 200ml',sup:'Booker',cat:'Mixers',pack:'Case 24×200ml · £15.00/case',cost:15.00,size:4800,unit:'ml'},
   {id:'DM51',type:'D',name:'Fever Tree Premium Indian Tonic 200ml',sup:'Booker',cat:'Mixers',pack:'Case 24×200ml · £16.99/case',cost:16.99,size:4800,unit:'ml'},
   {id:'DM52',type:'D',name:'Carters Royal Tonic Water',sup:'Booker',cat:'Mixers',pack:'Case 12×1ltr · £7.59/case',cost:7.59,size:12000,unit:'ml'},
@@ -475,36 +333,26 @@ let MASTERS = [
   {id:'DM54',type:'D',name:'Coca-Cola Draft (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 5.2:1 dilution = 43.4L yield · £87.00',cost:87.00,size:43400,unit:'ml'},
   {id:'DM55',type:'D',name:'Diet Coke Draft (BIB postmix)',sup:'Various',cat:'Mixers',pack:'7L BIB · 5.2:1 dilution = 43.4L yield · £74.00',cost:74.00,size:43400,unit:'ml'},
   {id:'DM56',type:'D',name:'Soda Water',sup:'Booker',cat:'Mixers',pack:'Case 12×1ltr · £7.59/case',cost:7.59,size:12000,unit:'ml'},
-
-  // Garnishes (whole items)
   {id:'DM60',type:'D',name:'Lemon (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.42',cost:0.42,size:1,unit:'each'},
   {id:'DM61',type:'D',name:'Lime (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.28',cost:0.28,size:1,unit:'each'},
   {id:'DM62',type:'D',name:'Orange (whole)',sup:'Arthur David',cat:'Garnishes',pack:'Each · £0.58',cost:0.58,size:1,unit:'each'},
   {id:'DM63',type:'D',name:'Cucumber (whole)',sup:'Booker',cat:'Garnishes',pack:'Each · £1.25',cost:1.25,size:1,unit:'each'},
   {id:'DM64',type:'D',name:'Mint pot',sup:'Arthur David',cat:'Garnishes',pack:'Per pot ≈40 sprigs · £2.38',cost:2.38,size:40,unit:'sprig'},
-  // Garnishes (per-serve derived — 1 unit = 1 slice/wedge/sprig)
   {id:'DM65',type:'D',name:'Lemon slice',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Lemon (whole)',cost:0,size:1,unit:'each',parentId:'DM60',portions:8},
   {id:'DM66',type:'D',name:'Lime wedge',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Lime (whole)',cost:0,size:1,unit:'each',parentId:'DM61',portions:6},
   {id:'DM67',type:'D',name:'Orange slice',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Orange (whole)',cost:0,size:1,unit:'each',parentId:'DM62',portions:8},
   {id:'DM68',type:'D',name:'Cucumber slice',sup:'Booker',cat:'Garnishes',pack:'Derived from Cucumber (whole)',cost:0,size:1,unit:'each',parentId:'DM63',portions:15},
   {id:'DM69',type:'D',name:'Mint sprig',sup:'Arthur David',cat:'Garnishes',pack:'Derived from Mint (100g bag ~40 sprigs)',cost:0,size:1,unit:'each',parentId:'DM64',portions:40},
-
-  // Drink consumables
   {id:'DM70',type:'D',name:'Paper Straw (black 210mm)',sup:'Booker',cat:'Consumables',pack:'250 per pack · £2.49',cost:2.49,size:250,unit:'each'},
   {id:'DM71',type:'D',name:'Ice portion (per drink)',sup:'Booker',cat:'Consumables',pack:'Party ice 2.27kg bag · ~20 portions · £1.02/bag',cost:1.015,size:20,unit:'each'},
 
-
-  /* ── FOOD MASTER (type F) ────────────────────── */
-
-  // Flour & Base
+  // FOOD MASTER
   {id:'FM01',type:'F',name:'Semola Rimacinata (Martimucci)',sup:'Carnevale',cat:'Flour & Base',pack:'25kg sack · £32.40',cost:32.40,size:25000,unit:'g'},
   {id:'FM02',type:'F',name:'Caputo Pizza Flour Blue (Tipo 00)',sup:'Booker',cat:'Flour & Base',pack:'15kg bag · £17.99',cost:17.99,size:15000,unit:'g'},
   {id:'FM03',type:'F',name:'GF Flour (pizza blend)',sup:'Various',cat:'Flour & Base',pack:'2kg bag · £17.50',cost:17.50,size:2000,unit:'g'},
   {id:'FM04',type:'F',name:'Fresh Yeast',sup:'Arthur David',cat:'Flour & Base',pack:'1kg block · £2.85',cost:2.85,size:1000,unit:'g'},
   {id:'FM05',type:'F',name:'Salt',sup:'Various',cat:'Dry Goods',pack:'Per kg · £1.08',cost:1.08,size:1000,unit:'g'},
   {id:'FM06',type:'F',name:'Olive Oil (cooking)',sup:'Various',cat:'Dry Goods',pack:'Per kg / litre · £8.76',cost:8.76,size:1000,unit:'g'},
-
-  // Dairy
   {id:'FM10',type:'F',name:'Fiordilatte Mozzarella (Valerio 10mm cubetti)',sup:'Carnevale',cat:'Dairy',pack:'Case 6×2kg = 12kg · £91.80',cost:91.80,size:12000,unit:'g'},
   {id:'FM11',type:'F',name:'Provola',sup:'Various',cat:'Dairy',pack:'Per kg · £5.35',cost:5.35,size:1000,unit:'g'},
   {id:'FM12',type:'F',name:'Parmesan Reggiano (Parmigiano)',sup:'Arthur David',cat:'Dairy',pack:'Per kg · £22.00',cost:22.00,size:1000,unit:'g'},
@@ -512,8 +360,6 @@ let MASTERS = [
   {id:'FM14',type:'F',name:'Ricotta Italian',sup:'Arthur David',cat:'Dairy',pack:'1.5kg tub · £6.06',cost:6.06,size:1500,unit:'g'},
   {id:'FM15',type:'F',name:'Burrata',sup:'Various',cat:'Dairy',pack:'Per ball · £1.65',cost:1.65,size:1,unit:'each'},
   {id:'FM16',type:'F',name:'Mascarpone',sup:'Various',cat:'Dairy',pack:'Per kg · £8.18',cost:8.18,size:1000,unit:'g'},
-
-  // Produce
   {id:'FM20',type:'F',name:'Cherry Vine Tomatoes',sup:'Arthur David',cat:'Produce',pack:'3kg box · £18.50',cost:18.50,size:3000,unit:'g'},
   {id:'FM21',type:'F',name:'Tinned Tomatoes (for sauce batches)',sup:'Various',cat:'Produce',pack:'2.5kg tin · £3.42',cost:3.42,size:2500,unit:'g'},
   {id:'FM25',type:'F',name:'Garlic (peeled)',sup:'Arthur David',cat:'Produce',pack:'Per kg · £8.16',cost:8.16,size:1000,unit:'g'},
@@ -524,20 +370,14 @@ let MASTERS = [
   {id:'FM30',type:'F',name:'Cavolo Nero (raw)',sup:'Various',cat:'Produce',pack:'Box ≈4.5kg · £20.09',cost:20.09,size:4500,unit:'g'},
   {id:'FM31',type:'F',name:'Lemons',sup:'Arthur David',cat:'Produce',pack:'Each · £0.42',cost:0.42,size:1,unit:'each'},
   {id:'FM32',type:'F',name:'Limes',sup:'Arthur David',cat:'Produce',pack:'Each · £0.28',cost:0.28,size:1,unit:'each'},
-
-  // Herbs
   {id:'FM22',type:'F',name:'Sweet Basil (fresh)',sup:'Arthur David',cat:'Herbs',pack:'Bunch ≈95g · £2.34 → £24.63/kg',cost:2.34,size:95,unit:'g'},
   {id:'FM23',type:'F',name:'Flat-leaf Parsley',sup:'Arthur David',cat:'Herbs',pack:'Bunch ≈180g · £1.56 → £8.67/kg',cost:1.56,size:180,unit:'g'},
   {id:'FM24',type:'F',name:'Fresh Mint',sup:'Arthur David',cat:'Herbs',pack:'Pot ≈100g · £2.38',cost:2.38,size:100,unit:'g'},
-
-  // Charcuterie & Proteins
   {id:'FM40',type:'F',name:'Anchovies',sup:'Various',cat:'Charcuterie',pack:'Per kg · £23.59',cost:23.59,size:1000,unit:'g'},
   {id:'FM41',type:'F',name:"Nduja (Charcuti')",sup:'Arthur David',cat:'Charcuterie',pack:'250g pack · £6.67',cost:6.67,size:250,unit:'g'},
   {id:'FM42',type:'F',name:'Pepperoni (sliced)',sup:'Arthur David',cat:'Charcuterie',pack:'Per kg · £17.60',cost:17.60,size:1000,unit:'g'},
   {id:'FM43',type:'F',name:'Mortadella',sup:'Various',cat:'Charcuterie',pack:'Per kg · £12.30',cost:12.30,size:1000,unit:'g'},
   {id:'FM44',type:'F',name:'Fennel Sausage',sup:'Various',cat:'Charcuterie',pack:'Per kg · £9.78',cost:9.78,size:1000,unit:'g'},
-
-  // Dry Goods & Pantry
   {id:'FM50',type:'F',name:'Capers Surfines',sup:'Arthur David',cat:'Dry Goods',pack:'1.6kg tin · £10.83 → £6.77/kg',cost:10.83,size:1600,unit:'g'},
   {id:'FM51',type:'F',name:'Black Pitted Olives (tinned)',sup:'Arthur David',cat:'Dry Goods',pack:'4.1kg tin · £11.04 → £2.69/kg',cost:11.04,size:4100,unit:'g'},
   {id:'FM52',type:'F',name:'Misto Mixed Olives',sup:'Arthur David',cat:'Dry Goods',pack:'3kg tub · £20.72 → £6.91/kg',cost:20.72,size:3000,unit:'g'},
@@ -552,14 +392,12 @@ let MASTERS = [
   {id:'FM61',type:'F',name:'Egg Yolk (pasteurised)',sup:'Various',cat:'Dairy',pack:'Per kg · £10.91',cost:10.91,size:1000,unit:'g'},
   {id:'FM62',type:'F',name:'Egg White (pasteurised)',sup:'Various',cat:'Dairy',pack:'Per kg · £5.41',cost:5.41,size:1000,unit:'g'},
   {id:'FM63',type:'F',name:'Espresso Coffee (beans)',sup:'Various',cat:'Hot Drinks',pack:'Per kg · £22.55',cost:22.55,size:1000,unit:'g'},
-
-  /* ── COMPOUND / BATCH ITEMS ────────────────────
-     These are house-made preparations. Cost = batch cost ÷ batch yield.
-     Update the batch cost here and all GP recipes auto-recalculate.  */
   {id:'FM80',type:'F',name:'Extra Thick Mayonnaise',sup:'Various',cat:'Condiments',pack:'Per kg · approx £3.00',cost:3.00,size:1000,unit:'g'},
+
+  /* COMPOUND / BATCH — FM72 now uses portionUnit + yieldGrams so ladle size is globally controlled */
   {id:'FM70',type:'F',name:'Pizza Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'15kg flour batch · £22.43 total · ≈93 balls',cost:22.43,size:93,unit:'each'},
   {id:'FM71',type:'F',name:'GF Dough Ball (house-made)',sup:'House',cat:'Compound — Batch',pack:'3.6kg batch · £18.60 · 12 balls',cost:18.60,size:12,unit:'each'},
-  {id:'FM72',type:'F',name:'Tomato Sauce (1 ladle = 70g)',sup:'House',cat:'Compound — Batch',pack:'2.5kg tin batch · £3.59 · 36 ladles',cost:3.59,size:36,unit:'each'},
+  {id:'FM72',type:'F',name:'Tomato Sauce',sup:'House',cat:'Compound — Batch',pack:'2.5kg tin batch · £3.59',cost:3.59,size:36,unit:'each',portionUnit:'ladle',yieldGrams:2520},
   {id:'FM73',type:'F',name:'House Pesto',sup:'House',cat:'Compound — Batch',pack:'1880g batch · £30.97 → £16.48/kg',cost:30.97,size:1880,unit:'g'},
   {id:'FM74',type:'F',name:'Parsley Sauce',sup:'House',cat:'Compound — Batch',pack:'650g batch · £5.68 → £8.74/kg',cost:5.68,size:650,unit:'g'},
   {id:'FM75',type:'F',name:'Chilli Dip',sup:'House',cat:'Compound — Batch',pack:'3.1kg batch · £22.93 → £7.40/kg',cost:22.93,size:3100,unit:'g'},
@@ -567,117 +405,44 @@ let MASTERS = [
   {id:'FM77',type:'F',name:'Cavolo Nero Topping (wilted, prepped)',sup:'House',cat:'Compound — Batch',pack:'2.05kg yield from 1 box · £21.06 batch → £10.27/kg',cost:21.06,size:2050,unit:'g'},
   {id:'FM78',type:'F',name:'Aubergine Parmigiana (per serving 1/18)',sup:'House',cat:'Compound — Batch',pack:'18-serving batch · £25.94 → £1.44 each',cost:25.94,size:18,unit:'each'},
 
-
-  /* ── OPS & MISC MASTER (type O) ─────────────── */
-
-  // Packaging
+  // OPS & MISC
   {id:'OM00',type:'O',name:'Dip pot 2oz with lid',sup:'Various',cat:'Packaging',pack:'1000 pots with lids · £52.99',cost:52.99,size:1000,unit:'each'},
   {id:'OM01',type:'O',name:'8oz Kraft Food Pot & Lid (combined)',sup:'Booker',cat:'Packaging',pack:'50 per pack · £9.49 → £0.19 each',cost:9.49,size:50,unit:'each'},
   {id:'OM02',type:'O',name:'Pizza Box 12" (31cm)',sup:'Carnevale',cat:'Packaging',pack:'100 per case · £26.80 → £0.27 each',cost:26.80,size:100,unit:'each'},
   {id:'OM03',type:'O',name:'White Napkin 30cm (1-ply)',sup:'Booker',cat:'Packaging',pack:'500 per pack · £22.99 → £0.046 each',cost:22.99,size:500,unit:'each'},
   {id:'OM04',type:'O',name:'Paper Straw Black 210mm',sup:'Booker',cat:'Packaging',pack:'250 per pack · £2.49 → £0.01 each',cost:2.49,size:250,unit:'each'},
-  // PPE
   {id:'OM05',type:'O',name:'Nitrile Gloves (Black, M)',sup:'Booker',cat:'PPE',pack:'100 per pack · £7.99 → £0.08 each',cost:7.99,size:100,unit:'each'},
-  // Cleaning
   {id:'OM06',type:'O',name:'2-ply Paper Towel / Blue Roll',sup:'Booker',cat:'Cleaning',pack:'12-pack · £14.89 → £1.24/roll',cost:14.89,size:12,unit:'each'},
   {id:'OM07',type:'O',name:'Dettol Multi-Action Spray 4ltr',sup:'Booker',cat:'Cleaning',pack:'Each · £6.59',cost:6.59,size:1,unit:'each'},
   {id:'OM08',type:'O',name:'HD Degreaser 750ml',sup:'Booker',cat:'Cleaning',pack:'Each · £2.49',cost:2.49,size:1,unit:'each'},
   {id:'OM09',type:'O',name:'Kitchen Cleaner 750ml',sup:'Booker',cat:'Cleaning',pack:'Each · £2.49',cost:2.49,size:1,unit:'each'},
-  // Consumables
   {id:'OM10',type:'O',name:'Party Ice Cubes 2.27kg bag',sup:'Booker',cat:'Consumables',pack:'6-bag case · £6.09/case → £1.02/bag',cost:6.09,size:6,unit:'each'},
   {id:'OM11',type:'O',name:'Squeezy Bottle 24oz',sup:'Arthur David',cat:'Equipment',pack:'Each · £2.72',cost:2.72,size:1,unit:'each'},
   {id:'OM12',type:'O',name:'CO₂ / Gas (draught beer)',sup:'Various',cat:'Consumables',pack:'Per bottle · est. £35',cost:35.00,size:1,unit:'each'},
 ];
 
-/* ════════════════════════════════════════════
-   GP RECIPE DATA
-   ════════════════════════════════════════════
-   Recipe ingredient formats:
-   {mid:'DM01', qty:50}           → master-linked (cost = qty × master.cost/master.size)
-   {mid:null, n:'Name', c:0.00}  → manual entry (cost = c)
-*/
-
+/* ═══════════════════ WET GP ═══════════════════ */
 let WET_GP = [
-  // ── Canned Cocktails
-  {id:1,name:'Margarita (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[
-    {mid:'DM40',qty:1},
-    {mid:null,n:'Ice & presentation',c:0.05}]},
-  {id:2,name:'Paloma (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[
-    {mid:'DM41',qty:1},
-    {mid:null,n:'Ice & presentation',c:0.05}]},
-
-  // ── Cocktails (quantities from Medley Wet Cost PDF)
-  {id:3,name:'G&T — Single',cat:'Cocktails',sell:6.76,recipe:[
-    {mid:'DM04',qty:25},
-    {mid:'DM50',qty:200},
-    {mid:'DM65',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:4,name:'G&T — Double',cat:'Cocktails',sell:10.00,recipe:[
-    {mid:'DM04',qty:50},
-    {mid:'DM51',qty:200},
-    {mid:'DM65',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:5,name:'Aperol Spritz (glass)',cat:'Cocktails',sell:9.20,recipe:[
-    {mid:'DM01',qty:50},
-    {mid:'DM56',qty:125},
-    {mid:'DM16',qty:50},
-    {mid:'DM67',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:6,name:'Aperol Spritz (jug)',cat:'Cocktails',sell:31.00,recipe:[
-    {mid:'DM01',qty:200},
-    {mid:'DM56',qty:500},
-    {mid:'DM16',qty:200},
-    {mid:'DM67',qty:4},
-    {mid:'DM70',qty:4}]},
-  {id:7,name:"Pimm's (glass)",cat:'Cocktails',sell:8.25,recipe:[
-    {mid:'DM02',qty:50},
-    {mid:'DM53',qty:225},
-    {mid:'DM69',qty:1},
-    {mid:'DM65',qty:1},
-    {mid:'DM66',qty:1},
-    {mid:'DM68',qty:1},
-    {mid:'DM67',qty:1},
-    {mid:'DM70',qty:1}]},
-  {id:8,name:"Pimm's (jug)",cat:'Cocktails',sell:31.00,recipe:[
-    {mid:'DM02',qty:200},
-    {mid:'DM53',qty:900},
-    {mid:'DM69',qty:4},
-    {mid:'DM65',qty:4},
-    {mid:'DM66',qty:4},
-    {mid:'DM68',qty:4},
-    {mid:'DM67',qty:4},
-    {mid:'DM70',qty:4}]},
-  {id:9,name:'Limoncello Spritz',cat:'Cocktails',sell:8.50,recipe:[
-    {mid:'DM03',qty:50},
-    {mid:'DM53',qty:125},
-    {mid:'DM16',qty:50},
-    {mid:'DM65',qty:1},
-    {mid:'DM70',qty:1}]},
-
-  // ── Beers
+  {id:1,name:'Margarita (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[{mid:'DM40',qty:1},{mid:null,n:'Ice & presentation',c:0.05}]},
+  {id:2,name:'Paloma (Can)',cat:'Canned Cocktails',sell:6.50,recipe:[{mid:'DM41',qty:1},{mid:null,n:'Ice & presentation',c:0.05}]},
+  {id:3,name:'G&T — Single',cat:'Cocktails',sell:6.76,recipe:[{mid:'DM04',qty:25},{mid:'DM50',qty:200},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:4,name:'G&T — Double',cat:'Cocktails',sell:10.00,recipe:[{mid:'DM04',qty:50},{mid:'DM51',qty:200},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:5,name:'Aperol Spritz (glass)',cat:'Cocktails',sell:9.20,recipe:[{mid:'DM01',qty:50},{mid:'DM56',qty:125},{mid:'DM16',qty:50},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
+  {id:6,name:'Aperol Spritz (jug)',cat:'Cocktails',sell:31.00,recipe:[{mid:'DM01',qty:200},{mid:'DM56',qty:500},{mid:'DM16',qty:200},{mid:'DM67',qty:4},{mid:'DM70',qty:4}]},
+  {id:7,name:"Pimm's (glass)",cat:'Cocktails',sell:8.25,recipe:[{mid:'DM02',qty:50},{mid:'DM53',qty:225},{mid:'DM69',qty:1},{mid:'DM65',qty:1},{mid:'DM66',qty:1},{mid:'DM68',qty:1},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
+  {id:8,name:"Pimm's (jug)",cat:'Cocktails',sell:31.00,recipe:[{mid:'DM02',qty:200},{mid:'DM53',qty:900},{mid:'DM69',qty:4},{mid:'DM65',qty:4},{mid:'DM66',qty:4},{mid:'DM68',qty:4},{mid:'DM67',qty:4},{mid:'DM70',qty:4}]},
+  {id:9,name:'Limoncello Spritz',cat:'Cocktails',sell:8.50,recipe:[{mid:'DM03',qty:50},{mid:'DM53',qty:125},{mid:'DM16',qty:50},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
   {id:10,name:'Medley Lager (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM30',qty:1}]},
   {id:11,name:'IPA (pint)',cat:'Beers',sell:6.75,recipe:[{mid:'DM33',qty:1}]},
   {id:12,name:'Yabba Dabba Doo (pint)',cat:'Beers',sell:6.90,recipe:[{mid:'DM32',qty:1}]},
   {id:13,name:'Stowford Press (pint)',cat:'Beers',sell:6.50,recipe:[{mid:'DM31',qty:1}]},
   {id:14,name:'0% Heineken',cat:'Beers',sell:4.20,recipe:[{mid:'DM35',qty:1}]},
   {id:15,name:'0% Craft Tap Social',cat:'Beers',sell:5.45,recipe:[{mid:'DM36',qty:1}]},
-
-  // ── Soft Drinks (quantities from Wet Cost PDF)
-  {id:16,name:'Coke',cat:'Soft Drinks',sell:3.10,recipe:[
-    {mid:'DM54',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:17,name:'Diet Coke',cat:'Soft Drinks',sell:3.10,recipe:[
-    {mid:'DM55',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:18,name:'Lemonade',cat:'Soft Drinks',sell:3.10,recipe:[
-    {mid:'DM53',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
-  {id:19,name:'Cordial & Soda',cat:'Soft Drinks',sell:1.60,recipe:[
-    {mid:'DM56',qty:300},
-    {mid:null,n:'Cordial 50ml (Rocks / Belvoir)',c:0.08},
-    {mid:'DM66',qty:1},{mid:'DM70',qty:1}]},
-  {id:20,name:'Juice',cat:'Soft Drinks',sell:2.90,recipe:[
-    {mid:null,n:'Juice 300ml (OJ / Apple)',c:0.45},
-    {mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
-
-  // ── Wine by the glass (175ml / 125ml)
+  {id:16,name:'Coke',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM54',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:17,name:'Diet Coke',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM55',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:18,name:'Lemonade',cat:'Soft Drinks',sell:3.10,recipe:[{mid:'DM53',qty:300},{mid:'DM65',qty:1},{mid:'DM70',qty:1}]},
+  {id:19,name:'Cordial & Soda',cat:'Soft Drinks',sell:1.60,recipe:[{mid:'DM56',qty:300},{mid:null,n:'Cordial 50ml (Rocks / Belvoir)',c:0.08},{mid:'DM66',qty:1},{mid:'DM70',qty:1}]},
+  {id:20,name:'Juice',cat:'Soft Drinks',sell:2.90,recipe:[{mid:null,n:'Juice 300ml (OJ / Apple)',c:0.45},{mid:'DM67',qty:1},{mid:'DM70',qty:1}]},
   {id:21,name:'House White — 125ml',cat:'Wine',sell:5.00,recipe:[{mid:'DM10',qty:125}]},
   {id:22,name:'House White — 175ml',cat:'Wine',sell:6.00,recipe:[{mid:'DM10',qty:175}]},
   {id:23,name:'House White — 250ml',cat:'Wine',sell:8.00,recipe:[{mid:'DM10',qty:250}]},
@@ -695,127 +460,28 @@ let WET_GP = [
   {id:35,name:'Champagne — Bottle',cat:'Wine',sell:50.00,recipe:[{mid:'DM20',qty:750}]},
 ];
 
-/* ── DRY GP — quantities from MEDLEY DRY COST PRICING 2025 PDF ── */
+/* ═══════════════════ DRY GP ═══════════════════ */
 let DRY_GP = [
-  // Starters & Sharers
-  {id:1,name:'Mixed Olives',cat:'Starters',sell:4.50,recipe:[
-    {mid:'FM52',qty:80},      // Mixed olives 80g from tub
-    {mid:null,n:'Olive oil drizzle',c:0.04},
-    {mid:'OM01',qty:1}]},     // 8oz kraft pot & lid
-  {id:2,name:'Garlic Pizette',cat:'Starters',sell:5.00,recipe:[
-    {mid:'FM70',qty:0.5},     // ½ dough ball (PDF)
-    {mid:'FM25',qty:2},       // Garlic 2g (PDF)
-    {mid:'FM06',qty:6}]},     // Olive oil 6g (PDF)
-  {id:3,name:'Padron Peppers',cat:'Starters',sell:6.50,recipe:[
-    {mid:'FM26',qty:100},     // Padron peppers 100g
-    {mid:'FM12',qty:20},      // Parmesan 20g
-    {mid:'FM75',qty:20},      // Chilli dip 20g
-    {mid:'FM05',qty:2}]},     // Sea salt 2g
-
-  // Pizzas — exact quantities from DRY PDF
-  {id:4,name:'Marinara',cat:'Pizza',sell:10.00,recipe:[
-    {mid:'FM70',qty:1},       // 1 dough ball
-    {mid:'FM72',qty:1.5},     // 1.5 ladles tomato sauce (105g ÷ 70g/ladle)
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM20',qty:50},      // Cherry tomatoes 50g
-    {mid:'FM06',qty:6},       // Olive oil 6g
-    {mid:'FM25',qty:2}]},     // Garlic 2g
-  {id:5,name:'Margherita',cat:'Pizza',sell:12.00,recipe:[
-    {mid:'FM70',qty:1},       // 1 dough ball
-    {mid:'FM72',qty:1},       // 1 ladle tomato sauce (70g)
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM06',qty:10},      // Olive oil 10g
-    {mid:'FM10',qty:50}]},    // Fiordilatte 50g
-  {id:6,name:'Anchovie',cat:'Pizza',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM06',qty:6},       // Olive oil 6g
-    {mid:'FM25',qty:2},       // Garlic 2g
-    {mid:'FM51',qty:27},      // Black olives 27g
-    {mid:'FM40',qty:10},      // Anchovies 10g
-    {mid:'FM50',qty:7},       // Capers 7g
-    {mid:'FM74',qty:17}]},    // Parsley sauce 17g
-  {id:7,name:'Pepperoni & Nduja',cat:'Pizza',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM42',qty:36},      // Pepperoni 36g
-    {mid:'FM41',qty:20}]},    // Nduja 20g
-  {id:8,name:'Broccoli Ricotta',cat:'Pizza',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM14',qty:80},      // Ricotta 80g
-    {mid:'FM10',qty:75},      // Fiordilatte 75g
-    {mid:'FM27',qty:100},     // Broccoli 100g
-    {mid:'FM12',qty:20},      // Parmesan 20g
-    {mid:null,n:'Chilli flakes',c:0.03},
-    {mid:'FM54',qty:15}]},    // Lemon juice 15g
-
-  // Upcoming menu (May) — from DRY PDF
-  {id:9,name:'Wood Fired Aubergine',cat:'Pizza — May Menu',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM72',qty:1},       // Tomato sauce 1 ladle
-    {mid:'FM22',qty:2.5},     // Basil 2.5g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM76',qty:65},      // Aubergine topping 65g
-    {mid:'FM20',qty:50},      // Cherry toms 50g
-    {mid:'FM13',qty:4}]},     // Pecorino 4g
-  {id:10,name:'Cavolo Nero',cat:'Pizza — May Menu',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM06',qty:15},      // Olive oil 15g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM11',qty:50},      // Provola 50g
-    {mid:'FM77',qty:70},      // Cavolo nero topping 70g
-    {mid:'FM44',qty:80},      // Fennel sausage 80g
-    {mid:'FM75',qty:20}]},    // Chilli dip 20g
-  {id:11,name:'Genovese Pesto',cat:'Pizza — May Menu',sell:14.50,recipe:[
-    {mid:'FM70',qty:1},       // Dough ball
-    {mid:'FM73',qty:55},      // House pesto 55g
-    {mid:'FM10',qty:50},      // Fiordilatte 50g
-    {mid:'FM20',qty:55},      // Cherry tomatoes 55g
-    {mid:'FM15',qty:1},       // Burrata 1 ball
-    {mid:'FM12',qty:3}]},     // Parmesan 3g
-
-  // Sides — May Menu (from DRY PDF)
-  {id:12,name:'Caprese',cat:'Sides — May Menu',sell:7.00,recipe:[
-    {mid:'FM20',qty:200},     // Tomatoes 200g
-    {mid:'FM22',qty:5},       // Basil 5g
-    {mid:'FM74',qty:15},      // Parsley sauce 15g
-    {mid:'FM15',qty:1}]},     // Burrata 1 ball
-  {id:13,name:'Aubergine Parmigiana',cat:'Sides — May Menu',sell:6.67,recipe:[
-    {mid:'FM78',qty:1},       // 1 serving from batch
-    {mid:null,n:'Tomato sauce (1.5 ladle)',c:0.15},
-    {mid:'FM22',qty:1},       // Basil 1 leaf ≈1g
-    {mid:'FM12',qty:3},       // Parmesan 3g
-    {mid:'FM70',qty:0.25}]},  // ¼ dough ball (bread)
-  {id:14,name:'Broccoli (side)',cat:'Sides — May Menu',sell:5.00,recipe:[
-    {mid:'FM27',qty:165},     // Broccoli 165g
-    {mid:'FM75',qty:20},      // Chilli dip 20g
-    {mid:'FM06',qty:10}]},    // Olive oil 10g
-
-  // Desserts
-  {id:15,name:'Affogato',cat:'Desserts',sell:6.50,recipe:[
-    {mid:'FM63',qty:16},      // Coffee ≈2 shots × 8g
-    {mid:'FM59',qty:150}]},   // Vanilla ice cream 150ml
-  {id:16,name:'Dough Ring',cat:'Desserts',sell:7.50,recipe:[
-    {mid:'FM70',qty:0.25},    // ¼ dough ball
-    {mid:null,n:'Chocolate filling 30g',c:0.40},
-    {mid:'FM14',qty:50},      // Ricotta 50g
-    {mid:'FM59',qty:100}]},   // Ice cream 100ml
-  {id:17,name:'Tiramisu (per serving, 1/24)',cat:'Desserts',sell:6.00,recipe:[
-    {mid:null,n:'Lady fingers (⅞ of 2 packs ÷ 24)',c:0.25},
-    {mid:'FM61',qty:10.4},    // Egg yolk 250g ÷ 24
-    {mid:'FM62',qty:16.7},    // Egg white 400g ÷ 24
-    {mid:'FM55',qty:15.6},    // Sugar 375g ÷ 24
-    {mid:'FM16',qty:83.3},    // Mascarpone 2000g ÷ 24
-    {mid:'FM63',qty:4}]},     // Coffee per serve
+  {id:1,name:'Mixed Olives',cat:'Starters',sell:4.50,recipe:[{mid:'FM52',qty:80},{mid:null,n:'Olive oil drizzle',c:0.04},{mid:'OM01',qty:1}]},
+  {id:2,name:'Garlic Pizette',cat:'Starters',sell:5.00,recipe:[{mid:'FM70',qty:0.5},{mid:'FM25',qty:2},{mid:'FM06',qty:6}]},
+  {id:3,name:'Padron Peppers',cat:'Starters',sell:6.50,recipe:[{mid:'FM26',qty:100},{mid:'FM12',qty:20},{mid:'FM75',qty:20},{mid:'FM05',qty:2}]},
+  {id:4,name:'Marinara',cat:'Pizza',sell:10.00,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:1.5},{mid:'FM22',qty:2.5},{mid:'FM20',qty:50},{mid:'FM06',qty:6},{mid:'FM25',qty:2}]},
+  {id:5,name:'Margherita',cat:'Pizza',sell:12.00,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:1},{mid:'FM22',qty:2.5},{mid:'FM06',qty:10},{mid:'FM10',qty:50}]},
+  {id:6,name:'Anchovie',cat:'Pizza',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:1},{mid:'FM22',qty:2.5},{mid:'FM10',qty:50},{mid:'FM06',qty:6},{mid:'FM25',qty:2},{mid:'FM51',qty:27},{mid:'FM40',qty:10},{mid:'FM50',qty:7},{mid:'FM74',qty:17}]},
+  {id:7,name:'Pepperoni & Nduja',cat:'Pizza',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:1},{mid:'FM22',qty:2.5},{mid:'FM10',qty:50},{mid:'FM42',qty:36},{mid:'FM41',qty:20}]},
+  {id:8,name:'Broccoli Ricotta',cat:'Pizza',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM14',qty:80},{mid:'FM10',qty:75},{mid:'FM27',qty:100},{mid:'FM12',qty:20},{mid:null,n:'Chilli flakes',c:0.03},{mid:'FM54',qty:15}]},
+  {id:9,name:'Wood Fired Aubergine',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM72',qty:1},{mid:'FM22',qty:2.5},{mid:'FM10',qty:50},{mid:'FM76',qty:65},{mid:'FM20',qty:50},{mid:'FM13',qty:4}]},
+  {id:10,name:'Cavolo Nero',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM06',qty:15},{mid:'FM10',qty:50},{mid:'FM11',qty:50},{mid:'FM77',qty:70},{mid:'FM44',qty:80},{mid:'FM75',qty:20}]},
+  {id:11,name:'Genovese Pesto',cat:'Pizza — May Menu',sell:14.50,recipe:[{mid:'FM70',qty:1},{mid:'FM73',qty:55},{mid:'FM10',qty:50},{mid:'FM20',qty:55},{mid:'FM15',qty:1},{mid:'FM12',qty:3}]},
+  {id:12,name:'Caprese',cat:'Sides — May Menu',sell:7.00,recipe:[{mid:'FM20',qty:200},{mid:'FM22',qty:5},{mid:'FM74',qty:15},{mid:'FM15',qty:1}]},
+  {id:13,name:'Aubergine Parmigiana',cat:'Sides — May Menu',sell:6.67,recipe:[{mid:'FM78',qty:1},{mid:null,n:'Tomato sauce (1.5 ladle)',c:0.15},{mid:'FM22',qty:1},{mid:'FM12',qty:3},{mid:'FM70',qty:0.25}]},
+  {id:14,name:'Broccoli (side)',cat:'Sides — May Menu',sell:5.00,recipe:[{mid:'FM27',qty:165},{mid:'FM75',qty:20},{mid:'FM06',qty:10}]},
+  {id:15,name:'Affogato',cat:'Desserts',sell:6.50,recipe:[{mid:'FM63',qty:16},{mid:'FM59',qty:150}]},
+  {id:16,name:'Dough Ring',cat:'Desserts',sell:7.50,recipe:[{mid:'FM70',qty:0.25},{mid:null,n:'Chocolate filling 30g',c:0.40},{mid:'FM14',qty:50},{mid:'FM59',qty:100}]},
+  {id:17,name:'Tiramisu (per serving, 1/24)',cat:'Desserts',sell:6.00,recipe:[{mid:null,n:'Lady fingers (⅞ of 2 packs ÷ 24)',c:0.25},{mid:'FM61',qty:10.4},{mid:'FM62',qty:16.7},{mid:'FM55',qty:15.6},{mid:'FM16',qty:83.3},{mid:'FM63',qty:4}]},
 ];
 
-/* ════════════════════════════════════════════
-   STATE
-   ════════════════════════════════════════════ */
+/* ═══════════════════ STATE ═══════════════════ */
 let activeTab = 'wet';
 let expandedId = null;
 let expandedType = null;
@@ -825,116 +491,118 @@ let mFilter = '';
 let nextIds = {D:80, F:90, O:20};
 let nextWet = 40;
 let nextDry = 20;
-
-/* ── Labour state ── */
 let STAFF = [];
 let SHIFTS = [];
 let WASTAGE = [];
-let BATCHES = []; // {id, name, team, ingredients:[{mid,qty}], yieldQty, yieldUnit, portions:{count,containerMid,label}, notes}
+let BATCHES = [];
 let nextBatchId = 1;
 let WASTAGE_REASONS = ['Out of date','Staff food','Spoiled','Staff drink','Spilt','Dropped','Test','Over-production','Broken'];
 let nextWastageId = 1;
 let wastageWeekOffset = 0;
+/* ── NEW: Global portion unit sizes — change once, updates everywhere ── */
+let PORTION_UNITS = { ladle: 70 }; // grams per named portion (e.g. 1 ladle = 70g)
 let nextStaffId = 1;
 let nextShiftId = 1;
-let labourSubTab = 'shifts'; // 'roster' | 'shifts' | 'summary'
+let labourSubTab = 'shifts';
 let seasonStart = '2026-04-01';
-
-/* ── Cloud sync state ── */
-let CLOUD = null; // {apiKey, binId} when configured
+let CLOUD = null;
 let syncTimer = null;
 
-/* ════════════════════════════════════════════
-   HELPERS
-   ════════════════════════════════════════════ */
+/* ═══════════════════ HELPERS ═══════════════════ */
 function getMaster(id){ return MASTERS.find(m=>m.id===id) }
 
-// Returns the effective cost per unit for a master ingredient
-// If the ingredient is derived (has parentId + portions), calculates from parent
+/* NEW: For portion-unit ingredients (e.g. ladle), auto-calculates size from batch yield */
+function getEffectiveSize(m){
+  if(m.portionUnit && m.yieldGrams && PORTION_UNITS[m.portionUnit]>0){
+    return m.yieldGrams / PORTION_UNITS[m.portionUnit];
+  }
+  return m.size;
+}
+
 function cpu(m){
   if(!m) return 0;
   if(m.parentId && m.portions){
     const parent=getMaster(m.parentId);
     if(parent) return cpu(parent)/m.portions;
   }
-  if(!m.size) return 0;
-  return m.cost/m.size;
+  const size=getEffectiveSize(m);
+  if(!size) return 0;
+  return m.cost/size;
 }
 
 function ingCost(ri){
-  if(ri.mid){
-    const m=getMaster(ri.mid);
-    return m ? ri.qty*cpu(m) : 0;
-  }
+  if(ri.mid){const m=getMaster(ri.mid);return m?ri.qty*cpu(m):0;}
   return ri.c||0;
 }
-
 function ingLabel(ri){
-  if(ri.mid){
-    const m=getMaster(ri.mid);
-    return m ? `${m.name} — ${ri.qty}${m.unit}` : `[deleted] — ${ri.qty}`;
-  }
+  if(ri.mid){const m=getMaster(ri.mid);return m?`${m.name} — ${ri.qty}${m.unit}`:`[deleted] — ${ri.qty}`;}
   return ri.n||'Custom';
 }
-
 function totalCost(item){ return item.recipe.reduce((s,r)=>s+ingCost(r),0) }
-
 function gpPct(item){
   const c=totalCost(item);
-  const exVat=item.sell/1.2;  // GP calculated on ex-VAT price
-  return exVat>0 ? ((exVat-c)/exVat*100) : 0;
+  const exVat=item.sell/1.2;
+  return exVat>0?((exVat-c)/exVat*100):0;
 }
-
 function gpPill(pct){
   const cls=pct>=target?'good':pct>=target-10?'mid':'bad';
   return `<span class="pill ${cls}">${pct.toFixed(1)}%</span>`;
 }
-
 function fmtCpu(m){
   const c=cpu(m);
-  if(m.unit==='ml'){
-    if(c<0.01) return `£${(c*1000).toFixed(3)}/L`;
-    return `£${(c*100).toFixed(3)}/100ml`;
-  }
-  if(m.unit==='g') return `£${(c*100).toFixed(4)}/100g`;
-  if(m.unit==='each'||m.unit==='pint'||m.unit==='sprig'||m.unit==='pack')
-    return `£${c.toFixed(4)}/ea`;
+  if(m.unit==='ml'){if(c<0.01)return `£${(c*1000).toFixed(3)}/L`;return `£${(c*100).toFixed(3)}/100ml`;}
+  if(m.unit==='g')return `£${(c*100).toFixed(4)}/100g`;
+  if(m.unit==='each'||m.unit==='pint'||m.unit==='sprig'||m.unit==='pack')return `£${c.toFixed(4)}/ea`;
   return `£${c.toFixed(5)}/${m.unit}`;
 }
-
 function fmtCpuDisplay(m){
-  // Derived items — calculate from parent
   if(m.parentId && m.portions){
     const parent=getMaster(m.parentId);
-    if(parent){
-      const c=cpu(parent)/m.portions;
-      return `£${c.toFixed(3)} each`;
-    }
+    if(parent){const c=cpu(parent)/m.portions;return `£${c.toFixed(3)} each`;}
   }
-  // More human-readable for table display
+  /* NEW: Portion-unit items show "£X per ladle (70g)" */
+  if(m.portionUnit && PORTION_UNITS[m.portionUnit]){
+    const c=cpu(m);
+    return `£${c.toFixed(3)} per ${m.portionUnit} (${PORTION_UNITS[m.portionUnit]}g)`;
+  }
   const c=cpu(m);
-  if(m.unit==='ml'){
-    if(c>=0.001) return `£${(c*1000).toFixed(2)}/L`;
-    return `£${(c*100).toFixed(3)}/100ml`;
-  }
-  if(m.unit==='g') return `£${(c*1000).toFixed(2)}/kg`;
+  if(m.unit==='ml'){if(c>=0.001)return `£${(c*1000).toFixed(2)}/L`;return `£${(c*100).toFixed(3)}/100ml`;}
+  if(m.unit==='g')return `£${(c*1000).toFixed(2)}/kg`;
   return `£${c.toFixed(3)} each`;
 }
-
 function getGP(type){ return type==='wet'?WET_GP:DRY_GP }
 
-/* ════════════════════════════════════════════
-   MASTER RENDER
-   ════════════════════════════════════════════ */
+/* ═══════════════════ MASTER RENDER ═══════════════════ */
 function renderMaster(type){
   const all=MASTERS.filter(m=>m.type===type);
   const filtered=mFilter
-    ? all.filter(m=>m.name.toLowerCase().includes(mFilter.toLowerCase())||m.cat.toLowerCase().includes(mFilter.toLowerCase())||m.sup.toLowerCase().includes(mFilter.toLowerCase()))
-    : all;
-
+    ?all.filter(m=>m.name.toLowerCase().includes(mFilter.toLowerCase())||m.cat.toLowerCase().includes(mFilter.toLowerCase())||m.sup.toLowerCase().includes(mFilter.toLowerCase()))
+    :all;
   const cats=[...new Set(all.map(m=>m.cat))].sort();
 
-  let h=`<div class="master-bar">
+  /* ── NEW: Portion Standards panel — Food tab only ── */
+  let portionStandardsHtml='';
+  if(type==='F'){
+    portionStandardsHtml=`<div style="background:#e8f4f1;border:1.5px solid var(--teal);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <strong style="color:var(--teal);font-size:12px;white-space:nowrap">⚖️ Portion Standards</strong>
+      <span style="font-size:11px;color:var(--muted)">Change a size once → cost updates instantly across every recipe using that unit</span>
+      ${Object.entries(PORTION_UNITS).map(([k,v])=>`<label style="display:flex;align-items:center;gap:5px;font-size:13px;background:#fff;padding:4px 10px;border-radius:6px;border:1px solid var(--border)">
+        <strong style="color:var(--teal)">${k}</strong> =
+        <input type="number" value="${v}" min="1" step="1"
+          style="width:52px;height:26px;border:1px solid var(--border);border-radius:5px;padding:0 5px;text-align:right;font-size:13px;font-weight:700;color:var(--teal)"
+          onchange="updatePortionUnit('${k}',+this.value)">
+        <span style="color:var(--muted);font-size:11px">g</span>
+        <button onclick="removePortionUnit('${k}')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:12px;padding:0 2px;line-height:1" title="Remove">✕</button>
+      </label>`).join('')}
+      <div style="display:flex;align-items:center;gap:5px">
+        <input type="text" id="new-pu-name" placeholder="unit name…" style="width:80px;height:28px;border:1px solid var(--border);border-radius:5px;padding:0 6px;font-size:12px">
+        <input type="number" id="new-pu-grams" placeholder="g" style="width:50px;height:28px;border:1px solid var(--border);border-radius:5px;padding:0 5px;font-size:12px">
+        <button class="btn-sm" onclick="addPortionUnit()" style="white-space:nowrap">+ Add</button>
+      </div>
+    </div>`;
+  }
+
+  let h=portionStandardsHtml+`<div class="master-bar">
     <input type="text" placeholder="Search name, category, supplier… (press Enter)" value="${mFilter}"
       id="master-search-input"
       onkeydown="if(event.key==='Enter'){mFilter=this.value;render();}"
@@ -982,16 +650,12 @@ function renderMaster(type){
           </div>
         </td>
         <td class="num">
-          ${isDerived
-            ? `<span style="color:var(--muted);font-size:11px">Auto</span><input id="e-co" type="hidden" value="${m.cost}">`
-            : `<input id="e-co" type="number" step="0.01" value="${m.cost}" style="width:70px;text-align:right">`
-          }
+          ${isDerived?`<span style="color:var(--muted);font-size:11px">Auto</span><input id="e-co" type="hidden" value="${m.cost}">`:
+          `<input id="e-co" type="number" step="0.01" value="${m.cost}" style="width:70px;text-align:right">`}
         </td>
         <td class="num">
-          ${isDerived
-            ? `<span style="color:var(--muted);font-size:11px">1</span><input id="e-si" type="hidden" value="1">`
-            : `<input id="e-si" type="number" step="0.001" value="${m.size}" style="width:70px;text-align:right">`
-          }
+          ${isDerived?`<span style="color:var(--muted);font-size:11px">1</span><input id="e-si" type="hidden" value="1">`:
+          `<input id="e-si" type="number" step="0.001" value="${m.size}" style="width:70px;text-align:right">`}
         </td>
         <td class="num"><input id="e-u" value="${m.unit}" style="width:50px"></td>
         <td class="num teal-bold">${fmtCpuDisplay(m)}</td>
@@ -1001,9 +665,12 @@ function renderMaster(type){
         </td></tr>`;
     } else {
       const isDerived=!!(m.parentId && m.portions);
+      /* NEW: show portion unit info in pack column */
+      const portionInfo=m.portionUnit?
+        ` · 1 ${m.portionUnit}=${PORTION_UNITS[m.portionUnit]||'?'}g → ${Math.round(getEffectiveSize(m))} portions/batch`:'';
       const packDisplay=isDerived
-        ? `<span style="color:var(--teal);font-size:10px;font-weight:700">⬡ Derived</span> <span class="muted small">from ${getMaster(m.parentId)?.name||m.parentId} ÷ ${m.portions}</span>`
-        : `<span class="muted small">${m.pack}</span>`;
+        ?`<span style="color:var(--teal);font-size:10px;font-weight:700">⬡ Derived</span> <span class="muted small">from ${getMaster(m.parentId)?.name||m.parentId} ÷ ${m.portions}</span>`
+        :`<span class="muted small">${m.pack}${portionInfo}</span>`;
       h+=`<tr>
         <td class="bold">${m.name}</td>
         <td class="muted">${m.sup}</td>
@@ -1025,78 +692,74 @@ function renderMaster(type){
   return h;
 }
 
-/* ════════════════════════════════════════════
-   MASTER CRUD
-   ════════════════════════════════════════════ */
+/* ═══════════════════ MASTER CRUD ═══════════════════ */
 function toggleDerivedFields(){
   const par=document.getElementById('e-par')?.value;
   const derivedRow=document.getElementById('e-derived-row');
   const packRow=document.getElementById('e-pack-row');
-  if(derivedRow) derivedRow.style.display=par?'flex':'none';
-  if(packRow) packRow.style.display=par?'none':'block';
+  if(derivedRow)derivedRow.style.display=par?'flex':'none';
+  if(packRow)packRow.style.display=par?'none':'block';
   updateDerivedPreview();
 }
 function updateDerivedPreview(){
   const parId=document.getElementById('e-par')?.value;
   const portions=parseInt(document.getElementById('e-por')?.value)||1;
   const preview=document.getElementById('e-derived-preview');
-  if(!preview||!parId) return;
+  if(!preview||!parId)return;
   const parent=getMaster(parId);
-  if(parent){
-    const costEach=cpu(parent)/portions;
-    preview.textContent=`= £${costEach.toFixed(4)} each`;
-  }
+  if(parent){const costEach=cpu(parent)/portions;preview.textContent=`= £${costEach.toFixed(4)} each`;}
 }
 function saveMaster(id){
-  const m=getMaster(id);
-  if(!m)return;
+  const m=getMaster(id);if(!m)return;
   m.name=document.getElementById('e-n').value.trim()||m.name;
   m.sup=document.getElementById('e-s').value.trim();
   m.cat=document.getElementById('e-c').value.trim();
   m.unit=document.getElementById('e-u').value.trim()||m.unit;
-
   const parId=document.getElementById('e-par')?.value;
   if(parId){
-    // Derived ingredient
     m.parentId=parId;
     m.portions=parseInt(document.getElementById('e-por')?.value)||1;
-    m.cost=0;
-    m.size=1;
+    m.cost=0;m.size=1;
     const parent=getMaster(parId);
     m.pack=`Derived from ${parent?parent.name:'parent'} ÷ ${m.portions}`;
   } else {
-    // Own pack price
-    delete m.parentId;
-    delete m.portions;
+    delete m.parentId;delete m.portions;
     m.pack=document.getElementById('e-p')?.value.trim()||m.pack;
     m.cost=parseFloat(document.getElementById('e-co')?.value)||m.cost;
     m.size=parseFloat(document.getElementById('e-si')?.value)||m.size;
   }
-  editingMId=null;
-  render();
+  editingMId=null;render();
 }
-
 function delMaster(id){
   if(!confirm('Remove this ingredient? Linked GP recipes will show £0 for this ingredient.'))return;
-  MASTERS=MASTERS.filter(m=>m.id!==id);
-  render();
+  MASTERS=MASTERS.filter(m=>m.id!==id);render();
 }
-
 function addMaster(type){
   const prefix={D:'DM',F:'FM',O:'OM'}[type];
   const id=prefix+nextIds[type]++;
   MASTERS.push({id,type,name:'New ingredient',sup:'',cat:'',pack:'',cost:0,size:1,unit:'g'});
-  editingMId=id;
-  mFilter='';
-  render();
+  editingMId=id;mFilter='';render();
 }
 
-/* ════════════════════════════════════════════
-   GP RENDER
-   ════════════════════════════════════════════ */
+/* NEW: Portion Unit CRUD */
+function updatePortionUnit(key,val){
+  if(val>0){PORTION_UNITS[key]=val;saveState();render();}
+}
+function addPortionUnit(){
+  const name=(document.getElementById('new-pu-name')?.value||'').trim().toLowerCase();
+  const grams=parseFloat(document.getElementById('new-pu-grams')?.value);
+  if(!name||!grams||grams<=0)return;
+  PORTION_UNITS[name]=grams;
+  saveState();render();
+}
+function removePortionUnit(key){
+  delete PORTION_UNITS[key];saveState();render();
+}
+
+/* ═══════════════════ GP RENDER ═══════════════════ */
 function renderGP(gpType){
   const items=getGP(gpType);
-  const avgGP=items.length ? items.reduce((s,i)=>s+gpPct(i),0)/items.length : 0;
+  const avgGP=items.length?items.reduce((s,i)=>s+gpPct(i),0)/items.length:0;
   const totalSellInc=items.reduce((s,i)=>s+i.sell,0);
   const totalSellEx=totalSellInc/1.2;
   const totalGPVal=items.reduce((s,i)=>s+(i.sell/1.2-totalCost(i)),0);
@@ -1106,18 +769,10 @@ function renderGP(gpType){
 
   let h=`
   <div class="metrics">
-    <div class="metric"><div class="ml">Average GP%</div>
-      <div class="mv" style="color:${col}">${avgGP.toFixed(1)}%</div>
-      <div class="ms">Target ${target}% · ex VAT</div></div>
-    <div class="metric"><div class="ml">Menu sell (inc VAT)</div>
-      <div class="mv">£${totalSellInc.toFixed(2)}</div>
-      <div class="ms">Ex VAT: £${totalSellEx.toFixed(2)}</div></div>
-    <div class="metric"><div class="ml">At / above target</div>
-      <div class="mv">${onTarget} / ${items.length}</div>
-      <div class="ms">${items.length?Math.round(onTarget/items.length*100):0}% of items</div></div>
-    <div class="metric"><div class="ml">Best performer</div>
-      <div class="mv small-text">${best?best.name:'—'}</div>
-      <div class="ms">${best?gpPct(best).toFixed(1)+'%':''}</div></div>
+    <div class="metric"><div class="ml">Average GP%</div><div class="mv" style="color:${col}">${avgGP.toFixed(1)}%</div><div class="ms">Target ${target}% · ex VAT</div></div>
+    <div class="metric"><div class="ml">Menu sell (inc VAT)</div><div class="mv">£${totalSellInc.toFixed(2)}</div><div class="ms">Ex VAT: £${totalSellEx.toFixed(2)}</div></div>
+    <div class="metric"><div class="ml">At / above target</div><div class="mv">${onTarget} / ${items.length}</div><div class="ms">${items.length?Math.round(onTarget/items.length*100):0}% of items</div></div>
+    <div class="metric"><div class="ml">Best performer</div><div class="mv small-text">${best?best.name:'—'}</div><div class="ms">${best?gpPct(best).toFixed(1)+'%':''}</div></div>
   </div>
   <div class="target-row">
     <label style="font-weight:600;color:var(--text)">Target GP%</label>
@@ -1128,21 +783,12 @@ function renderGP(gpType){
     <span id="target-saved-msg" style="font-size:11px;color:var(--good);opacity:0;transition:opacity .4s">✓ Saved</span>
   </div>
   <table class="gp-table">
-    <colgroup>
-      <col style="width:22%"><col style="width:12%">
-      <col style="width:10%"><col style="width:10%">
-      <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:5%">
-    </colgroup>
+    <colgroup><col style="width:22%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:5%"></colgroup>
     <thead><tr>
       <th>Item</th><th>Category</th>
-      <th class="num">Sell (inc VAT)</th>
-      <th class="num">Sell (ex VAT)</th>
-      <th class="num">Cost £</th>
-      <th class="num">GP £</th>
-      <th class="num">GP%</th>
-      <th></th>
-    </tr></thead>
-    <tbody>`;
+      <th class="num">Sell (inc VAT)</th><th class="num">Sell (ex VAT)</th>
+      <th class="num">Cost £</th><th class="num">GP £</th><th class="num">GP%</th><th></th>
+    </tr></thead><tbody>`;
 
   items.forEach(item=>{
     const cost=totalCost(item);
@@ -1152,15 +798,11 @@ function renderGP(gpType){
     const isExp=expandedId===item.id && expandedType===gpType;
 
     h+=`<tr class="gp-row${isExp?' expanded':''}"
-      draggable="true"
-      data-id="${item.id}"
-      data-gptype="${gpType}"
+      draggable="true" data-id="${item.id}" data-gptype="${gpType}"
       onclick="toggleExp(${item.id},'${gpType}')"
       ondragstart="gpDragStart(event,${item.id},'${gpType}')"
-      ondragover="gpDragOver(event)"
-      ondragleave="gpDragLeave(event)"
-      ondrop="gpDrop(event,${item.id},'${gpType}')"
-      ondragend="gpDragEnd(event)">
+      ondragover="gpDragOver(event)" ondragleave="gpDragLeave(event)"
+      ondrop="gpDrop(event,${item.id},'${gpType}')" ondragend="gpDragEnd(event)">
       <td style="white-space:nowrap">
         <span class="drag-handle" onclick="event.stopPropagation()" title="Drag to reorder">⠿</span>
         <span class="xi">${isExp?'▼':'▶'}</span><strong>${item.name}</strong>
@@ -1184,53 +826,36 @@ function renderGP(gpType){
         <div class="recipe-header">Recipe — ${item.name}</div>
         <table class="recipe-table">
           <thead><tr>
-            <th style="width:34%">Ingredient</th>
-            <th style="width:28%">Master ID / pack</th>
-            <th class="num" style="width:18%">Qty / cost</th>
-            <th class="num" style="width:14%">£ cost</th>
-            <th style="width:6%"></th>
-          </tr></thead>
-          <tbody>`;
+            <th style="width:34%">Ingredient</th><th style="width:28%">Master ID / pack</th>
+            <th class="num" style="width:18%">Qty / cost</th><th class="num" style="width:14%">£ cost</th><th style="width:6%"></th>
+          </tr></thead><tbody>`;
 
       item.recipe.forEach((ri,idx)=>{
         const m=ri.mid?getMaster(ri.mid):null;
         const rCost=ingCost(ri);
         const name=ri.mid?(m?m.name:'[deleted master]'):(ri.n||'Custom');
-        const midTag=m
-          ?`<span class="master-tag">${m.id}</span> <span class="muted small">${m.pack.split('·')[0].trim()}</span>`
+        const midTag=m?`<span class="master-tag">${m.id}</span> <span class="muted small">${m.pack.split('·')[0].trim()}</span>`
           :`<span class="master-tag custom">manual</span>`;
-
         h+=`<tr>
-          <td>${name}</td>
-          <td>${midTag}</td>
+          <td>${name}</td><td>${midTag}</td>
           <td class="num">`;
-
         if(ri.mid && m){
           h+=`<input class="qty-in" type="number" step="${m.unit==='each'||m.unit==='pint'||m.unit==='sprig'?'0.1':'1'}"
-              value="${ri.qty}"
-              onchange="setQty(${item.id},'${gpType}',${idx},+this.value)"
+              value="${ri.qty}" onchange="setQty(${item.id},'${gpType}',${idx},+this.value)"
               onclick="event.stopPropagation()"> <span class="muted small">${m.unit}</span>`;
         } else {
-          h+=`£<input class="cost-in" type="number" step="0.01"
-              value="${(ri.c||0).toFixed(2)}"
-              onchange="setCost(${item.id},'${gpType}',${idx},+this.value)"
-              onclick="event.stopPropagation()">`;
+          h+=`£<input class="cost-in" type="number" step="0.01" value="${(ri.c||0).toFixed(2)}"
+              onchange="setCost(${item.id},'${gpType}',${idx},+this.value)" onclick="event.stopPropagation()">`;
         }
-
-        h+=`</td>
-          <td class="num teal-bold">£${rCost.toFixed(3)}</td>
+        h+=`</td><td class="num teal-bold">£${rCost.toFixed(3)}</td>
           <td><button class="del-btn" onclick="delIng(${item.id},'${gpType}',${idx},event)">✕</button></td>
         </tr>`;
       });
 
       h+=`<tr class="recipe-total">
           <td colspan="3"><strong>Total cost per serve</strong></td>
-          <td class="num teal-bold"><strong>£${cost.toFixed(3)}</strong></td>
-          <td></td>
-        </tr>
-        </tbody></table>
-
-        <!-- ── Add ingredient from master ── -->
+          <td class="num teal-bold"><strong>£${cost.toFixed(3)}</strong></td><td></td>
+        </tr></tbody></table>
         <div class="add-ing-section" onclick="event.stopPropagation()">
           <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Add ingredient</div>
           <div class="add-ing-row" style="position:relative">
@@ -1238,23 +863,21 @@ function renderGP(gpType){
               <input type="text" id="ms-search-${item.id}" placeholder="Type to search ingredient…"
                 autocomplete="off"
                 style="width:100%;height:28px;border:1px solid var(--border);border-radius:5px;padding:0 28px 0 8px;font-size:12px"
-                oninput="filterMasterDrop(${item.id})"
-                onfocus="showMasterDrop(${item.id})"
+                oninput="filterMasterDrop(${item.id})" onfocus="showMasterDrop(${item.id})"
                 onkeydown="navMasterDrop(event,${item.id})">
               <input type="hidden" id="ms-${item.id}" value="">
-              <!-- dropdown rendered as body portal via JS -->
             </div>
             <input type="number" id="mq-${item.id}" placeholder="qty" step="any" style="width:80px" oninput="onQtyIn(${item.id})">
             <span id="mu-${item.id}" class="muted small" style="min-width:30px"></span>
             <span id="mp-${item.id}" class="ing-preview" style="min-width:70px"></span>
-            <button class="btn-sm btn-teal" onclick="addFromMaster(${item.id},\'${gpType}\')">Add ↓</button>
+            <button class="btn-sm btn-teal" onclick="addFromMaster(${item.id},'${gpType}')">Add ↓</button>
           </div>
           <div class="add-ing-row" style="margin-top:8px">
             <span class="muted small" style="white-space:nowrap">or custom:</span>
             <input type="text" id="cn-${item.id}" placeholder="Ingredient name" style="flex:2">
             <span style="color:var(--muted);font-size:12px">£</span>
             <input type="number" id="cc-${item.id}" placeholder="0.00" step="0.01" style="width:80px">
-            <button class="btn-sm btn-teal" onclick="addCustom(${item.id},\'${gpType}\')">Add ↓</button>
+            <button class="btn-sm btn-teal" onclick="addCustom(${item.id},'${gpType}')">Add ↓</button>
           </div>
         </div>
       </div></td></tr>`;
@@ -1286,84 +909,34 @@ function renderGP(gpType){
   return h;
 }
 
-/* ════════════════════════════════════════════
-   GP EVENT HANDLERS
-   ════════════════════════════════════════════ */
+/* ═══════════════════ GP EVENT HANDLERS ═══════════════════ */
 function toggleExp(id,type){
   if(expandedId===id&&expandedType===type){expandedId=null;expandedType=null;}
   else{expandedId=id;expandedType=type;}
   render();
 }
-
-/* ── GP row drag-and-drop reordering ── */
 let _dragId=null,_dragType=null;
-
-function gpDragStart(e,id,gpType){
-  _dragId=id;_dragType=gpType;
-  e.currentTarget.classList.add('dragging');
-  e.dataTransfer.effectAllowed='move';
-  e.dataTransfer.setData('text/plain',id);
-}
-function gpDragOver(e){
-  e.preventDefault();
-  e.dataTransfer.dropEffect='move';
-  // Only highlight the main gp-row, not expand-rows
-  const row=e.currentTarget;
-  if(row.classList.contains('gp-row'))row.classList.add('drag-over');
-}
-function gpDragLeave(e){
-  e.currentTarget.classList.remove('drag-over');
-}
+function gpDragStart(e,id,gpType){_dragId=id;_dragType=gpType;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',id);}
+function gpDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';const row=e.currentTarget;if(row.classList.contains('gp-row'))row.classList.add('drag-over');}
+function gpDragLeave(e){e.currentTarget.classList.remove('drag-over');}
 function gpDrop(e,targetId,gpType){
-  e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
   if(_dragId===null||_dragId===targetId)return;
   const arr=getGP(gpType);
   const fromIdx=arr.findIndex(i=>i.id===_dragId);
   const toIdx=arr.findIndex(i=>i.id===targetId);
   if(fromIdx<0||toIdx<0)return;
-  // Move item from fromIdx to toIdx
   const [moved]=arr.splice(fromIdx,1);
   arr.splice(toIdx,0,moved);
   saveState();render();
 }
-function gpDragEnd(e){
-  e.currentTarget.classList.remove('dragging');
-  document.querySelectorAll('.drag-over').forEach(r=>r.classList.remove('drag-over'));
-  _dragId=null;_dragType=null;
-}
-
-function adjustTarget(delta){
-  target=Math.min(95,Math.max(30,target+delta));
-  render();
-}
-function saveTarget(){
-  saveState();
-  // Flash saved message
-  const msg=document.getElementById('target-saved-msg');
-  if(msg){msg.style.opacity='1';setTimeout(()=>msg.style.opacity='0',2000);}
-}
-function setSell(id,type,val){
-  const item=getGP(type).find(i=>i.id===id);
-  if(item){item.sell=val;render();}
-}
-
-function setQty(id,type,idx,val){
-  const item=getGP(type).find(i=>i.id===id);
-  if(item&&item.recipe[idx]){item.recipe[idx].qty=val;render();}
-}
-
-function setCost(id,type,idx,val){
-  const item=getGP(type).find(i=>i.id===id);
-  if(item&&item.recipe[idx]){item.recipe[idx].c=val;render();}
-}
-
-function delIng(id,type,idx,e){
-  e.stopPropagation();
-  const item=getGP(type).find(i=>i.id===id);
-  if(item){item.recipe.splice(idx,1);render();}
-}
-
+function gpDragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.drag-over').forEach(r=>r.classList.remove('drag-over'));_dragId=null;_dragType=null;}
+function adjustTarget(delta){target=Math.min(95,Math.max(30,target+delta));render();}
+function saveTarget(){saveState();const msg=document.getElementById('target-saved-msg');if(msg){msg.style.opacity='1';setTimeout(()=>msg.style.opacity='0',2000);}}
+function setSell(id,type,val){const item=getGP(type).find(i=>i.id===id);if(item){item.sell=val;render();}}
+function setQty(id,type,idx,val){const item=getGP(type).find(i=>i.id===id);if(item&&item.recipe[idx]){item.recipe[idx].qty=val;render();}}
+function setCost(id,type,idx,val){const item=getGP(type).find(i=>i.id===id);if(item&&item.recipe[idx]){item.recipe[idx].c=val;render();}}
+function delIng(id,type,idx,e){e.stopPropagation();const item=getGP(type).find(i=>i.id===id);if(item){item.recipe.splice(idx,1);render();}}
 function delItem(id,type,e){
   e.stopPropagation();
   if(!confirm('Remove this menu item?'))return;
@@ -1373,11 +946,8 @@ function delItem(id,type,e){
   render();
 }
 
-/* ── Searchable ingredient picker ── */
-function buildMasterList(){
-  return MASTERS.slice().sort((a,b)=>a.name.localeCompare(b.name));
-}
-/* ── Portal dropdown — escapes overflow:hidden on gp-table ── */
+/* ── Ingredient picker portal ── */
+function buildMasterList(){return MASTERS.slice().sort((a,b)=>a.name.localeCompare(b.name));}
 let _portalDrop=null,_portalItemId=null;
 function getPortalDrop(){
   if(!_portalDrop){
@@ -1391,8 +961,7 @@ function getPortalDrop(){
 function positionPortalDrop(inp){
   const r=inp.getBoundingClientRect(),drop=getPortalDrop();
   const below=window.innerHeight-r.bottom;
-  drop.style.left=r.left+'px';
-  drop.style.width=Math.max(r.width,340)+'px';
+  drop.style.left=r.left+'px';drop.style.width=Math.max(r.width,340)+'px';
   if(below>150){drop.style.top=(r.bottom+2)+'px';drop.style.bottom='auto';}
   else{drop.style.bottom=(window.innerHeight-r.top+2)+'px';drop.style.top='auto';}
 }
@@ -1404,13 +973,8 @@ function filterMasterDrop(itemId,showAll=false){
   const drop=getPortalDrop();
   const q=(inp.value||'').toLowerCase().trim();
   const all=buildMasterList();
-  const filtered=showAll&&!q?all:all.filter(m=>
-    m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||
-    m.cat.toLowerCase().includes(q)||m.sup.toLowerCase().includes(q));
-  if(!filtered.length){
-    drop.innerHTML=`<div style="padding:10px 14px;color:var(--muted);font-size:13px">No results for "${q}"</div>`;
-    drop.style.display='block';positionPortalDrop(inp);return;
-  }
+  const filtered=showAll&&!q?all:all.filter(m=>m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||m.cat.toLowerCase().includes(q)||m.sup.toLowerCase().includes(q));
+  if(!filtered.length){drop.innerHTML=`<div style="padding:10px 14px;color:var(--muted);font-size:13px">No results for "${q}"</div>`;drop.style.display='block';positionPortalDrop(inp);return;}
   let ddHtml='';
   [{t:'D',label:'Drink Master'},{t:'F',label:'Food Master'},{t:'O',label:'Ops & Misc'}].forEach(({t,label})=>{
     const group=filtered.filter(m=>m.type===t);
@@ -1418,7 +982,7 @@ function filterMasterDrop(itemId,showAll=false){
     ddHtml+=`<div style="padding:5px 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#f0f0f0;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1">${label}</div>`;
     group.forEach(m=>{
       const hi=q?m.name.replace(new RegExp(`(${q})`,'gi'),'<strong style="color:var(--teal)">$1</strong>'):m.name;
-      const safeN=m.name.replace(/'/g,"\'");
+      const safeN=m.name.replace(/'/g,"\\'");
       ddHtml+=`<div class="ms-drop-item" data-id="${m.id}"
         onmousedown="selectMasterItem(${itemId},'${m.id}','${safeN}','${m.unit}')"
         style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;gap:8px">
@@ -1427,17 +991,13 @@ function filterMasterDrop(itemId,showAll=false){
       </div>`;
     });
   });
-  drop.innerHTML=ddHtml;
-  drop.style.display='block';positionPortalDrop(inp);
-  drop.querySelectorAll('.ms-drop-item').forEach(el=>{
-    el.onmouseenter=()=>el.style.background='var(--teal-l)';
-    el.onmouseleave=()=>el.style.background='';
-  });
+  drop.innerHTML=ddHtml;drop.style.display='block';positionPortalDrop(inp);
+  drop.querySelectorAll('.ms-drop-item').forEach(el=>{el.onmouseenter=()=>el.style.background='var(--teal-l)';el.onmouseleave=()=>el.style.background='';});
 }
 function selectMasterItem(itemId,mid,name,unit){
   const inp=document.getElementById(`ms-search-${itemId}`);
   const hid=document.getElementById(`ms-${itemId}`);
-  const drop=getPortalDrop(); // use portal
+  const drop=getPortalDrop();
   const uSp=document.getElementById(`mu-${itemId}`);
   const pSp=document.getElementById(`mp-${itemId}`);
   const qIn=document.getElementById(`mq-${itemId}`);
@@ -1467,363 +1027,219 @@ document.addEventListener('click',e=>{
     const drop=getPortalDrop();drop.style.display='none';
   }
 });
-function onMSel(){}
 function onQtyIn(itemId){
   const mid=document.getElementById(`ms-${itemId}`)?.value;
   const qIn=document.getElementById(`mq-${itemId}`);
   const pSp=document.getElementById(`mp-${itemId}`);
   const m=getMaster(mid);
-  if(m&&qIn){const qty=parseFloat(qIn.value)||0;const cost=qty*cpu(m);if(pSp)pSp.textContent=cost>0?`= £${cost.toFixed(3)}`:'';}
+  if(m&&qIn){const qty=parseFloat(qIn.value)||0;const cost=qty*cpu(m);if(pSp)pSp.textContent=cost>0?`= £${cost.toFixed(3)}`:'';} 
 }
-
 function addFromMaster(itemId,gpType){
   const mid=document.getElementById(`ms-${itemId}`).value;
   const qty=parseFloat(document.getElementById(`mq-${itemId}`).value);
   if(!mid){alert('Please select an ingredient from the master.');return;}
   if(isNaN(qty)||qty<=0){alert('Please enter a quantity greater than 0.');return;}
   const item=getGP(gpType).find(i=>i.id===itemId);
-  if(item){
-    item.recipe.push({mid,qty});
-    expandedId=itemId; expandedType=gpType;
-    render();
-  }
+  if(item){item.recipe.push({mid,qty});expandedId=itemId;expandedType=gpType;render();}
 }
-
 function addCustom(itemId,gpType){
   const n=(document.getElementById(`cn-${itemId}`).value||'').trim();
   const c=parseFloat(document.getElementById(`cc-${itemId}`).value);
   if(!n){alert('Please enter an ingredient name.');return;}
   if(isNaN(c)){alert('Please enter a cost (£).');return;}
   const item=getGP(gpType).find(i=>i.id===itemId);
-  if(item){
-    item.recipe.push({mid:null,n,c});
-    expandedId=itemId; expandedType=gpType;
-    render();
-  }
+  if(item){item.recipe.push({mid:null,n,c});expandedId=itemId;expandedType=gpType;render();}
 }
-
 function addItem(gpType){
   const name=(document.getElementById(`nn-${gpType}`).value||'').trim();
   const cat=document.getElementById(`nc-${gpType}`).value;
   const sell=parseFloat(document.getElementById(`np-${gpType}`).value);
   if(!name||isNaN(sell)||sell<=0){alert('Enter a name and sell price.');return;}
-  if(gpType==='wet') WET_GP.push({id:nextWet++,name,cat,sell,recipe:[]});
+  if(gpType==='wet')WET_GP.push({id:nextWet++,name,cat,sell,recipe:[]});
   else DRY_GP.push({id:nextDry++,name,cat,sell,recipe:[]});
   render();
 }
 
-/* ════════════════════════════════════════════
-   MAIN RENDER
-   ════════════════════════════════════════════ */
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') }
+/* ═══════════════════ MAIN RENDER ═══════════════════ */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function setTab(t){activeTab=t;expandedId=null;expandedType=null;mFilter='';render();}
 
-function setTab(t){
-  activeTab=t;
-  expandedId=null;
-  expandedType=null;
-  mFilter='';
-  render();
-}
-
-/* ════════════════════════════════════════════
-   LABOUR HELPERS
-   ════════════════════════════════════════════ */
+/* ═══════════════════ LABOUR HELPERS ═══════════════════ */
 function shiftHours(s){
   if(!s.start||!s.end)return 0;
   const [sh,sm]=s.start.split(':').map(Number);
   const [eh,em]=s.end.split(':').map(Number);
   let mins=(eh*60+em)-(sh*60+sm);
-  if(mins<0)mins+=24*60; // midnight crossover
+  if(mins<0)mins+=24*60;
   const breakMins=s.break||0;
   return Math.max(0,(mins-breakMins)/60);
 }
-function shiftCost(s){
-  const st=STAFF.find(x=>x.id===s.staffId);
-  return st?shiftHours(s)*st.rate:0;
-}
-function weekOf(dateStr){
-  const d=new Date(dateStr), base=new Date(seasonStart);
-  return Math.max(1,Math.floor((d-base)/(7*864e5))+1);
-}
+function shiftCost(s){const st=STAFF.find(x=>x.id===s.staffId);return st?shiftHours(s)*st.rate:0;}
+function weekOf(dateStr){const d=new Date(dateStr),base=new Date(seasonStart);return Math.max(1,Math.floor((d-base)/(7*864e5))+1);}
 function weekLabel(w){
-  const d=new Date(seasonStart);
-  d.setDate(d.getDate()+(w-1)*7);
-  const e=new Date(d); e.setDate(e.getDate()+6);
+  const d=new Date(seasonStart);d.setDate(d.getDate()+(w-1)*7);
+  const e=new Date(d);e.setDate(e.getDate()+6);
   const fmt=x=>x.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
   return fmt(d)+' – '+fmt(e);
 }
-function fmtDate(s){
-  if(!s)return'—';
-  return new Date(s).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-}
-function totalLabourCost(shifts){
-  return shifts.reduce((t,s)=>t+shiftCost(s),0);
-}
-function totalLabourHours(shifts){
-  return shifts.reduce((t,s)=>t+shiftHours(s),0);
-}
+function fmtDate(s){if(!s)return'—';return new Date(s).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});}
+function totalLabourCost(shifts){return shifts.reduce((t,s)=>t+shiftCost(s),0);}
+function totalLabourHours(shifts){return shifts.reduce((t,s)=>t+shiftHours(s),0);}
 
-/* ════════════════════════════════════════════
-   LABOUR RENDER
-   ════════════════════════════════════════════ */
+/* ═══════════════════ LABOUR RENDER ═══════════════════ */
 function renderLabour(){
   const totalCostSeason=totalLabourCost(SHIFTS);
-  const totalHrsSeason=totalLabourHours(SHIFTS);
-
-  // This week
   const today=new Date().toISOString().slice(0,10);
   const thisWeek=weekOf(today);
   const thisWeekShifts=SHIFTS.filter(s=>weekOf(s.date)===thisWeek);
   const thisWeekCost=totalLabourCost(thisWeekShifts);
   const thisWeekHrs=totalLabourHours(thisWeekShifts);
-
-  // Weekly average
   const weeks=[...new Set(SHIFTS.map(s=>weekOf(s.date)))];
   const avgWeeklyCost=weeks.length?totalCostSeason/weeks.length:0;
 
   let h=`
   <div class="labour-metrics">
-    <div class="metric"><div class="ml">Season labour cost</div>
-      <div class="mv">£${totalCostSeason.toFixed(2)}</div>
-      <div class="ms">${totalLabourHours(SHIFTS).toFixed(1)} total hours</div></div>
-    <div class="metric"><div class="ml">This week (Wk ${thisWeek})</div>
-      <div class="mv">£${thisWeekCost.toFixed(2)}</div>
-      <div class="ms">${thisWeekHrs.toFixed(1)} hrs · ${thisWeekShifts.length} shifts</div></div>
-    <div class="metric"><div class="ml">Weekly average</div>
-      <div class="mv">£${avgWeeklyCost.toFixed(2)}</div>
-      <div class="ms">over ${weeks.length} week${weeks.length!==1?'s':''} logged</div></div>
-    <div class="metric"><div class="ml">Staff on roster</div>
-      <div class="mv">${STAFF.length}</div>
-      <div class="ms">${STAFF.filter(s=>s.rate>0).length} paid · ${STAFF.filter(s=>s.rate===0).length} unpaid</div></div>
+    <div class="metric"><div class="ml">Season labour cost</div><div class="mv">£${totalCostSeason.toFixed(2)}</div><div class="ms">${totalLabourHours(SHIFTS).toFixed(1)} total hours</div></div>
+    <div class="metric"><div class="ml">This week (Wk ${thisWeek})</div><div class="mv">£${thisWeekCost.toFixed(2)}</div><div class="ms">${thisWeekHrs.toFixed(1)} hrs · ${thisWeekShifts.length} shifts</div></div>
+    <div class="metric"><div class="ml">Weekly average</div><div class="mv">£${avgWeeklyCost.toFixed(2)}</div><div class="ms">over ${weeks.length} week${weeks.length!==1?'s':''} logged</div></div>
+    <div class="metric"><div class="ml">Staff on roster</div><div class="mv">${STAFF.length}</div><div class="ms">${STAFF.filter(s=>s.rate>0).length} paid · ${STAFF.filter(s=>s.rate===0).length} unpaid</div></div>
   </div>
-
   <div class="subtab-bar">
     <button class="subtab${labourSubTab==='shifts'?' active':''}" onclick="labourSubTab='shifts';render()">📅 Shift Log</button>
     <button class="subtab${labourSubTab==='roster'?' active':''}" onclick="labourSubTab='roster';render()">👥 Staff Roster</button>
     <button class="subtab${labourSubTab==='summary'?' active':''}" onclick="labourSubTab='summary';render()">📊 Weekly Summary</button>
   </div>`;
-
-  if(labourSubTab==='roster') h+=renderRoster();
-  else if(labourSubTab==='shifts') h+=renderShifts();
+  if(labourSubTab==='roster')h+=renderRoster();
+  else if(labourSubTab==='shifts')h+=renderShifts();
   else h+=renderLabourSummary();
-
   return h;
 }
 
 function renderRoster(){
-  let h=`<div class="panel">
-  <div class="panel-title">Staff Roster
-    <button class="btn-teal" onclick="addStaffMember()">+ Add staff</button>
-  </div>
-  <table class="labour-table">
-    <thead><tr>
-      <th>Name</th><th>Role</th><th class="num">Rate £/hr</th>
-      <th class="num">Min wage ref</th><th class="num">Shifts logged</th><th class="num">Hours</th><th class="num">Season cost</th><th></th>
-    </tr></thead><tbody>`;
-
-  if(!STAFF.length){
-    h+=`<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">No staff added yet — click "+ Add staff" to begin</td></tr>`;
-  }
-
+  let h=`<div class="panel"><div class="panel-title">Staff Roster<button class="btn-teal" onclick="addStaffMember()">+ Add staff</button></div>
+  <table class="labour-table"><thead><tr>
+    <th>Name</th><th>Role</th><th class="num">Rate £/hr</th><th class="num">Min wage ref</th><th class="num">Shifts logged</th><th class="num">Hours</th><th class="num">Season cost</th><th></th>
+  </tr></thead><tbody>`;
+  if(!STAFF.length)h+=`<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">No staff added yet — click "+ Add staff" to begin</td></tr>`;
   STAFF.forEach(st=>{
     const stShifts=SHIFTS.filter(s=>s.staffId===st.id);
-    const hrs=totalLabourHours(stShifts);
-    const cost=totalLabourCost(stShifts);
+    const hrs=totalLabourHours(stShifts);const cost=totalLabourCost(stShifts);
     h+=`<tr>
       <td class="bold">${st.name}</td>
       <td><span class="cat-badge">${st.role}</span></td>
-      <td class="num">
-        £<input style="width:60px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px"
-          type="number" step="0.01" value="${st.rate.toFixed(2)}"
-          onchange="updateStaffRate(${st.id},+this.value)">
-      </td>
+      <td class="num">£<input style="width:60px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:12px"
+        type="number" step="0.01" value="${st.rate.toFixed(2)}" onchange="updateStaffRate(${st.id},+this.value)"></td>
       <td class="num muted" style="font-size:11px">21+ £12.21<br>18-20 £10.18</td>
-      <td class="num">${stShifts.length}</td>
-      <td class="num">${hrs.toFixed(1)}h</td>
+      <td class="num">${stShifts.length}</td><td class="num">${hrs.toFixed(1)}h</td>
       <td class="num teal-bold">£${cost.toFixed(2)}</td>
       <td><button class="del-btn" onclick="deleteStaff(${st.id})">✕</button></td>
     </tr>`;
   });
-
-  h+=`</tbody></table></div>`;
-  return h;
+  h+=`</tbody></table></div>`;return h;
 }
 
 function renderShifts(){
-  // Sort shifts newest first
   const sorted=[...SHIFTS].sort((a,b)=>b.date.localeCompare(a.date));
-
-  let h=`<div class="panel">
-  <div class="panel-title">Log a Shift</div>
+  let h=`<div class="panel"><div class="panel-title">Log a Shift</div>
   <div class="shift-form">
-    <div>
-      <label>Staff member</label>
+    <div><label>Staff member</label>
       <select id="sf-staff" style="min-width:160px" onchange="updateShiftPreview()">
         <option value="">— select —</option>
         ${STAFF.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
       </select>
     </div>
-    <div><label>Date</label>
-      <input type="date" id="sf-date" value="${new Date().toISOString().slice(0,10)}" onchange="updateShiftPreview()">
-    </div>
-    <div><label>Start</label>
-      <input type="time" id="sf-start" value="10:00" onchange="updateShiftPreview()">
-    </div>
-    <div><label>End</label>
-      <input type="time" id="sf-end" value="18:00" onchange="updateShiftPreview()">
-    </div>
+    <div><label>Date</label><input type="date" id="sf-date" value="${new Date().toISOString().slice(0,10)}" onchange="updateShiftPreview()"></div>
+    <div><label>Start</label><input type="time" id="sf-start" value="10:00" onchange="updateShiftPreview()"></div>
+    <div><label>End</label><input type="time" id="sf-end" value="18:00" onchange="updateShiftPreview()"></div>
     <div><label>Unpaid break</label>
       <select id="sf-break" onchange="updateShiftPreview()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px">
-        <option value="0">No break</option>
-        <option value="15">15 min</option>
-        <option value="20">20 min</option>
-        <option value="30">30 min</option>
-        <option value="45">45 min</option>
-        <option value="60">1 hour</option>
+        <option value="0">No break</option><option value="15">15 min</option><option value="20">20 min</option>
+        <option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hour</option>
       </select>
     </div>
-    <div><label>Notes</label>
-      <input type="text" id="sf-notes" placeholder="Optional" style="width:120px">
-    </div>
-    <div>
-      <label style="opacity:0">Add</label>
+    <div><label>Notes</label><input type="text" id="sf-notes" placeholder="Optional" style="width:120px"></div>
+    <div><label style="opacity:0">Add</label>
       <div style="display:flex;align-items:center;gap:10px">
         <span class="shift-preview" id="shift-preview"></span>
         <button class="btn-teal" onclick="logShift()">Log shift</button>
       </div>
     </div>
   </div>
-
-  <table class="labour-table">
-    <thead><tr>
-      <th>Date</th><th>Week</th><th>Staff</th><th>Start</th><th>End</th><th>Break</th>
-      <th class="num">Hours</th><th class="num">Cost £</th><th>Notes</th><th></th>
-    </tr></thead><tbody>`;
-
-  if(!sorted.length){
-    h+=`<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">No shifts logged yet</td></tr>`;
-  }
-
+  <table class="labour-table"><thead><tr>
+    <th>Date</th><th>Week</th><th>Staff</th><th>Start</th><th>End</th><th>Break</th>
+    <th class="num">Hours</th><th class="num">Cost £</th><th>Notes</th><th></th>
+  </tr></thead><tbody>`;
+  if(!sorted.length)h+=`<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">No shifts logged yet</td></tr>`;
   sorted.forEach(s=>{
     const st=STAFF.find(x=>x.id===s.staffId);
-    const hrs=shiftHours(s);
-    const cost=shiftCost(s);
-    const brk=s.break||0;
+    const hrs=shiftHours(s);const cost=shiftCost(s);const brk=s.break||0;
     h+=`<tr>
-      <td>${fmtDate(s.date)}</td>
-      <td><span class="week-badge">Wk ${weekOf(s.date)}</span></td>
+      <td>${fmtDate(s.date)}</td><td><span class="week-badge">Wk ${weekOf(s.date)}</span></td>
       <td class="bold">${st?st.name:'Unknown'}</td>
       <td>${s.start}</td><td>${s.end}</td>
       <td class="muted small">${brk>0?brk+'m':'—'}</td>
-      <td class="num">${hrs.toFixed(2)}h</td>
-      <td class="num teal-bold">£${cost.toFixed(2)}</td>
+      <td class="num">${hrs.toFixed(2)}h</td><td class="num teal-bold">£${cost.toFixed(2)}</td>
       <td class="muted small">${s.notes||''}</td>
       <td><button class="del-btn" onclick="deleteShift(${s.id})">✕</button></td>
     </tr>`;
   });
-
-  h+=`</tbody></table></div>`;
-  return h;
+  h+=`</tbody></table></div>`;return h;
 }
 
 function renderLabourSummary(){
-  if(!SHIFTS.length){
-    return `<div class="panel" style="text-align:center;padding:40px;color:var(--muted)">Log some shifts first to see the weekly summary.</div>`;
-  }
-
+  if(!SHIFTS.length)return`<div class="panel" style="text-align:center;padding:40px;color:var(--muted)">Log some shifts first to see the weekly summary.</div>`;
   const weeks=[...new Set(SHIFTS.map(s=>weekOf(s.date)))].sort((a,b)=>a-b);
-
   let h=`<div class="panel"><div class="panel-title">Weekly Breakdown — 2026 Season</div>
-  <table class="labour-table">
-    <thead><tr>
-      <th>Week</th><th>Period</th><th class="num">Shifts</th>
-      <th class="num">Hours</th><th class="num">Labour cost</th><th>Staff worked</th>
-    </tr></thead><tbody>`;
-
+  <table class="labour-table"><thead><tr>
+    <th>Week</th><th>Period</th><th class="num">Shifts</th><th class="num">Hours</th><th class="num">Labour cost</th><th>Staff worked</th>
+  </tr></thead><tbody>`;
   weeks.forEach(w=>{
     const wShifts=SHIFTS.filter(s=>weekOf(s.date)===w);
-    const hrs=totalLabourHours(wShifts);
-    const cost=totalLabourCost(wShifts);
-    const staffNames=[...new Set(wShifts.map(s=>{
-      const st=STAFF.find(x=>x.id===s.staffId);
-      return st?st.name.split(' ')[0]:'?';
+    const hrs=totalLabourHours(wShifts);const cost=totalLabourCost(wShifts);
+    const staffNames=[...new Set(wShifts.map(s=>{const st=STAFF.find(x=>x.id===s.staffId);return st?st.name.split(' ')[0]:'?';
     }))].join(', ');
-    h+=`<tr>
-      <td><span class="week-badge">Wk ${w}</span></td>
-      <td class="muted small">${weekLabel(w)}</td>
-      <td class="num">${wShifts.length}</td>
-      <td class="num">${hrs.toFixed(1)}h</td>
-      <td class="num teal-bold">£${cost.toFixed(2)}</td>
-      <td class="muted small">${staffNames}</td>
-    </tr>`;
+    h+=`<tr><td><span class="week-badge">Wk ${w}</span></td><td class="muted small">${weekLabel(w)}</td>
+      <td class="num">${wShifts.length}</td><td class="num">${hrs.toFixed(1)}h</td>
+      <td class="num teal-bold">£${cost.toFixed(2)}</td><td class="muted small">${staffNames}</td></tr>`;
   });
-
-  // Totals row
-  h+=`<tr style="background:var(--teal-l);font-weight:700">
-    <td colspan="2">Season total (${weeks.length} weeks)</td>
-    <td class="num">${SHIFTS.length}</td>
-    <td class="num">${totalLabourHours(SHIFTS).toFixed(1)}h</td>
-    <td class="num teal-bold">£${totalLabourCost(SHIFTS).toFixed(2)}</td>
-    <td></td>
-  </tr>`;
-
+  h+=`<tr style="background:var(--teal-l);font-weight:700"><td colspan="2">Season total (${weeks.length} weeks)</td>
+    <td class="num">${SHIFTS.length}</td><td class="num">${totalLabourHours(SHIFTS).toFixed(1)}h</td>
+    <td class="num teal-bold">£${totalLabourCost(SHIFTS).toFixed(2)}</td><td></td></tr>`;
   h+=`</tbody></table>
-
   <div style="margin-top:20px"><div class="panel-title" style="margin-bottom:12px">By Staff Member</div>
   <table class="labour-table"><thead><tr>
-    <th>Name</th><th>Role</th><th class="num">Rate</th>
-    <th class="num">Shifts</th><th class="num">Hours</th><th class="num">Earnings</th>
+    <th>Name</th><th>Role</th><th class="num">Rate</th><th class="num">Shifts</th><th class="num">Hours</th><th class="num">Earnings</th>
   </tr></thead><tbody>`;
-
   STAFF.forEach(st=>{
-    const stShifts=SHIFTS.filter(s=>s.staffId===st.id);
-    if(!stShifts.length)return;
-    const hrs=totalLabourHours(stShifts);
-    const cost=totalLabourCost(stShifts);
-    h+=`<tr>
-      <td class="bold">${st.name}</td>
-      <td><span class="cat-badge">${st.role}</span></td>
-      <td class="num muted">£${st.rate.toFixed(2)}/hr</td>
-      <td class="num">${stShifts.length}</td>
-      <td class="num">${hrs.toFixed(1)}h</td>
-      <td class="num teal-bold">£${cost.toFixed(2)}</td>
-    </tr>`;
+    const stShifts=SHIFTS.filter(s=>s.staffId===st.id);if(!stShifts.length)return;
+    h+=`<tr><td class="bold">${st.name}</td><td><span class="cat-badge">${st.role}</span></td>
+      <td class="num muted">£${st.rate.toFixed(2)}/hr</td><td class="num">${stShifts.length}</td>
+      <td class="num">${totalLabourHours(stShifts).toFixed(1)}h</td>
+      <td class="num teal-bold">£${totalLabourCost(stShifts).toFixed(2)}</td></tr>`;
   });
-
-  h+=`</tbody></table></div></div>`;
-  return h;
+  h+=`</tbody></table></div></div>`;return h;
 }
 
-/* ── Labour event handlers ── */
 function addStaffMember(){
-  const name=prompt('Staff member name:');
-  if(!name||!name.trim())return;
+  const name=prompt('Staff member name:');if(!name||!name.trim())return;
   const role=prompt('Role (e.g. Bar Staff, Kitchen, GM):') || 'Bar Staff';
   const rate=parseFloat(prompt('Hourly rate £ (enter 0 if unpaid/owner):')) || 0;
-  STAFF.push({id:nextStaffId++, name:name.trim(), role:role.trim(), rate});
-  saveState();
-  render();
+  STAFF.push({id:nextStaffId++,name:name.trim(),role:role.trim(),rate});
+  saveState();render();
 }
-function updateStaffRate(id,val){
-  const st=STAFF.find(s=>s.id===id);
-  if(st){st.rate=val;saveState();}
-}
+function updateStaffRate(id,val){const st=STAFF.find(s=>s.id===id);if(st){st.rate=val;saveState();}}
 function deleteStaff(id){
   if(!confirm('Remove this staff member? Their shifts will remain but show as unknown.'))return;
-  STAFF=STAFF.filter(s=>s.id!==id);
-  saveState(); render();
+  STAFF=STAFF.filter(s=>s.id!==id);saveState();render();
 }
 function updateShiftPreview(){
   const staffId=parseInt(document.getElementById('sf-staff').value);
   const start=document.getElementById('sf-start').value;
   const end=document.getElementById('sf-end').value;
   const brk=parseInt(document.getElementById('sf-break')?.value||0);
-  const preview=document.getElementById('shift-preview');
-  if(!preview)return;
+  const preview=document.getElementById('shift-preview');if(!preview)return;
   const st=STAFF.find(s=>s.id===staffId);
-  const tmp={staffId,start,end,break:brk};
-  const hrs=shiftHours(tmp);
-  const cost=st?hrs*st.rate:0;
+  const tmp={staffId,start,end,break:brk};const hrs=shiftHours(tmp);const cost=st?hrs*st.rate:0;
   preview.textContent=hrs>0?(hrs.toFixed(1)+'h'+(brk>0?' (−'+brk+'m break)':'')+(st&&cost>0?' = £'+cost.toFixed(2):'')):'';
 }
 function logShift(){
@@ -1838,152 +1254,80 @@ function logShift(){
   if(!start||!end){alert('Please enter start and end times.');return;}
   if(shiftHours({start,end,break:brk})<=0){alert('End time must be after start time.');return;}
   SHIFTS.push({id:nextShiftId++,staffId,date,start,end,break:brk,notes});
-  saveState(); render();
+  saveState();render();
 }
 function deleteShift(id){
   if(!confirm('Delete this shift?'))return;
-  SHIFTS=SHIFTS.filter(s=>s.id!==id);
-  saveState(); render();
+  SHIFTS=SHIFTS.filter(s=>s.id!==id);saveState();render();
 }
 
-/* ════════════════════════════════════════════
-   CLOUD SYNC — JSONBin.io
-   ════════════════════════════════════════════ */
+/* ═══════════════════ CLOUD SYNC ═══════════════════ */
 const CLOUD_KEY='medley-cloud-v1';
 const BIN_API='https://api.jsonbin.io/v3/b';
-
-function loadCloudConfig(){
-  try{
-    const raw=localStorage.getItem(CLOUD_KEY);
-    if(raw) CLOUD=JSON.parse(raw);
-  }catch(e){}
-}
-
-function saveCloudConfig(){
-  if(CLOUD) localStorage.setItem(CLOUD_KEY, JSON.stringify(CLOUD));
-}
-
-function setDot(status){
-  ['sync-dot-tb','sync-dot'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.className='sync-dot '+status;}
-  });
-}
+function loadCloudConfig(){try{const raw=localStorage.getItem(CLOUD_KEY);if(raw)CLOUD=JSON.parse(raw);}catch(e){}}
+function saveCloudConfig(){if(CLOUD)localStorage.setItem(CLOUD_KEY,JSON.stringify(CLOUD));}
+function setDot(status){['sync-dot-tb','sync-dot'].forEach(id=>{const el=document.getElementById(id);if(el){el.className='sync-dot '+status;}});}
 
 async function pushToCloud(state){
   if(!CLOUD)return;
   try{
     setDot('busy');
-    // Before pushing, fetch cloud state and merge WASTAGE + SHIFTS
-    // so we don't overwrite other users' entries
     const merged=await mergeWithCloud(state);
-    const r=await fetch(`${BIN_API}/${CLOUD.binId}`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':CLOUD.apiKey},
-      body:JSON.stringify(merged)
-    });
+    const r=await fetch(`${BIN_API}/${CLOUD.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':CLOUD.apiKey},body:JSON.stringify(merged)});
     setDot(r.ok?'ok':'err');
     if(r.ok){
       const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      const el=document.getElementById('sync-status-text');
-      if(el) el.textContent='Connected — last pushed '+t;
-      // Update local with merged state so we immediately see others' entries
-      if(merged.WASTAGE) WASTAGE=merged.WASTAGE;
-      if(merged.SHIFTS)  SHIFTS=merged.SHIFTS;
-      if(merged.nextWastageId) nextWastageId=merged.nextWastageId;
+      const el=document.getElementById('sync-status-text');if(el)el.textContent='Connected — last pushed '+t;
+      if(merged.WASTAGE)WASTAGE=merged.WASTAGE;
+      if(merged.SHIFTS)SHIFTS=merged.SHIFTS;
+      if(merged.nextWastageId)nextWastageId=merged.nextWastageId;
       saveState();
     }
   }catch(e){setDot('err');}
 }
 
 async function mergeWithCloud(localState){
-  // Fetch current cloud state
   try{
-    const r=await fetch(`${BIN_API}/${CLOUD.binId}/latest`,{
-      headers:{'X-Master-Key':CLOUD.apiKey}
-    });
-    if(!r.ok)return localState; // can't reach cloud — push as-is
-    const data=await r.json();
-    const cloud=data.record;
+    const r=await fetch(`${BIN_API}/${CLOUD.binId}/latest`,{headers:{'X-Master-Key':CLOUD.apiKey}});
+    if(!r.ok)return localState;
+    const data=await r.json();const cloud=data.record;
     if(!cloud||!cloud.MASTERS)return localState;
-
-    // Merge WASTAGE: combine both arrays, dedupe by id
-    const cloudWastage=cloud.WASTAGE||[];
-    const localWastage=localState.WASTAGE||[];
     const wasteMap=new Map();
-    // Cloud entries first, then local overwrites (local is source of truth for edits)
-    cloudWastage.forEach(e=>wasteMap.set(e.id,e));
-    localWastage.forEach(e=>wasteMap.set(e.id,e));
+    (cloud.WASTAGE||[]).forEach(e=>wasteMap.set(e.id,e));
+    (localState.WASTAGE||[]).forEach(e=>wasteMap.set(e.id,e));
     const mergedWastage=[...wasteMap.values()].sort((a,b)=>a.id-b.id);
-
-    // Merge SHIFTS similarly
-    const cloudShifts=cloud.SHIFTS||[];
-    const localShifts=localState.SHIFTS||[];
     const shiftMap=new Map();
-    cloudShifts.forEach(s=>shiftMap.set(s.id,s));
-    localShifts.forEach(s=>shiftMap.set(s.id,s));
+    (cloud.SHIFTS||[]).forEach(s=>shiftMap.set(s.id,s));
+    (localState.SHIFTS||[]).forEach(s=>shiftMap.set(s.id,s));
     const mergedShifts=[...shiftMap.values()].sort((a,b)=>a.id-b.id);
-
-    // Merge WASTAGE_REASONS — union of both lists
-    const cloudReasons=cloud.WASTAGE_REASONS||[];
-    const localReasons=localState.WASTAGE_REASONS||[];
-    const mergedReasons=[...new Set([...cloudReasons,...localReasons])];
-
-    // Keep highest nextWastageId to avoid ID collisions
-    const mergedNextWastageId=Math.max(
-      localState.nextWastageId||1,
-      cloud.nextWastageId||1,
-      mergedWastage.length?Math.max(...mergedWastage.map(e=>e.id))+1:1
-    );
-    const mergedNextShiftId=Math.max(
-      localState.nextShiftId||1,
-      cloud.nextShiftId||1
-    );
-
-    return {
-      ...localState,       // prices, recipes, GP data — local is authoritative
-      WASTAGE:mergedWastage,
-      SHIFTS:mergedShifts,
-      WASTAGE_REASONS:mergedReasons,
-      nextWastageId:mergedNextWastageId,
-      nextShiftId:mergedNextShiftId
-    };
-  }catch(e){
-    return localState; // network error — push local as-is
-  }
+    const mergedReasons=[...new Set([...(cloud.WASTAGE_REASONS||[]),...(localState.WASTAGE_REASONS||[])])];
+    const mergedNextWastageId=Math.max(localState.nextWastageId||1,cloud.nextWastageId||1,mergedWastage.length?Math.max(...mergedWastage.map(e=>e.id))+1:1);
+    const mergedNextShiftId=Math.max(localState.nextShiftId||1,cloud.nextShiftId||1);
+    return {...localState,WASTAGE:mergedWastage,SHIFTS:mergedShifts,WASTAGE_REASONS:mergedReasons,nextWastageId:mergedNextWastageId,nextShiftId:mergedNextShiftId};
+  }catch(e){return localState;}
 }
 
 async function forceSyncFromCloud(){
   if(!CLOUD){alert('Cloud sync not configured.');return;}
   try{
     setDot('busy');
-    const r=await fetch(`${BIN_API}/${CLOUD.binId}/latest`,{
-      headers:{'X-Master-Key':CLOUD.apiKey}
-    });
+    const r=await fetch(`${BIN_API}/${CLOUD.binId}/latest`,{headers:{'X-Master-Key':CLOUD.apiKey}});
     if(!r.ok){setDot('err');return;}
-    const data=await r.json();
-    const s=data.record;
+    const data=await r.json();const s=data.record;
     if(!s||!s.MASTERS){setDot('err');return;}
-
-    // Merge before applying — don't lose local-only entries
-    const localState=buildState();
-    const merged=await mergeWithCloud(localState);
-
-    MASTERS=s.MASTERS; WET_GP=s.WET_GP; DRY_GP=s.DRY_GP;
-    STAFF=s.STAFF||[]; target=s.target||70;
-    nextIds=s.nextIds||nextIds; nextWet=s.nextWet||nextWet;
-    nextDry=s.nextDry||nextDry; nextStaffId=s.nextStaffId||nextStaffId;
-    // Use merged arrays for collaborative data
+    const localState=buildState();const merged=await mergeWithCloud(localState);
+    MASTERS=s.MASTERS;WET_GP=s.WET_GP;DRY_GP=s.DRY_GP;
+    STAFF=s.STAFF||[];target=s.target||70;
+    nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;nextStaffId=s.nextStaffId||nextStaffId;
+    PORTION_UNITS=s.PORTION_UNITS||PORTION_UNITS;
     SHIFTS=merged.SHIFTS||s.SHIFTS||[];
     WASTAGE=merged.WASTAGE||s.WASTAGE||[];
     WASTAGE_REASONS=merged.WASTAGE_REASONS||s.WASTAGE_REASONS||WASTAGE_REASONS;
     nextWastageId=merged.nextWastageId||s.nextWastageId||nextWastageId;
     nextShiftId=merged.nextShiftId||s.nextShiftId||nextShiftId;
-
-    saveState(); setDot('ok'); render();
+    saveState();setDot('ok');render();
     const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    const el=document.getElementById('sync-status-text');
-    if(el) el.textContent='Synced from cloud at '+t+' (entries merged)';
+    const el=document.getElementById('sync-status-text');if(el)el.textContent='Synced from cloud at '+t+' (entries merged)';
   }catch(e){setDot('err');}
 }
 
@@ -1995,23 +1339,11 @@ async function setupNewCloud(){
   try{
     setDot('busy');
     const state=buildState();
-    const r=await fetch(BIN_API,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-Master-Key':apiKey,'X-Bin-Name':'medley-gp-data','X-Bin-Private':'true'},
-      body:JSON.stringify(state)
-    });
-    if(!r.ok){
-      const txt=await r.text();
-      errEl.textContent='Error: '+txt;errEl.style.display='block';setDot('err');return;
-    }
+    const r=await fetch(BIN_API,{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':apiKey,'X-Bin-Name':'medley-gp-data','X-Bin-Private':'true'},body:JSON.stringify(state)});
+    if(!r.ok){const txt=await r.text();errEl.textContent='Error: '+txt;errEl.style.display='block';setDot('err');return;}
     const data=await r.json();
-    CLOUD={apiKey,binId:data.metadata.id};
-    saveCloudConfig();
-    setDot('ok');
-    showSyncConnected();
-  }catch(e){
-    errEl.textContent='Connection failed: '+e.message;errEl.style.display='block';setDot('err');
-  }
+    CLOUD={apiKey,binId:data.metadata.id};saveCloudConfig();setDot('ok');showSyncConnected();
+  }catch(e){errEl.textContent='Connection failed: '+e.message;errEl.style.display='block';setDot('err');}
 }
 
 async function joinCloud(){
@@ -2021,106 +1353,59 @@ async function joinCloud(){
   try{
     const parsed=JSON.parse(atob(code));
     if(!parsed.ak||!parsed.bi)throw new Error('Invalid code');
-    CLOUD={apiKey:parsed.ak,binId:parsed.bi};
-    saveCloudConfig();
-    errEl.style.display='none';
-    await forceSyncFromCloud();
-    showSyncConnected();
-  }catch(e){
-    errEl.textContent='Invalid share code. Ask the person who set it up to resend it.';
-    errEl.style.display='block';
-  }
+    CLOUD={apiKey:parsed.ak,binId:parsed.bi};saveCloudConfig();errEl.style.display='none';
+    await forceSyncFromCloud();showSyncConnected();
+  }catch(e){errEl.textContent='Invalid share code. Ask the person who set it up to resend it.';errEl.style.display='block';}
 }
 
 function showSyncConnected(){
   document.getElementById('sync-setup-section').style.display='none';
   document.getElementById('sync-status-section').style.display='block';
   const code=CLOUD?btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId})):'';
-  const el=document.getElementById('share-code-display');
-  if(el) el.textContent=code;
+  const el=document.getElementById('share-code-display');if(el)el.textContent=code;
 }
-
 function copyShareCode(){
   const code=CLOUD?btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId})):'';
-  navigator.clipboard.writeText(code).then(()=>{
-    alert('Share code copied! Send it to Charlie and the head chef — they paste it in ☁️ → "Join existing sync".');
-  });
+  navigator.clipboard.writeText(code).then(()=>{alert('Share code copied! Send it to Charlie and the head chef.');});
 }
-
 function disconnectCloud(){
   if(!confirm('Disconnect cloud sync? Your local data stays, but changes won\'t sync to others.'))return;
-  CLOUD=null;
-  localStorage.removeItem(CLOUD_KEY);
-  setDot('');
-  closeSyncModal();
+  CLOUD=null;localStorage.removeItem(CLOUD_KEY);setDot('');closeSyncModal();
 }
-
 function closeSyncModal(){
   document.getElementById('sync-modal').style.display='none';
-  // Refresh sync status display
   if(CLOUD){
     document.getElementById('sync-setup-section').style.display='none';
     document.getElementById('sync-status-section').style.display='block';
     const code=btoa(JSON.stringify({ak:CLOUD.apiKey,bi:CLOUD.binId}));
-    const el=document.getElementById('share-code-display');
-    if(el) el.textContent=code;
+    const el=document.getElementById('share-code-display');if(el)el.textContent=code;
   }
 }
 
-/* ════════════════════════════════════════════
-   BATCHES
-   ════════════════════════════════════════════ */
-
-function batchIngCost(b){
-  return (b.ingredients||[]).reduce((s,r)=>{
-    const m=getMaster(r.mid);
-    return s+(m?r.qty*cpu(m):0);
-  },0);
-}
-
-function batchCostPerUnit(b){
-  if(!b.yieldQty||b.yieldQty<=0)return 0;
-  return batchIngCost(b)/b.yieldQty;
-}
-
+/* ═══════════════════ BATCHES ═══════════════════ */
+function batchIngCost(b){return(b.ingredients||[]).reduce((s,r)=>{const m=getMaster(r.mid);return s+(m?r.qty*cpu(m):0);},0);}
+function batchCostPerUnit(b){if(!b.yieldQty||b.yieldQty<=0)return 0;return batchIngCost(b)/b.yieldQty;}
 function batchCostPerPortion(b){
   if(!b.portions||!b.portions.count||b.portions.count<=0)return 0;
-  const ingCost=batchIngCost(b);
-  let containerCost=0;
-  if(b.portions.containerMid){
-    const m=getMaster(b.portions.containerMid);
-    if(m) containerCost=cpu(m)*b.portions.count;
-  }
-  return (ingCost+containerCost)/b.portions.count;
+  const ingCost=batchIngCost(b);let containerCost=0;
+  if(b.portions.containerMid){const m=getMaster(b.portions.containerMid);if(m)containerCost=cpu(m)*b.portions.count;}
+  return(ingCost+containerCost)/b.portions.count;
 }
-
 function syncAllBatchMasters(){
   BATCHES.forEach(b=>{
-    const existingId='BM'+b.id;
-    const hasPortion=b.portions&&b.portions.count>0;
-    const ingCost=batchIngCost(b);
-    let containerCost=0;
-    if(hasPortion&&b.portions.containerMid){
-      const m=getMaster(b.portions.containerMid);
-      if(m) containerCost=cpu(m)*b.portions.count;
-    }
+    const existingId='BM'+b.id;const hasPortion=b.portions&&b.portions.count>0;
+    const ingCost=batchIngCost(b);let containerCost=0;
+    if(hasPortion&&b.portions.containerMid){const m=getMaster(b.portions.containerMid);if(m)containerCost=cpu(m)*b.portions.count;}
     const totalBatchCost=ingCost+(hasPortion?containerCost:0);
     const unit=hasPortion?'each':b.yieldUnit||'g';
     const size=hasPortion?b.portions.count:b.yieldQty||1;
     const costPerPart=hasPortion?batchCostPerPortion(b):batchCostPerUnit(b);
     const portLabel=b.portions?.label||'portion';
-    const packDesc=hasPortion
-      ?`Batch: ${b.portions.count} × ${portLabel} · £${totalBatchCost.toFixed(2)} total · £${costPerPart.toFixed(4)} each`
-      :`${b.yieldQty}${unit} batch · £${ingCost.toFixed(2)} total`;
+    const packDesc=hasPortion?`Batch: ${b.portions.count} × ${portLabel} · £${totalBatchCost.toFixed(2)} total · £${costPerPart.toFixed(4)} each`:`${b.yieldQty}${unit} batch · £${ingCost.toFixed(2)} total`;
     const masterName=b.name+(hasPortion?` (per ${portLabel})`:'');
     const existing=MASTERS.find(m=>m.id===existingId);
-    if(existing){
-      existing.name=masterName; existing.pack=packDesc;
-      existing.cost=totalBatchCost; existing.size=size; existing.unit=unit;
-    } else {
-      MASTERS.push({id:existingId,type:'F',name:masterName,sup:'House — Batch',
-        cat:'Batch Production',pack:packDesc,cost:totalBatchCost,size,unit});
-    }
+    if(existing){existing.name=masterName;existing.pack=packDesc;existing.cost=totalBatchCost;existing.size=size;existing.unit=unit;}
+    else{MASTERS.push({id:existingId,type:'F',name:masterName,sup:'House — Batch',cat:'Batch Production',pack:packDesc,cost:totalBatchCost,size,unit});}
   });
 }
 
@@ -2130,7 +1415,6 @@ function renderBatches(){
   syncAllBatchMasters();
   const fohBatches=BATCHES.filter(b=>b.team==='foh');
   const bohBatches=BATCHES.filter(b=>b.team==='boh');
-
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
     <div style="font-size:12px;color:var(--muted)">Each batch registers as a <strong>[BM…]</strong> master ingredient — link it directly in any GP recipe.</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -2138,54 +1422,34 @@ function renderBatches(){
       <button class="btn-teal" style="background:#7c3aed" onclick="newBatch()">+ New batch recipe</button>
     </div>
   </div>`;
-
-  if(!BATCHES.length){
-    h+=`<div class="empty"><div class="empty-icon">🧪</div>No batch recipes yet — create your first batch (e.g. Garlic Dip, Pizza Sauce, Pesto)</div>`;
-    return h;
-  }
-
+  if(!BATCHES.length){h+=`<div class="empty"><div class="empty-icon">🧪</div>No batch recipes yet — create your first batch (e.g. Garlic Dip, Pizza Sauce, Pesto)</div>`;return h;}
   const renderGroup=(batches,label)=>{
     if(!batches.length)return'';
     let g=`<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">${label}</div>`;
-    batches.forEach(b=>g+=renderBatchCard(b));
-    return g;
+    batches.forEach(b=>g+=renderBatchCard(b));return g;
   };
-
   h+=renderGroup(bohBatches,'🍕 Back of House — Kitchen');
   h+=renderGroup(fohBatches,'🍸 Front of House — Bar');
   return h;
 }
 
 function renderBatchCard(b){
-  const isEditing=editingBatchId===b.id;
-  const ingCost=batchIngCost(b);
-  const hasPortion=b.portions&&b.portions.count>0;
-  const cpp=batchCostPerPortion(b);
-  const cpu_=batchCostPerUnit(b);
-
-  if(isEditing) return renderBatchEdit(b);
-
+  if(editingBatchId===b.id)return renderBatchEdit(b);
+  const ingCost=batchIngCost(b);const hasPortion=b.portions&&b.portions.count>0;
+  const cpp=batchCostPerPortion(b);const cpu_=batchCostPerUnit(b);
   return `<div class="card" style="margin-bottom:10px;border-left:3px solid #7c3aed">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
       <div>
         <div style="font-size:15px;font-weight:800;color:#7c3aed">${b.name}
           <span style="font-size:10px;font-weight:600;background:#f3f0ff;color:#7c3aed;border-radius:10px;padding:2px 8px;margin-left:6px">[BM${b.id}]</span>
         </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px">
-          ${b.ingredients.length} ingredients · ${b.yieldQty||'?'} ${b.yieldUnit||'g'} yield
-          ${b.notes?` · ${b.notes}`:''}
-        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">${b.ingredients.length} ingredients · ${b.yieldQty||'?'} ${b.yieldUnit||'g'} yield${b.notes?` · ${b.notes}`:''}</div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:20px;font-weight:900;color:#7c3aed">£${ingCost.toFixed(2)}</div>
-        <div style="font-size:11px;color:var(--muted)">ingredient cost</div>
-      </div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-size:20px;font-weight:900;color:#7c3aed">£${ingCost.toFixed(2)}</div><div style="font-size:11px;color:var(--muted)">ingredient cost</div></div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:13px">
       ${b.yieldQty?`<div style="background:#f3f0ff;padding:4px 10px;border-radius:6px">Per ${b.yieldUnit||'g'}: <strong>£${cpu_.toFixed(4)}</strong></div>`:''}
-      ${hasPortion?`<div style="background:#7c3aed;color:#fff;padding:4px 12px;border-radius:6px;font-weight:700">
-        ${b.portions.count} × ${b.portions.label||'portions'} → <strong>£${cpp.toFixed(4)} each</strong>
-      </div>`:''}
+      ${hasPortion?`<div style="background:#7c3aed;color:#fff;padding:4px 12px;border-radius:6px;font-weight:700">${b.portions.count} × ${b.portions.label||'portions'} → <strong>£${cpp.toFixed(4)} each</strong></div>`:''}
     </div>
     <div style="margin-top:10px;display:flex;gap:6px">
       <button class="btn-sm" onclick="editingBatchId=${b.id};render()">✏️ Edit</button>
@@ -2195,22 +1459,17 @@ function renderBatchCard(b){
 }
 
 function renderBatchEdit(b){
-  const ingCost=batchIngCost(b);
-  const hasPortion=b.portions&&b.portions.count>0;
-  const cpp=hasPortion?batchCostPerPortion(b):0;
-  const cpu_=batchCostPerUnit(b);
+  const ingCost=batchIngCost(b);const hasPortion=b.portions&&b.portions.count>0;
+  const cpp=hasPortion?batchCostPerPortion(b):0;const cpu_=batchCostPerUnit(b);
   const containerMaster=b.portions?.containerMid?getMaster(b.portions.containerMid):null;
-
   return `<div class="card" style="margin-bottom:14px;border-left:4px solid #7c3aed">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div style="font-size:15px;font-weight:800;color:#7c3aed">✏️ ${b.name}</div>
       <button class="btn-sm" onclick="saveBatch(${b.id})">✓ Save</button>
     </div>
-
     <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:12px">
       <div><label class="form-label">Batch name</label>
-        <input id="be-name" value="${b.name}"
-          style="width:100%;height:34px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:14px;font-weight:600">
+        <input id="be-name" value="${b.name}" style="width:100%;height:34px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:14px;font-weight:600">
       </div>
       <div><label class="form-label">Team</label>
         <select id="be-team" style="width:100%;height:34px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
@@ -2219,19 +1478,15 @@ function renderBatchEdit(b){
         </select>
       </div>
     </div>
-
     <div class="card-title" style="color:#7c3aed">Ingredients</div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px">
       <thead><tr>
         <th style="text-align:left;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Ingredient</th>
         <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Qty</th>
         <th style="padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Unit</th>
-        <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Cost</th>
-        <th></th>
+        <th style="text-align:right;padding:5px 6px;font-size:10px;text-transform:uppercase;color:var(--muted)">Cost</th><th></th>
       </tr></thead><tbody>
-      ${b.ingredients.map((r,i)=>{
-        const m=getMaster(r.mid);
-        const rc=m?r.qty*cpu(m):0;
+      ${b.ingredients.map((r,i)=>{const m=getMaster(r.mid);const rc=m?r.qty*cpu(m):0;
         return `<tr style="border-bottom:1px solid var(--border)">
           <td style="padding:5px 6px"><strong>${m?`[${m.id}] ${m.name}`:'[deleted]'}</strong></td>
           <td style="padding:5px 6px;text-align:right">
@@ -2242,24 +1497,17 @@ function renderBatchEdit(b){
           <td style="padding:5px 6px;color:var(--muted)">${m?m.unit:''}</td>
           <td style="padding:5px 6px;text-align:right;color:#7c3aed;font-weight:700">£${rc.toFixed(3)}</td>
           <td style="padding:5px 6px"><button class="del-btn" onclick="removeBatchIng(${b.id},${i})">✕</button></td>
-        </tr>`;
-      }).join('')}
+        </tr>`;}).join('')}
       <tr style="background:#f3f0ff;font-weight:700">
         <td colspan="3" style="padding:6px 6px;text-align:right">Ingredient total:</td>
-        <td style="padding:6px 6px;text-align:right;color:#7c3aed">£${ingCost.toFixed(3)}</td>
-        <td></td>
-      </tr>
-      </tbody>
+        <td style="padding:6px 6px;text-align:right;color:#7c3aed">£${ingCost.toFixed(3)}</td><td></td>
+      </tr></tbody>
     </table>
-
-    <!-- Add ingredient -->
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
       <div style="position:relative;flex:2;min-width:180px">
-        <input type="text" id="be-ing-search-${b.id}" placeholder="Search ingredient to add…"
-          autocomplete="off"
+        <input type="text" id="be-ing-search-${b.id}" placeholder="Search ingredient to add…" autocomplete="off"
           style="width:100%;height:32px;border:1.5px solid var(--teal);border-radius:6px;padding:0 8px;font-size:13px"
-          oninput="filterBatchIngSearch(${b.id})"
-          onfocus="filterBatchIngSearch(${b.id},true)"
+          oninput="filterBatchIngSearch(${b.id})" onfocus="filterBatchIngSearch(${b.id},true)"
           onkeydown="navBatchIngDrop(event,${b.id})">
         <input type="hidden" id="be-ing-mid-${b.id}" value="">
         <div id="be-ing-drop-${b.id}" style="display:none;position:fixed;background:#fff;border:2px solid var(--teal);border-radius:8px;max-height:200px;overflow-y:auto;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.2)"></div>
@@ -2268,7 +1516,6 @@ function renderBatchEdit(b){
         style="width:70px;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 6px;font-size:13px">
       <button class="btn-sm btn-teal" onclick="addBatchIng(${b.id})">+ Add</button>
     </div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
       <div><label class="form-label">Total yield quantity</label>
         <input type="number" value="${b.yieldQty||0}" min="0" step="any"
@@ -2286,7 +1533,6 @@ function renderBatchEdit(b){
           oninput="updateBatchField(${b.id},'notes',this.value)">
       </div>
     </div>
-
     <div class="card-title" style="color:#7c3aed">Portioning <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">(for dip pots, cups, squeeze bottles etc.)</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
       <div><label class="form-label">Portions per batch</label>
@@ -2300,27 +1546,21 @@ function renderBatchEdit(b){
           oninput="updateBatchPortions(${b.id},'label',this.value)">
       </div>
       <div><label class="form-label">Container (Ops & Misc)</label>
-        <input type="text" id="be-container-search-${b.id}"
-          value="${containerMaster?containerMaster.name:''}"
-          placeholder="Search packaging…"
-          autocomplete="off"
+        <input type="text" id="be-container-search-${b.id}" value="${containerMaster?containerMaster.name:''}"
+          placeholder="Search packaging…" autocomplete="off"
           style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px"
-          oninput="filterContainerSearch(${b.id})"
-          onfocus="filterContainerSearch(${b.id},true)">
+          oninput="filterContainerSearch(${b.id})" onfocus="filterContainerSearch(${b.id},true)">
         <input type="hidden" id="be-port-mid-${b.id}" value="${b.portions?.containerMid||''}">
         <div id="be-container-drop-${b.id}" style="display:none;position:fixed;background:#fff;border:2px solid var(--teal);border-radius:8px;max-height:180px;overflow-y:auto;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.2)"></div>
         ${containerMaster?`<div style="font-size:11px;color:var(--teal);margin-top:3px">✓ £${cpu(containerMaster).toFixed(4)} each</div>`:''}
       </div>
     </div>
-
     <div style="background:#f3f0ff;border-radius:8px;padding:12px;font-size:13px;margin-bottom:12px">
-      <strong style="color:#7c3aed">Cost summary:</strong>
-      Ingredients £${ingCost.toFixed(2)}
+      <strong style="color:#7c3aed">Cost summary:</strong> Ingredients £${ingCost.toFixed(2)}
       ${b.yieldQty?` · £${cpu_.toFixed(4)} per ${b.yieldUnit||'g'}`:''}
       ${hasPortion?` · <strong>£${cpp.toFixed(4)} per ${b.portions.label||'portion'}</strong>`:''}
       · Registers as <strong>[BM${b.id}]</strong>
     </div>
-
     <div style="display:flex;gap:8px">
       <button class="btn-teal" style="background:#7c3aed" onclick="saveBatch(${b.id})">✓ Save batch</button>
       <button class="btn-sm" onclick="editingBatchId=null;render()">Cancel</button>
@@ -2328,440 +1568,180 @@ function renderBatchEdit(b){
   </div>`;
 }
 
-/* ── Batch CRUD ── */
 function importBibleBatches(){
   if(BATCHES.length&&!confirm('This will add Food Bible batches to your existing list. Continue?'))return;
-
   const bibleBatches=[
-    {
-      name:'Pizza Dough',team:'boh',
-      notes:'~97 balls · ball at 250–160g · prove overnight · label with yeast & time',
-      yieldQty:97,yieldUnit:'each',portions:null,
-      ingredients:[
-        {mid:'FM02',qty:15000}, // Caputo Flour 15kg bag
-        {mid:'FM04',qty:5},     // Fresh Yeast ~5g avg
-        {mid:'FM05',qty:375},   // Salt 375g
-        {mid:'FM06',qty:50},    // Olive Oil squeeze
-      ]
-    },
-    {
-      name:'Tomato Sauce (batch)',team:'boh',
-      notes:'12 tins · 15g salt per tin · blend until smooth · yield ~36 ladles',
-      yieldQty:36,yieldUnit:'each',portions:null,
-      ingredients:[
-        {mid:'FM21',qty:12},    // 12 tins (each tin = 1 unit)
-        {mid:'FM05',qty:180},   // 15g salt × 12 tins
-      ]
-    },
-    {
-      name:'Garlic Dip',team:'boh',
-      notes:'Blend all in 10L tub · yields 303 × 2oz dip pots',
-      yieldQty:11770,yieldUnit:'g',
-      portions:{count:303,label:'dip pot',containerMid:'OM00'},
-      ingredients:[
-        {mid:'FM25',qty:350},   // Garlic cloves 350g
-        {mid:'FM06',qty:120},   // Extra Virgin Olive Oil 120g
-        {mid:'FM80',qty:10000}, // Extra Thick Mayo 10kg
-        {mid:'FM53',qty:800},   // White Wine Vinegar 800g
-        {mid:'FM23',qty:50},    // Fresh Parsley 1 bunch ~50g
-      ]
-    },
-    {
-      name:'Genovese Pesto',team:'boh',
-      notes:'2kg batch · add 200ml cold water when using fresh batch · thin layer of olive oil to stop oxidation',
-      yieldQty:1880,yieldUnit:'g',portions:null,
-      ingredients:[
-        {mid:'FM22',qty:600},   // Fresh Basil 600g
-        {mid:'FM25',qty:60},    // Garlic cloves 60g
-        {mid:'FM12',qty:400},   // Parmesan 400g
-        {mid:'FM13',qty:200},   // Pecorino 200g
-        {mid:'FM06',qty:500},   // Extra Virgin Olive Oil 500g
-        {mid:'FM05',qty:20},    // Salt 20g
-      ]
-    },
-    {
-      name:'Chilli Dip & Dressing',team:'boh',
-      notes:'Large batch · pot half into 2oz dips · rest into squeezy tubes for service · blend well or tubes will block',
-      yieldQty:7080,yieldUnit:'g',
-      portions:{count:150,label:'dip pot',containerMid:'OM00'},
-      ingredients:[
-        {mid:'FM29',qty:4000},  // Fresh Red Chilies 4kg
-        {mid:'FM25',qty:400},   // Garlic cloves 400g
-        {mid:'FM54',qty:1000},  // Fresh Lemon Juice 1L
-        {mid:'FM53',qty:240},   // White Wine Vinegar 240ml
-        {mid:'FM06',qty:1000},  // Extra Virgin Olive Oil 1L
-        {mid:'FM05',qty:100},   // Sea Salt 100g
-        {mid:'FM55',qty:40},    // White Castor Sugar 40g
-      ]
-    },
-    {
-      name:'Parsley & Garlic Dressing',team:'boh',
-      notes:'Pulse until combined but not over-blended · thin layer of olive oil on top to stop oxidation · fridge 10 days',
-      yieldQty:500,yieldUnit:'g',portions:null,
-      ingredients:[
-        {mid:'FM23',qty:100},   // Flat-leaf Parsley 2 large bunches ~100g
-        {mid:'FM25',qty:30},    // Garlic cloves 6 cloves ~30g
-        {mid:'FM53',qty:60},    // White Wine Vinegar 4 tbsp ~60ml
-        {mid:'FM54',qty:30},    // Fresh Lemon Juice 2 tbsp ~30ml
-        {mid:'FM06',qty:90},    // Extra Virgin Olive Oil 6 tbsp ~90ml
-        {mid:'FM05',qty:5},     // Sea Salt 1 tsp
-      ]
-    },
-    {
-      name:'Tiramisu',team:'boh',
-      notes:'Set 12h+ overnight · serve from 150mm clear 1/1 gastro · 18 portions per batch',
-      yieldQty:18,yieldUnit:'each',portions:null,
-      ingredients:[
-        {mid:'FM60',qty:8},     // Lady Fingers (8 packs)
-        {mid:'FM61',qty:250},   // Egg Yolk 250g
-        {mid:'FM55',qty:495},   // Sugar 375g + 120g
-        {mid:'FM62',qty:400},   // Egg White 400g
-        {mid:'FM16',qty:2000},  // Mascarpone 2kg
-        {mid:'FM63',qty:100},   // Espresso Coffee (10 double shots)
-      ]
-    },
-    {
-      name:'Chocolate Mousse',team:'boh',
-      notes:'Blast chill in ice bath · set 12h+ overnight · 54% and 70% chocolate blend',
-      yieldQty:20,yieldUnit:'each',portions:null,
-      ingredients:[
-        {mid:'FM06',qty:420},   // Olive Oil 420g
-        {mid:'FM61',qty:460},   // Egg Yolk 460g
-        {mid:'FM55',qty:300},   // Sugar 180g + 120g
-        {mid:'FM62',qty:720},   // Egg White 720g
-      ]
-    },
-    {
-      name:'Aubergine Topping (roasted)',team:'boh',
-      notes:'Diced 20mm · roast until golden · one box yield ~3.28kg prepped',
-      yieldQty:3280,yieldUnit:'g',portions:null,
-      ingredients:[
-        {mid:'FM28',qty:4000},  // Aubergine raw ~1 box
-        {mid:'FM06',qty:100},   // Extra Virgin Olive Oil
-        {mid:'FM05',qty:10},    // Salt
-        {mid:'FM57',qty:5},     // Ground Black Pepper
-      ]
-    },
-    {
-      name:'Cavolo Nero (wilted & prepped)',team:'boh',
-      notes:'Blanch 20 sec max · ice bath · chop 3–4cm slices · toast in wood oven until golden · one box yield ~2.05kg',
-      yieldQty:2050,yieldUnit:'g',portions:null,
-      ingredients:[
-        {mid:'FM30',qty:3000},  // Cavolo Nero raw ~1 box
-        {mid:'FM06',qty:60},    // Extra Virgin Olive Oil
-        {mid:'FM05',qty:10},    // Sea Salt
-      ]
-    },
+    {name:'Pizza Dough',team:'boh',notes:'~97 balls · ball at 250–160g · prove overnight',yieldQty:97,yieldUnit:'each',portions:null,ingredients:[{mid:'FM02',qty:15000},{mid:'FM04',qty:5},{mid:'FM05',qty:375},{mid:'FM06',qty:50}]},
+    {name:'Tomato Sauce (batch)',team:'boh',notes:'12 tins · 15g salt per tin · blend until smooth · yield ~36 ladles',yieldQty:36,yieldUnit:'each',portions:null,ingredients:[{mid:'FM21',qty:12},{mid:'FM05',qty:180}]},
+    {name:'Garlic Dip',team:'boh',notes:'Blend all in 10L tub · yields 303 × 2oz dip pots',yieldQty:11770,yieldUnit:'g',portions:{count:303,label:'dip pot',containerMid:'OM00'},ingredients:[{mid:'FM25',qty:350},{mid:'FM06',qty:120},{mid:'FM80',qty:10000},{mid:'FM53',qty:800},{mid:'FM23',qty:50}]},
+    {name:'Genovese Pesto',team:'boh',notes:'2kg batch · thin layer of olive oil to stop oxidation',yieldQty:1880,yieldUnit:'g',portions:null,ingredients:[{mid:'FM22',qty:600},{mid:'FM25',qty:60},{mid:'FM12',qty:400},{mid:'FM13',qty:200},{mid:'FM06',qty:500},{mid:'FM05',qty:20}]},
+    {name:'Chilli Dip & Dressing',team:'boh',notes:'Large batch · pot half into 2oz dips · rest into squeezy tubes',yieldQty:7080,yieldUnit:'g',portions:{count:150,label:'dip pot',containerMid:'OM00'},ingredients:[{mid:'FM29',qty:4000},{mid:'FM25',qty:400},{mid:'FM54',qty:1000},{mid:'FM53',qty:240},{mid:'FM06',qty:1000},{mid:'FM05',qty:100},{mid:'FM55',qty:40}]},
+    {name:'Parsley & Garlic Dressing',team:'boh',notes:'Pulse until combined but not over-blended · fridge 10 days',yieldQty:500,yieldUnit:'g',portions:null,ingredients:[{mid:'FM23',qty:100},{mid:'FM25',qty:30},{mid:'FM53',qty:60},{mid:'FM54',qty:30},{mid:'FM06',qty:90},{mid:'FM05',qty:5}]},
+    {name:'Tiramisu',team:'boh',notes:'Set 12h+ overnight · 18 portions per batch',yieldQty:18,yieldUnit:'each',portions:null,ingredients:[{mid:'FM60',qty:8},{mid:'FM61',qty:250},{mid:'FM55',qty:495},{mid:'FM62',qty:400},{mid:'FM16',qty:2000},{mid:'FM63',qty:100}]},
+    {name:'Aubergine Topping (roasted)',team:'boh',notes:'Diced 20mm · roast until golden · one box yield ~3.28kg prepped',yieldQty:3280,yieldUnit:'g',portions:null,ingredients:[{mid:'FM28',qty:4000},{mid:'FM06',qty:100},{mid:'FM05',qty:10},{mid:'FM57',qty:5}]},
+    {name:'Cavolo Nero (wilted & prepped)',team:'boh',notes:'Blanch 20 sec max · ice bath · one box yield ~2.05kg',yieldQty:2050,yieldUnit:'g',portions:null,ingredients:[{mid:'FM30',qty:3000},{mid:'FM06',qty:60},{mid:'FM05',qty:10}]},
   ];
-
-  bibleBatches.forEach(b=>{
-    BATCHES.push({id:nextBatchId++,...b});
-  });
-
-  syncAllBatchMasters();
-  saveState();render();
-  alert(`✅ Imported ${bibleBatches.length} batch recipes from the Food Bible. Review each batch and update any ingredient quantities or prices as needed.`);
+  bibleBatches.forEach(b=>{BATCHES.push({id:nextBatchId++,...b});});
+  syncAllBatchMasters();saveState();render();
+  alert(`✅ Imported ${bibleBatches.length} batch recipes from the Food Bible.`);
 }
 
-function newBatch(){
-  const id=nextBatchId++;
-  BATCHES.push({id,name:'New batch',team:'boh',ingredients:[],yieldQty:0,yieldUnit:'g',portions:null,notes:''});
-  editingBatchId=id;
-  saveState();render();
-}
-
-function saveBatch(id){
-  const b=BATCHES.find(x=>x.id===id);
-  if(!b)return;
-  b.name=document.getElementById('be-name')?.value.trim()||b.name;
-  b.team=document.getElementById('be-team')?.value||b.team;
-  syncAllBatchMasters();
-  editingBatchId=null;
-  saveState();render();
-}
-
+function newBatch(){const id=nextBatchId++;BATCHES.push({id,name:'New batch',team:'boh',ingredients:[],yieldQty:0,yieldUnit:'g',portions:null,notes:''});editingBatchId=id;saveState();render();}
+function saveBatch(id){const b=BATCHES.find(x=>x.id===id);if(!b)return;b.name=document.getElementById('be-name')?.value.trim()||b.name;b.team=document.getElementById('be-team')?.value||b.team;syncAllBatchMasters();editingBatchId=null;saveState();render();}
 function deleteBatch(btn,id){
-  if(btn.dataset.confirm){
-    MASTERS=MASTERS.filter(m=>m.id!=='BM'+id);
-    BATCHES=BATCHES.filter(b=>b.id!==id);
-    saveState();render();
-  } else {
-    btn.dataset.confirm='1';btn.textContent='Tap again to confirm';
-    setTimeout(()=>{if(btn){delete btn.dataset.confirm;btn.textContent='🗑️ Delete';}},3000);
-  }
+  if(btn.dataset.confirm){MASTERS=MASTERS.filter(m=>m.id!=='BM'+id);BATCHES=BATCHES.filter(b=>b.id!==id);saveState();render();}
+  else{btn.dataset.confirm='1';btn.textContent='Tap again to confirm';setTimeout(()=>{if(btn){delete btn.dataset.confirm;btn.textContent='🗑️ Delete';}},3000);}
 }
-
-function updateBatchField(id,field,val){
-  const b=BATCHES.find(x=>x.id===id);
-  if(b){b[field]=val;}
-}
-
-function updateBatchPortions(id,field,val){
-  const b=BATCHES.find(x=>x.id===id);
-  if(!b)return;
-  if(!b.portions)b.portions={count:0,label:'',containerMid:''};
-  b.portions[field]=val;
-}
-
-function updateBatchIngQty(batchId,idx,val){
-  const b=BATCHES.find(x=>x.id===batchId);
-  if(b&&b.ingredients[idx])b.ingredients[idx].qty=val;
-}
-
-function removeBatchIng(batchId,idx){
-  const b=BATCHES.find(x=>x.id===batchId);
-  if(b){b.ingredients.splice(idx,1);editingBatchId=batchId;saveState();render();}
-}
-
+function updateBatchField(id,field,val){const b=BATCHES.find(x=>x.id===id);if(b){b[field]=val;}}
+function updateBatchPortions(id,field,val){const b=BATCHES.find(x=>x.id===id);if(!b)return;if(!b.portions)b.portions={count:0,label:'',containerMid:''};b.portions[field]=val;}
+function updateBatchIngQty(batchId,idx,val){const b=BATCHES.find(x=>x.id===batchId);if(b&&b.ingredients[idx])b.ingredients[idx].qty=val;}
+function removeBatchIng(batchId,idx){const b=BATCHES.find(x=>x.id===batchId);if(b){b.ingredients.splice(idx,1);editingBatchId=batchId;saveState();render();}}
 function addBatchIng(batchId){
   const mid=document.getElementById(`be-ing-mid-${batchId}`)?.value;
   const qty=parseFloat(document.getElementById(`be-ing-qty-${batchId}`)?.value)||0;
-  if(!mid){alert('Select an ingredient first.');return;}
-  if(qty<=0){alert('Enter a quantity.');return;}
-  const b=BATCHES.find(x=>x.id===batchId);
-  if(b){b.ingredients.push({mid,qty});editingBatchId=batchId;saveState();render();}
+  if(!mid){alert('Select an ingredient first.');return;}if(qty<=0){alert('Enter a quantity.');return;}
+  const b=BATCHES.find(x=>x.id===batchId);if(b){b.ingredients.push({mid,qty});editingBatchId=batchId;saveState();render();}
 }
-
-/* ── Searchable dropdowns ── */
 function filterBatchIngSearch(batchId,showAll=false){
-  const inp=document.getElementById(`be-ing-search-${batchId}`);
-  const drop=document.getElementById(`be-ing-drop-${batchId}`);
+  const inp=document.getElementById(`be-ing-search-${batchId}`);const drop=document.getElementById(`be-ing-drop-${batchId}`);
   if(!inp||!drop)return;
-  const q=(inp.value||'').toLowerCase().trim();
-  const r=inp.getBoundingClientRect();
+  const q=(inp.value||'').toLowerCase().trim();const r=inp.getBoundingClientRect();
   drop.style.cssText+=`;left:${r.left}px;top:${r.bottom+2}px;width:${Math.max(r.width,300)}px`;
   const items=MASTERS.filter(m=>!m.id.startsWith('BM')&&(showAll&&!q||m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)));
-  drop.innerHTML=items.length
-    ?items.map(m=>`<div class="ms-drop-item" onmousedown="selectBatchIng(${batchId},'${m.id}','${m.name.replace(/'/g,"\\'")}','${m.unit}')"
-        style="padding:7px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between">
-        <span><span style="color:var(--teal);font-size:10px;font-weight:700;margin-right:4px">[${m.id}]</span>${m.name}</span>
-        <span style="color:var(--teal);font-size:11px;font-weight:700">${fmtCpuDisplay(m)}</span>
-      </div>`).join('')
-    :`<div style="padding:8px 12px;color:var(--muted);font-size:12px">No results</div>`;
+  drop.innerHTML=items.length?items.map(m=>`<div class="ms-drop-item" onmousedown="selectBatchIng(${batchId},'${m.id}','${m.name.replace(/'/g,"\\'")}','${m.unit}')"
+      style="padding:7px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between">
+      <span><span style="color:var(--teal);font-size:10px;font-weight:700;margin-right:4px">[${m.id}]</span>${m.name}</span>
+      <span style="color:var(--teal);font-size:11px;font-weight:700">${fmtCpuDisplay(m)}</span>
+    </div>`).join(''):`<div style="padding:8px 12px;color:var(--muted);font-size:12px">No results</div>`;
   drop.style.display='block';
   drop.querySelectorAll('.ms-drop-item').forEach(el=>{el.onmouseenter=()=>el.style.background='var(--teal-l)';el.onmouseleave=()=>el.style.background='';});
 }
-
 function selectBatchIng(batchId,mid,name){
-  const inp=document.getElementById(`be-ing-search-${batchId}`);
-  const hid=document.getElementById(`be-ing-mid-${batchId}`);
-  const drop=document.getElementById(`be-ing-drop-${batchId}`);
-  if(inp)inp.value=`[${mid}] ${name}`;
-  if(hid)hid.value=mid;
-  if(drop)drop.style.display='none';
+  const inp=document.getElementById(`be-ing-search-${batchId}`);const hid=document.getElementById(`be-ing-mid-${batchId}`);const drop=document.getElementById(`be-ing-drop-${batchId}`);
+  if(inp)inp.value=`[${mid}] ${name}`;if(hid)hid.value=mid;if(drop)drop.style.display='none';
   document.getElementById(`be-ing-qty-${batchId}`)?.focus();
 }
-
 function navBatchIngDrop(e,batchId){
-  const drop=document.getElementById(`be-ing-drop-${batchId}`);
-  if(!drop||drop.style.display==='none')return;
-  const items=[...drop.querySelectorAll('.ms-drop-item')];
-  const cur=drop.querySelector('[data-focused]');
-  let idx=items.indexOf(cur);
+  const drop=document.getElementById(`be-ing-drop-${batchId}`);if(!drop||drop.style.display==='none')return;
+  const items=[...drop.querySelectorAll('.ms-drop-item')];const cur=drop.querySelector('[data-focused]');let idx=items.indexOf(cur);
   if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(idx+1,items.length-1);}
   else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(idx-1,0);}
   else if(e.key==='Enter'&&cur){e.preventDefault();cur.onmousedown();return;}
-  else if(e.key==='Escape'){drop.style.display='none';return;}
-  else return;
+  else if(e.key==='Escape'){drop.style.display='none';return;}else return;
   items.forEach(i=>{delete i.dataset.focused;i.style.background='';});
   if(items[idx]){items[idx].dataset.focused='1';items[idx].style.background='var(--teal-l)';items[idx].scrollIntoView({block:'nearest'});}
 }
-
 function filterContainerSearch(batchId,showAll=false){
-  const inp=document.getElementById(`be-container-search-${batchId}`);
-  const drop=document.getElementById(`be-container-drop-${batchId}`);
+  const inp=document.getElementById(`be-container-search-${batchId}`);const drop=document.getElementById(`be-container-drop-${batchId}`);
   if(!inp||!drop)return;
-  const q=(inp.value||'').toLowerCase().trim();
-  const r=inp.getBoundingClientRect();
+  const q=(inp.value||'').toLowerCase().trim();const r=inp.getBoundingClientRect();
   drop.style.cssText+=`;left:${r.left}px;top:${r.bottom+2}px;width:${Math.max(r.width,260)}px`;
   const items=MASTERS.filter(m=>m.type==='O'&&(showAll&&!q||m.name.toLowerCase().includes(q)));
-  drop.innerHTML=items.length
-    ?items.map(m=>`<div class="ms-drop-item" onmousedown="selectContainer(${batchId},'${m.id}','${m.name.replace(/'/g,"\\'")}')"
-        style="padding:7px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between">
-        <span>[${m.id}] ${m.name}</span>
-        <span style="color:var(--teal);font-size:11px;font-weight:700">${fmtCpuDisplay(m)}</span>
-      </div>`).join('')
-    :`<div style="padding:8px 12px;color:var(--muted);font-size:12px">No packaging in Ops & Misc</div>`;
+  drop.innerHTML=items.length?items.map(m=>`<div class="ms-drop-item" onmousedown="selectContainer(${batchId},'${m.id}','${m.name.replace(/'/g,"\\'")}')"
+      style="padding:7px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between">
+      <span>[${m.id}] ${m.name}</span><span style="color:var(--teal);font-size:11px;font-weight:700">${fmtCpuDisplay(m)}</span>
+    </div>`).join(''):`<div style="padding:8px 12px;color:var(--muted);font-size:12px">No packaging in Ops & Misc</div>`;
   drop.style.display='block';
   drop.querySelectorAll('.ms-drop-item').forEach(el=>{el.onmouseenter=()=>el.style.background='var(--teal-l)';el.onmouseleave=()=>el.style.background='';});
 }
-
 function selectContainer(batchId,mid,name){
-  const inp=document.getElementById(`be-container-search-${batchId}`);
-  const hid=document.getElementById(`be-port-mid-${batchId}`);
-  const drop=document.getElementById(`be-container-drop-${batchId}`);
-  if(inp)inp.value=name;
-  if(hid)hid.value=mid;
-  if(drop)drop.style.display='none';
+  const inp=document.getElementById(`be-container-search-${batchId}`);const hid=document.getElementById(`be-port-mid-${batchId}`);const drop=document.getElementById(`be-container-drop-${batchId}`);
+  if(inp)inp.value=name;if(hid)hid.value=mid;if(drop)drop.style.display='none';
   updateBatchPortions(batchId,'containerMid',mid);
 }
-
 document.addEventListener('click',e=>{
-  if(!e.target.closest('[id^="be-ing-drop-"],[id^="be-container-drop-"]')&&
-     !e.target.closest('[id^="be-ing-search-"],[id^="be-container-search-"]')){
-    document.querySelectorAll('[id^="be-ing-drop-"],[id^="be-container-drop-"]')
-      .forEach(d=>d.style.display='none');
+  if(!e.target.closest('[id^="be-ing-drop-"],[id^="be-container-drop-"]')&&!e.target.closest('[id^="be-ing-search-"],[id^="be-container-search-"]')){
+    document.querySelectorAll('[id^="be-ing-drop-"],[id^="be-container-drop-"]').forEach(d=>d.style.display='none');
   }
 });
 
+/* ═══════════════════ BUILD STATE ═══════════════════ */
 function buildState(){
   return {
-    v:1, savedAt:new Date().toISOString(),
-    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,BATCHES,
+    v:1,savedAt:new Date().toISOString(),
+    MASTERS,WET_GP,DRY_GP,STAFF,SHIFTS,WASTAGE,WASTAGE_REASONS,BATCHES,PORTION_UNITS,
     nextIds,nextWet,nextDry,nextStaffId,nextShiftId,nextWastageId,nextBatchId,target
   };
 }
 
+/* ═══════════════════ RENDER ═══════════════════ */
 function render(){
-  const labels={
-    drink:'Drink Ingredients Master',
-    food:'Food Ingredients Master',
-    ops:'Ops & Miscellaneous',
-    wet:'Wet GP — Drinks Menu',
-    dry:'Dry GP — Food Menu',
-    labour:'Labour — Staff & Shifts',
-    wastage:'Weekly Wastage Log',
-    batches:'Batch Recipes & Production'
-  };
-  const subs={
-    drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',
-    food:'Prices from Arthur David & Carnevale · 03/04/26 · Compound items (green badge) are house-made batch preparations',
-    ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',
-    wet:'Click any item to expand its recipe · Select from master to link ingredients — cost auto-calculates from purchase price',
-    dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included',
-    labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync',
-    wastage:'Log daily wastage each week · Menu item wastage auto-calculates ingredient cost from recipe specs',
-    batches:'Build batch recipes from master ingredients · Set yield and portioning · Cost-per-portion auto-registers for use in GP recipes'
-  };
-
-  let html=`<div class="tab-header">
-    <div class="tab-title">${labels[activeTab]||''}</div>
-    <div class="tab-sub">${subs[activeTab]||''}</div>
-  </div>`;
-
-  if(activeTab==='drink') html+=renderMaster('D');
-  else if(activeTab==='food') html+=renderMaster('F');
-  else if(activeTab==='ops') html+=renderMaster('O');
-  else if(activeTab==='wet') html+=renderGP('wet');
-  else if(activeTab==='dry') html+=renderGP('dry');
-  else if(activeTab==='labour') html+=renderLabour();
-  else if(activeTab==='wastage') html+=renderWastage();
-  else if(activeTab==='batches') html+=renderBatches();
-
+  const labels={drink:'Drink Ingredients Master',food:'Food Ingredients Master',ops:'Ops & Miscellaneous',wet:'Wet GP — Drinks Menu',dry:'Dry GP — Food Menu',labour:'Labour — Staff & Shifts',wastage:'Weekly Wastage Log',batches:'Batch Recipes & Production'};
+  const subs={drink:'Purchase prices from Booker & Grape Minds · 03/04/26 · Edit any row to update prices — all linked GP recipes auto-recalculate instantly',food:'Prices from Arthur David & Carnevale · 03/04/26 · Compound items (green badge) are house-made batch preparations',ops:'Packaging, cleaning, PPE & operational consumables · Update costs as new invoices arrive',wet:'Click any item to expand its recipe · Select from master to link ingredients — cost auto-calculates from purchase price',dry:'Quantities from Medley Dry Cost Pricing 2025 PDF · Live prices from 03/04/26 invoices · May menu items included',labour:'Season April–September 2026 · Log shifts and track weekly labour cost · All users see live updates via cloud sync',wastage:'Log daily wastage each week · Menu item wastage auto-calculates ingredient cost from recipe specs',batches:'Build batch recipes from master ingredients · Set yield and portioning · Cost-per-portion auto-registers for use in GP recipes'};
+  let html=`<div class="tab-header"><div class="tab-title">${labels[activeTab]||''}</div><div class="tab-sub">${subs[activeTab]||''}</div></div>`;
+  if(activeTab==='drink')html+=renderMaster('D');
+  else if(activeTab==='food')html+=renderMaster('F');
+  else if(activeTab==='ops')html+=renderMaster('O');
+  else if(activeTab==='wet')html+=renderGP('wet');
+  else if(activeTab==='dry')html+=renderGP('dry');
+  else if(activeTab==='labour')html+=renderLabour();
+  else if(activeTab==='wastage')html+=renderWastage();
+  else if(activeTab==='batches')html+=renderBatches();
   document.getElementById('content').innerHTML=html;
-
   document.querySelectorAll('.navtab').forEach(b=>b.classList.remove('active'));
-  const at=document.getElementById('t-'+activeTab);
-  if(at) at.classList.add('active');
+  const at=document.getElementById('t-'+activeTab);if(at)at.classList.add('active');
 }
 
-
-/* ════════════════════════════════════════════
-   WASTAGE
-   ════════════════════════════════════════════ */
-
+/* ═══════════════════ WASTAGE ═══════════════════ */
 function wastageWeekStart(offset=0){
   const n=new Date();
   const todayStr=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
   const today=new Date(todayStr+'T00:00:00');
-  const dow=today.getDay();
-  const daysSinceMon=dow===0?6:dow-1;
-  const mon=new Date(today);
-  mon.setDate(today.getDate()-daysSinceMon+offset*7);
+  const dow=today.getDay();const daysSinceMon=dow===0?6:dow-1;
+  const mon=new Date(today);mon.setDate(today.getDate()-daysSinceMon+offset*7);
   return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
 }
-function wastageWeekEnd(weekStart){
-  const d=new Date(weekStart+'T00:00:00');
-  d.setDate(d.getDate()+6);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function fmtWDate(str){
-  if(!str)return'—';
-  return new Date(str+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-}
-
+function wastageWeekEnd(weekStart){const d=new Date(weekStart+'T00:00:00');d.setDate(d.getDate()+6);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtWDate(str){if(!str)return'—';return new Date(str+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
 function calcWastageCost(entry){
-  if(entry.type==='menu'){
-    const arr=entry.gpType==='wet'?WET_GP:DRY_GP;
-    const item=arr.find(i=>i.id===entry.itemId);
-    return item?totalCost(item)*(entry.portions||1):0;
-  } else {
-    // Raw ingredient
-    const m=getMaster(entry.mid);
-    if(!m)return 0;
-    return (entry.qty||0)*cpu(m);
-  }
+  if(entry.type==='menu'){const arr=entry.gpType==='wet'?WET_GP:DRY_GP;const item=arr.find(i=>i.id===entry.itemId);return item?totalCost(item)*(entry.portions||1):0;}
+  const m=getMaster(entry.mid);if(!m)return 0;return(entry.qty||0)*cpu(m);
 }
-
 function wastageTeam(entry){
   if(entry.team)return entry.team;
-  if(entry.type==='menu'){
-    return entry.gpType==='dry'?'boh':'foh';
-  }
-  const m=getMaster(entry.mid);
-  if(!m)return'both';
-  // Garnishes → foh, food → boh, ops → ops
+  if(entry.type==='menu')return entry.gpType==='dry'?'boh':'foh';
+  const m=getMaster(entry.mid);if(!m)return'both';
   return m.type==='D'?'foh':m.type==='F'?'boh':'ops';
+}
+
+/* NEW: Iframe-safe error display — no alert() */
+function showWastageError(msg){
+  const el=document.getElementById('wastage-form-error');
+  if(el){el.textContent='⚠ '+msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',5000);}
 }
 
 function renderWastage(){
   const ws=wastageWeekStart(wastageWeekOffset);
   const we=wastageWeekEnd(ws);
   const weekEntries=WASTAGE.filter(e=>e.week===ws);
-
-  // Stats
   const totalCostAll=weekEntries.reduce((s,e)=>s+calcWastageCost(e),0);
   const fohCost=weekEntries.filter(e=>wastageTeam(e)==='foh').reduce((s,e)=>s+calcWastageCost(e),0);
   const bohCost=weekEntries.filter(e=>wastageTeam(e)==='boh').reduce((s,e)=>s+calcWastageCost(e),0);
-  const topReason=weekEntries.length?
-    Object.entries(weekEntries.reduce((m,e)=>{m[e.reason]=(m[e.reason]||0)+1;return m;},{}))
-      .sort((a,b)=>b[1]-a[1])[0]?.[0]||'—'
-    :'—';
-
-  // Build all master options for searchable select
-  const masterOpts=MASTERS.map(m=>`<option value="m:${m.id}">[${m.id}] ${m.name} (${fmtCpuDisplay(m)})</option>`).join('');
-  const wetOpts=WET_GP.map(i=>`<option value="w:${i.id}:${i.id}">🍸 ${i.name}</option>`).join('');
-  const dryOpts=DRY_GP.map(i=>`<option value="d:${i.id}:${i.id}">🍕 ${i.name}</option>`).join('');
-
-  // Reasons datalist
+  const topReason=weekEntries.length?Object.entries(weekEntries.reduce((m,e)=>{m[e.reason]=(m[e.reason]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—':'—';
   const reasonsList=WASTAGE_REASONS.map(r=>`<option value="${r}">`).join('');
 
   let h=`
-  <!-- Week nav -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
     <button class="btn-sm" onclick="wastageWeekOffset--;render()">← Prev week</button>
     <strong style="color:var(--teal);font-size:14px">${fmtWDate(ws)} – ${fmtWDate(we)}</strong>
     <button class="btn-sm" onclick="wastageWeekOffset++;render()">Next week →</button>
     ${wastageWeekOffset!==0?`<button class="btn-sm" onclick="wastageWeekOffset=0;render()" style="margin-left:auto">This week</button>`:''}
   </div>
-
-  <!-- Stats row -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-    <div class="wastage-metric"><div class="wm-label">Total wastage</div>
-      <div class="wm-val">£${totalCostAll.toFixed(2)}</div>
-      <div class="wm-sub">${weekEntries.length} items this week</div></div>
-    <div class="wastage-metric"><div class="wm-label">🍸 FOH (bar/drinks)</div>
-      <div class="wm-val">£${fohCost.toFixed(2)}</div>
-      <div class="wm-sub">${weekEntries.filter(e=>wastageTeam(e)==='foh').length} items</div></div>
-    <div class="wastage-metric"><div class="wm-label">🍕 BOH (kitchen/food)</div>
-      <div class="wm-val">£${bohCost.toFixed(2)}</div>
-      <div class="wm-sub">${weekEntries.filter(e=>wastageTeam(e)==='boh').length} items</div></div>
-    <div class="wastage-metric"><div class="wm-label">Top reason</div>
-      <div class="wm-val" style="font-size:14px">${topReason}</div>
-      <div class="wm-sub">most common this week</div></div>
+    <div class="wastage-metric"><div class="wm-label">Total wastage</div><div class="wm-val">£${totalCostAll.toFixed(2)}</div><div class="wm-sub">${weekEntries.length} items this week</div></div>
+    <div class="wastage-metric"><div class="wm-label">🍸 FOH (bar/drinks)</div><div class="wm-val">£${fohCost.toFixed(2)}</div><div class="wm-sub">${weekEntries.filter(e=>wastageTeam(e)==='foh').length} items</div></div>
+    <div class="wastage-metric"><div class="wm-label">🍕 BOH (kitchen/food)</div><div class="wm-val">£${bohCost.toFixed(2)}</div><div class="wm-sub">${weekEntries.filter(e=>wastageTeam(e)==='boh').length} items</div></div>
+    <div class="wastage-metric"><div class="wm-label">Top reason</div><div class="wm-val" style="font-size:14px">${topReason}</div><div class="wm-sub">most common this week</div></div>
   </div>
 
-  <!-- Log form -->
   <div class="card" style="margin-bottom:14px">
     <div class="card-title" style="color:#7f1d1d">📝 Log Wastage</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div>
-        <label class="form-label">Date</label>
+      <div><label class="form-label">Date</label>
         <input type="date" id="w-date" value="${ws}" max="${we}" min="${ws}"
           style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
       </div>
-      <div>
-        <label class="form-label">Team</label>
+      <div><label class="form-label">Team</label>
         <select id="w-team" style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px">
           <option value="auto">Auto (from item)</option>
           <option value="foh">🍸 FOH — Bar</option>
@@ -2769,40 +1749,21 @@ function renderWastage(){
         </select>
       </div>
     </div>
-
-    <!-- Item type selector -->
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px">
-        <input type="radio" name="w-type" value="ingredient" checked onchange="toggleWastageType(this.value)"> Raw ingredient / stock item
-      </label>
-      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px">
-        <input type="radio" name="w-type" value="menu" onchange="toggleWastageType(this.value)"> Menu item (auto-costs from recipe)
-      </label>
-    </div>
-
-    <!-- Ingredient selector -->
-    <!-- Unified searchable item picker — covers ingredients, menu items, derivatives -->
     <div style="margin-bottom:10px">
-      <label class="form-label">Item <span style="text-transform:none;font-weight:400;font-size:10px">(search ingredients, menu items, or derivatives — e.g. "lemon slice", "margherita", "mint")</span></label>
+      <label class="form-label">Item <span style="text-transform:none;font-weight:400;font-size:10px">(search ingredients, menu items, or derivatives — e.g. "tomato sauce", "margherita", "mint")</span></label>
       <div style="position:relative">
         <input type="text" id="w-item-search" placeholder="Type to search all ingredients and menu items…"
           autocomplete="off"
           style="width:100%;height:36px;border:1.5px solid #7f1d1d;border-radius:6px;padding:0 12px;font-size:14px"
-          oninput="filterWastageSearch()"
-          onfocus="filterWastageSearch(true)"
-          onkeydown="navWastageDrop(event)">
+          oninput="filterWastageSearch()" onfocus="filterWastageSearch(true)" onkeydown="navWastageDrop(event)">
         <input type="hidden" id="w-item-type" value="">
         <input type="hidden" id="w-mid" value="">
         <input type="hidden" id="w-gptype" value="">
         <input type="hidden" id="w-gpid" value="">
-        <div id="w-item-drop"
-          style="display:none;position:fixed;background:#fff;border:2px solid #7f1d1d;border-radius:8px;max-height:280px;overflow-y:auto;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.2)">
-        </div>
+        <div id="w-item-drop" style="display:none;position:fixed;background:#fff;border:2px solid #7f1d1d;border-radius:8px;max-height:280px;overflow-y:auto;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.2)"></div>
       </div>
       <div id="w-item-selected" style="margin-top:6px;min-height:20px"></div>
     </div>
-
-    <!-- Qty / portions row — shown after item selected -->
     <div id="w-qty-row" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
       <div id="w-qty-wrap">
         <label class="form-label" id="w-qty-label">Quantity</label>
@@ -2812,8 +1773,7 @@ function renderWastage(){
       </div>
       <div id="w-unit-wrap">
         <label class="form-label">Unit</label>
-        <input type="text" id="w-unit" readonly
-          style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px;background:#f9f9f9">
+        <input type="text" id="w-unit" readonly style="width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px;background:#f9f9f9">
       </div>
       <div>
         <label class="form-label">Cost preview</label>
@@ -2821,6 +1781,8 @@ function renderWastage(){
       </div>
     </div>
     <datalist id="w-reasons-list">${reasonsList}</datalist>
+    <!-- NEW: Inline error banner — replaces alert() which doesn't work in iframes -->
+    <div id="wastage-form-error" style="display:none;background:#fdeaea;color:#7f1d1d;border:1px solid #fca5a5;border-radius:7px;padding:9px 14px;font-size:13px;font-weight:600;margin-bottom:8px"></div>
     <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:4px">
       <div style="flex:2;min-width:200px">
         <label class="form-label">Reason <span style="font-weight:400;text-transform:none;font-size:10px">(type or pick — new reasons auto-save)</span></label>
@@ -2831,18 +1793,15 @@ function renderWastage(){
     </div>
   </div>
 
-  <!-- Wastage log table -->
   <div class="card">
     <div class="card-title" style="color:#7f1d1d">Week of ${fmtWDate(ws)} – ${fmtWDate(we)} (${weekEntries.length} items)</div>`;
 
   if(!weekEntries.length){
     h+=`<div class="empty"><div class="empty-icon">✅</div>No wastage logged this week</div>`;
   } else {
-    // Group by FOH / BOH
     const fohItems=weekEntries.filter(e=>wastageTeam(e)==='foh');
     const bohItems=weekEntries.filter(e=>wastageTeam(e)==='boh');
     const otherItems=weekEntries.filter(e=>!['foh','boh'].includes(wastageTeam(e)));
-
     const renderGroup=(items,label,color)=>{
       if(!items.length)return'';
       let t=`<div style="font-size:11px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.05em;padding:8px 0 4px">${label}</div>`;
@@ -2854,8 +1813,7 @@ function renderWastage(){
         const cost=calcWastageCost(e);groupCost+=cost;
         let itemName='',qtyStr='';
         if(e.type==='menu'){
-          const arr=e.gpType==='wet'?WET_GP:DRY_GP;
-          const item=arr.find(i=>i.id===e.itemId);
+          const arr=e.gpType==='wet'?WET_GP:DRY_GP;const item=arr.find(i=>i.id===e.itemId);
           itemName=(e.gpType==='wet'?'🍸 ':'🍕 ')+(item?item.name:'[deleted]');
           qtyStr=`${e.portions} portion${e.portions>1?'s':''}`;
         } else {
@@ -2869,35 +1827,28 @@ function renderWastage(){
           <td>${qtyStr}</td>
           <td><span class="reason-tag">${e.reason}</span></td>
           <td class="num" style="color:#7f1d1d;font-weight:700">£${cost.toFixed(2)}</td>
-          <td><button class="del-btn" onclick="deleteWastage(${e.id})">✕</button></td>
+          <td><button class="del-btn" id="dw-${e.id}" onclick="deleteWastage(this,${e.id})">✕</button></td>
         </tr>`;
       });
       t+=`<tr style="background:#fdeaea"><td colspan="4" style="font-weight:700;text-align:right">Group total</td>
         <td class="num" style="font-weight:900;color:#7f1d1d">£${groupCost.toFixed(2)}</td><td></td></tr>`;
-      t+=`</tbody></table>`;
-      return t;
+      t+=`</tbody></table>`;return t;
     };
-
     h+=renderGroup(fohItems,'🍸 Front of House — Bar & Drinks','var(--teal)');
     h+=renderGroup(bohItems,'🍕 Back of House — Kitchen & Food','#c44414');
-    if(otherItems.length) h+=renderGroup(otherItems,'📦 Other / Ops','var(--muted)');
-
+    if(otherItems.length)h+=renderGroup(otherItems,'📦 Other / Ops','var(--muted)');
     h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fdeaea;border-radius:8px;font-weight:700;color:#7f1d1d">
-      <span>Week total wastage</span>
-      <span style="font-size:18px">£${totalCostAll.toFixed(2)}</span>
+      <span>Week total wastage</span><span style="font-size:18px">£${totalCostAll.toFixed(2)}</span>
     </div>`;
   }
 
   h+=`</div>
-
-  <!-- Manage reasons -->
   <div class="card">
     <div class="card-title" style="color:var(--muted)">⚙️ Manage Reasons</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-      ${WASTAGE_REASONS.map((r,i)=>`
-        <div style="display:flex;align-items:center;background:var(--teal-l);border-radius:16px;padding:3px 10px;font-size:12px;gap:4px">
-          ${r}<button onclick="removeReason(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 2px">✕</button>
-        </div>`).join('')}
+      ${WASTAGE_REASONS.map((r,i)=>`<div style="display:flex;align-items:center;background:var(--teal-l);border-radius:16px;padding:3px 10px;font-size:12px;gap:4px">
+        ${r}<button onclick="removeReason(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 2px">✕</button>
+      </div>`).join('')}
     </div>
     <div style="display:flex;gap:8px">
       <input type="text" id="new-reason-input" placeholder="Add custom reason…"
@@ -2906,409 +1857,214 @@ function renderWastage(){
       <button class="btn-sm" onclick="addReason()">Add</button>
     </div>
   </div>`;
-
   return h;
 }
 
-function showToastGP(msg,type){alert(msg);}
 function filterWastageSearch(showAll=false){
-  const inp=document.getElementById('w-item-search');
-  const drop=document.getElementById('w-item-drop');
-  if(!inp||!drop)return;
+  const inp=document.getElementById('w-item-search');const drop=document.getElementById('w-item-drop');if(!inp||!drop)return;
   const q=(inp.value||'').toLowerCase().trim();
-
-  // Position drop below input
   const r=inp.getBoundingClientRect();
-  drop.style.left=r.left+'px';
-  drop.style.top=(r.bottom+2)+'px';
-  drop.style.width=Math.max(r.width,400)+'px';
-
-  // Build combined list: all masters + all GP items
+  drop.style.left=r.left+'px';drop.style.top=(r.bottom+2)+'px';drop.style.width=Math.max(r.width,400)+'px';
   let results=[];
-
-  // Ingredients (masters)
   const mLabel={D:'🍸 Drink Ingredient',F:'🍕 Food Ingredient',O:'📦 Ops'};
   MASTERS.forEach(m=>{
     if(showAll&&!q||m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||m.cat.toLowerCase().includes(q)){
-      results.push({
-        key:`m:${m.id}`,label:`[${m.id}] ${m.name}`,
-        sub:`${mLabel[m.type]||''} · ${m.cat} · ${fmtCpuDisplay(m)}`,
-        type:'ingredient',mid:m.id,unit:m.unit,cost:cpu(m),
-        badge:mLabel[m.type]||'',badgeColor:m.type==='D'?'var(--teal)':m.type==='F'?'#c44414':'var(--muted)'
-      });
+      results.push({key:`m:${m.id}`,label:`[${m.id}] ${m.name}`,sub:`${mLabel[m.type]||''} · ${m.cat} · ${fmtCpuDisplay(m)}`,type:'ingredient',mid:m.id,unit:m.unit,cost:cpu(m),badge:mLabel[m.type]||'',badgeColor:m.type==='D'?'var(--teal)':m.type==='F'?'#c44414':'var(--muted)'});
     }
   });
-
-  // Menu items — wet GP
-  WET_GP.forEach(i=>{
-    if(showAll&&!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)){
-      results.push({
-        key:`w:${i.id}`,label:`🍸 ${i.name}`,
-        sub:`Drinks menu · ${i.cat} · Recipe cost £${totalCost(i).toFixed(2)} per portion`,
-        type:'menu',gpType:'wet',gpId:i.id,cost:totalCost(i),
-        badge:'Menu item',badgeColor:'var(--teal)'
-      });
-    }
-  });
-
-  // Menu items — dry GP
-  DRY_GP.forEach(i=>{
-    if(showAll&&!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)){
-      results.push({
-        key:`d:${i.id}`,label:`🍕 ${i.name}`,
-        sub:`Food menu · ${i.cat} · Recipe cost £${totalCost(i).toFixed(2)} per portion`,
-        type:'menu',gpType:'dry',gpId:i.id,cost:totalCost(i),
-        badge:'Menu item',badgeColor:'#c44414'
-      });
-    }
-  });
-
-  if(!results.length){
-    drop.innerHTML=`<div style="padding:10px 14px;color:var(--muted);font-size:13px">No results for "${q}"</div>`;
-    drop.style.display='block';return;
-  }
-
+  WET_GP.forEach(i=>{if(showAll&&!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)){results.push({key:`w:${i.id}`,label:`🍸 ${i.name}`,sub:`Drinks menu · ${i.cat} · Recipe cost £${totalCost(i).toFixed(2)} per portion`,type:'menu',gpType:'wet',gpId:i.id,cost:totalCost(i),badge:'Menu item',badgeColor:'var(--teal)'});}});
+  DRY_GP.forEach(i=>{if(showAll&&!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)){results.push({key:`d:${i.id}`,label:`🍕 ${i.name}`,sub:`Food menu · ${i.cat} · Recipe cost £${totalCost(i).toFixed(2)} per portion`,type:'menu',gpType:'dry',gpId:i.id,cost:totalCost(i),badge:'Menu item',badgeColor:'#c44414'});}});
+  if(!results.length){drop.innerHTML=`<div style="padding:10px 14px;color:var(--muted);font-size:13px">No results for "${q}"</div>`;drop.style.display='block';return;}
   const hi=(txt)=>q?txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<strong style="color:#7f1d1d">$1</strong>'):txt;
-
-  drop.innerHTML=results.map(r=>`
-    <div class="ms-drop-item" onmousedown="selectWastageItem(${JSON.stringify(r).replace(/"/g,'&quot;')})"
-      style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;gap:10px">
-      <div>
-        <div style="font-size:13px">${hi(r.label)}</div>
-        <div style="font-size:11px;color:var(--muted)">${r.sub}</div>
-      </div>
-      <span style="font-size:10px;font-weight:700;color:${r.badgeColor};white-space:nowrap;background:#f5f5f5;padding:2px 7px;border-radius:10px">${r.badge}</span>
-    </div>`).join('');
-
+  drop.innerHTML=results.map(r=>`<div class="ms-drop-item" onmousedown="selectWastageItem(${JSON.stringify(r).replace(/"/g,'&quot;')})"
+    style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;gap:10px">
+    <div><div style="font-size:13px">${hi(r.label)}</div><div style="font-size:11px;color:var(--muted)">${r.sub}</div></div>
+    <span style="font-size:10px;font-weight:700;color:${r.badgeColor};white-space:nowrap;background:#f5f5f5;padding:2px 7px;border-radius:10px">${r.badge}</span>
+  </div>`).join('');
   drop.style.display='block';
-  drop.querySelectorAll('.ms-drop-item').forEach(el=>{
-    el.onmouseenter=()=>el.style.background='#fff5f5';
-    el.onmouseleave=()=>el.style.background='';
-  });
+  drop.querySelectorAll('.ms-drop-item').forEach(el=>{el.onmouseenter=()=>el.style.background='#fff5f5';el.onmouseleave=()=>el.style.background='';});
 }
 
 function selectWastageItem(r){
-  // r is the result object from filterWastageSearch
-  const inp=document.getElementById('w-item-search');
-  const drop=document.getElementById('w-item-drop');
-  const selEl=document.getElementById('w-item-selected');
-  const qtyRow=document.getElementById('w-qty-row');
-  const qtyLbl=document.getElementById('w-qty-label');
-  const unitEl=document.getElementById('w-unit');
-
-  if(inp)inp.value=r.label;
-  if(drop)drop.style.display='none';
-
-  // Store hidden values
+  const inp=document.getElementById('w-item-search');const drop=document.getElementById('w-item-drop');
+  const selEl=document.getElementById('w-item-selected');const qtyRow=document.getElementById('w-qty-row');
+  const qtyLbl=document.getElementById('w-qty-label');const unitEl=document.getElementById('w-unit');
+  if(inp)inp.value=r.label;if(drop)drop.style.display='none';
   document.getElementById('w-item-type').value=r.type;
   document.getElementById('w-mid').value=r.mid||'';
   document.getElementById('w-gptype').value=r.gpType||'';
   document.getElementById('w-gpid').value=r.gpId||'';
-
-  // Show selection confirmation
-  if(selEl){
-    const costPer=r.type==='ingredient'?`${fmtCpuDisplay(getMaster(r.mid))}`:`£${r.cost.toFixed(2)} per portion`;
-    selEl.innerHTML=`<span style="color:#7f1d1d;font-size:12px;font-weight:600">✓ Selected: <strong>${r.label}</strong> · ${costPer}</span>`;
-  }
-
-  // Show qty row and configure labels
+  if(selEl){const costPer=r.type==='ingredient'?`${fmtCpuDisplay(getMaster(r.mid))}`:`£${r.cost.toFixed(2)} per portion`;selEl.innerHTML=`<span style="color:#7f1d1d;font-size:12px;font-weight:600">✓ Selected: <strong>${r.label}</strong> · ${costPer}</span>`;}
   if(qtyRow)qtyRow.style.display='grid';
-  if(r.type==='ingredient'){
-    if(qtyLbl)qtyLbl.textContent='Quantity';
-    if(unitEl)unitEl.value=r.unit||'';
-  } else {
-    if(qtyLbl)qtyLbl.textContent='Portions wasted';
-    if(unitEl)unitEl.value='portions';
-    const qtyIn=document.getElementById('w-qty');
-    if(qtyIn&&!qtyIn.value)qtyIn.value='1';
-  }
-
-  updateWastagePreview();
-  document.getElementById('w-qty')?.focus();
+  if(r.type==='ingredient'){if(qtyLbl)qtyLbl.textContent='Quantity';if(unitEl)unitEl.value=r.unit||'';}
+  else{if(qtyLbl)qtyLbl.textContent='Portions wasted';if(unitEl)unitEl.value='portions';const qtyIn=document.getElementById('w-qty');if(qtyIn&&!qtyIn.value)qtyIn.value='1';}
+  updateWastagePreview();document.getElementById('w-qty')?.focus();
 }
 
 function navWastageDrop(e){
-  const drop=document.getElementById('w-item-drop');
-  if(!drop||drop.style.display==='none')return;
-  const items=[...drop.querySelectorAll('.ms-drop-item')];
-  const cur=drop.querySelector('.ms-drop-item[data-focused]');
-  let idx=items.indexOf(cur);
+  const drop=document.getElementById('w-item-drop');if(!drop||drop.style.display==='none')return;
+  const items=[...drop.querySelectorAll('.ms-drop-item')];const cur=drop.querySelector('.ms-drop-item[data-focused]');let idx=items.indexOf(cur);
   if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(idx+1,items.length-1);}
   else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(idx-1,0);}
   else if(e.key==='Enter'&&cur){e.preventDefault();cur.onmousedown();return;}
-  else if(e.key==='Escape'){drop.style.display='none';return;}
-  else return;
+  else if(e.key==='Escape'){drop.style.display='none';return;}else return;
   items.forEach(i=>{delete i.dataset.focused;i.style.background='';});
   if(items[idx]){items[idx].dataset.focused='1';items[idx].style.background='#fff5f5';items[idx].scrollIntoView({block:'nearest'});}
 }
-
-// Close wastage drop when clicking elsewhere
 document.addEventListener('click',e=>{
   const drop=document.getElementById('w-item-drop');
-  if(drop&&!e.target.closest('#w-item-search')&&!e.target.closest('#w-item-drop'))
-    drop.style.display='none';
+  if(drop&&!e.target.closest('#w-item-search')&&!e.target.closest('#w-item-drop'))drop.style.display='none';
 });
 
-function toggleWastageType(type){} // legacy — no longer needed
-function updateMenuItemOpts(){} // legacy — no longer needed
-
 function updateWastagePreview(){
-  const type=document.getElementById('w-item-type')?.value;
-  const costEl=document.getElementById('w-cost-preview');
-  let cost=0;
-  if(type==='ingredient'){
-    const mid=document.getElementById('w-mid')?.value;
-    const qty=parseFloat(document.getElementById('w-qty')?.value)||0;
-    const m=getMaster(mid);
-    cost=m?qty*cpu(m):0;
-  } else if(type==='menu'){
-    const gptype=document.getElementById('w-gptype')?.value||'wet';
-    const gpid=parseInt(document.getElementById('w-gpid')?.value);
-    const portions=parseFloat(document.getElementById('w-qty')?.value)||1;
-    const arr=gptype==='wet'?WET_GP:DRY_GP;
-    const item=arr.find(i=>i.id===gpid);
-    cost=item?totalCost(item)*portions:0;
-  }
+  const type=document.getElementById('w-item-type')?.value;const costEl=document.getElementById('w-cost-preview');let cost=0;
+  if(type==='ingredient'){const mid=document.getElementById('w-mid')?.value;const qty=parseFloat(document.getElementById('w-qty')?.value)||0;const m=getMaster(mid);cost=m?qty*cpu(m):0;}
+  else if(type==='menu'){const gptype=document.getElementById('w-gptype')?.value||'wet';const gpid=parseInt(document.getElementById('w-gpid')?.value);const portions=parseFloat(document.getElementById('w-qty')?.value)||1;const arr=gptype==='wet'?WET_GP:DRY_GP;const item=arr.find(i=>i.id===gpid);cost=item?totalCost(item)*portions:0;}
   if(costEl)costEl.textContent=`£${cost.toFixed(2)}`;
 }
 
+/* NEW: logWastage uses showWastageError instead of alert — works in iframes */
 function logWastage(weekStart){
   const type=document.getElementById('w-item-type')?.value;
   const date=document.getElementById('w-date')?.value||weekStart;
   const reason=(document.getElementById('w-reason')?.value||'').trim();
   const teamSel=document.getElementById('w-team')?.value||'auto';
   const qty=parseFloat(document.getElementById('w-qty')?.value)||0;
-
-  if(!type){showToastGP('Please search and select an item first.','warn');return;}
-  if(!reason){showToastGP('Please add a reason.','warn');return;}
-  if(qty<=0){showToastGP('Please enter a quantity or number of portions.','warn');return;}
-
+  if(!type){showWastageError('Please search and select an item first.');return;}
+  if(!reason){showWastageError('Please add a reason for the wastage.');return;}
+  if(qty<=0){showWastageError('Please enter a quantity or number of portions.');return;}
   let entry={id:nextWastageId++,week:weekStart,date,reason,team:teamSel==='auto'?null:teamSel};
-
   if(type==='ingredient'){
-    const mid=document.getElementById('w-mid')?.value;
-    const m=getMaster(mid);
-    if(!mid||!m){showToastGP('Ingredient not found.','warn');return;}
+    const mid=document.getElementById('w-mid')?.value;const m=getMaster(mid);
+    if(!mid||!m){showWastageError('Ingredient not found.');return;}
     entry.type='ingredient';entry.mid=mid;entry.qty=qty;entry.unit=m.unit||'';
   } else {
-    const gptype=document.getElementById('w-gptype')?.value||'wet';
-    const gpid=parseInt(document.getElementById('w-gpid')?.value);
-    if(!gpid){showToastGP('Menu item not found.','warn');return;}
+    const gptype=document.getElementById('w-gptype')?.value||'wet';const gpid=parseInt(document.getElementById('w-gpid')?.value);
+    if(!gpid){showWastageError('Menu item not found.');return;}
     entry.type='menu';entry.gpType=gptype;entry.itemId=gpid;entry.portions=qty;
   }
-
-  // Auto-save new reasons
   if(reason&&!WASTAGE_REASONS.includes(reason))WASTAGE_REASONS.push(reason);
-
-  WASTAGE.push(entry);
-  saveState();render();
+  WASTAGE.push(entry);saveState();render();
 }
 
-function deleteWastage(id){
-  WASTAGE=WASTAGE.filter(e=>e.id!==id);
-  saveState();render();
+/* NEW: Two-tap delete — no confirm() which is also blocked in iframes */
+function deleteWastage(btn,id){
+  if(btn.dataset.confirm){
+    WASTAGE=WASTAGE.filter(e=>e.id!==id);saveState();render();
+  } else {
+    btn.dataset.confirm='1';btn.textContent='✓ sure?';btn.style.color='var(--bad)';
+    setTimeout(()=>{if(btn){delete btn.dataset.confirm;btn.textContent='✕';btn.style.color='';}},3000);
+  }
 }
 
-function addReason(){
-  const inp=document.getElementById('new-reason-input');
-  const r=(inp?.value||'').trim();
-  if(!r||WASTAGE_REASONS.includes(r))return;
-  WASTAGE_REASONS.push(r);
-  inp.value='';
-  saveState();render();
-}
+function addReason(){const inp=document.getElementById('new-reason-input');const r=(inp?.value||'').trim();if(!r||WASTAGE_REASONS.includes(r))return;WASTAGE_REASONS.push(r);inp.value='';saveState();render();}
+function removeReason(idx){WASTAGE_REASONS.splice(idx,1);saveState();render();}
 
-function removeReason(idx){
-  WASTAGE_REASONS.splice(idx,1);
-  saveState();render();
-}
+/* ═══════════════════ PERSISTENCE ═══════════════════ */
+const STORAGE_KEY='medley-gp-v1';
+const ACCESS_PASSWORD='Medley2026';
 
-/* ════════════════════════════════════════════
-   PERSISTENCE — localStorage + JSON export/import
-   ════════════════════════════════════════════ */
-const STORAGE_KEY = 'medley-gp-v1';
-
-// ── Set your shared password here ─────────────────────────────────────────
-// All three of you (owner, GM, head chef) use this same password.
-// To change it: update the line below, save the file, share the new version.
-const ACCESS_PASSWORD = 'Medley2026';
-// ──────────────────────────────────────────────────────────────────────────
-
-function saveState() {
-  try {
-    const state = buildState();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function saveState(){
+  try{
+    const state=buildState();
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
     updateSaveStatus(state.savedAt);
-    // Debounced cloud push — waits 2.5s after last change before pushing
     clearTimeout(syncTimer);
-    syncTimer = setTimeout(()=>pushToCloud(state), 2500);
-  } catch(e) { console.warn('Save failed:', e); }
+    syncTimer=setTimeout(()=>pushToCloud(state),2500);
+  }catch(e){console.warn('Save failed:',e);}
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    if (!s || !s.MASTERS) return null;
-    MASTERS  = s.MASTERS;
-    WET_GP   = s.WET_GP;
-    DRY_GP   = s.DRY_GP;
-    STAFF    = s.STAFF    || [];
-    SHIFTS   = s.SHIFTS   || [];
-    WASTAGE  = s.WASTAGE  || [];
-    WASTAGE_REASONS = s.WASTAGE_REASONS || WASTAGE_REASONS;
-    BATCHES  = s.BATCHES  || [];
-    nextBatchId = s.nextBatchId || nextBatchId;
-    nextIds  = s.nextIds  || nextIds;
-    nextWet  = s.nextWet  || nextWet;
-    nextDry  = s.nextDry  || nextDry;
-    nextStaffId  = s.nextStaffId  || nextStaffId;
-    nextShiftId  = s.nextShiftId  || nextShiftId;
-    nextWastageId= s.nextWastageId|| nextWastageId;
-    target   = s.target   || 70;
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return null;
+    const s=JSON.parse(raw);if(!s||!s.MASTERS)return null;
+    MASTERS=s.MASTERS;WET_GP=s.WET_GP;DRY_GP=s.DRY_GP;
+    STAFF=s.STAFF||[];SHIFTS=s.SHIFTS||[];WASTAGE=s.WASTAGE||[];
+    WASTAGE_REASONS=s.WASTAGE_REASONS||WASTAGE_REASONS;
+    BATCHES=s.BATCHES||[];
+    PORTION_UNITS=s.PORTION_UNITS||PORTION_UNITS;  /* NEW */
+    nextBatchId=s.nextBatchId||nextBatchId;
+    nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;
+    nextStaffId=s.nextStaffId||nextStaffId;nextShiftId=s.nextShiftId||nextShiftId;
+    nextWastageId=s.nextWastageId||nextWastageId;
+    target=s.target||70;
     return s.savedAt;
-  } catch(e) { return null; }
+  }catch(e){return null;}
 }
 
-function updateSaveStatus(isoStr) {
-  const el = document.getElementById('save-status');
-  if (!el || !isoStr) return;
-  const d    = new Date(isoStr);
-  const time = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
-  const date = d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
-  el.textContent = '💾 Saved ' + date + ' ' + time;
-  el.className = 'save-status ok';
+function updateSaveStatus(isoStr){
+  const el=document.getElementById('save-status');if(!el||!isoStr)return;
+  const d=new Date(isoStr);
+  el.textContent='💾 Saved '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  el.className='save-status ok';
 }
 
-function exportData() {
-  const state = {
-    v: 1,
-    exportedAt: new Date().toISOString(),
-    MASTERS, WET_GP, DRY_GP,
-    nextIds, nextWet, nextDry, target
-  };
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'medley-gp-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
+function exportData(){
+  const state={v:1,exportedAt:new Date().toISOString(),MASTERS,WET_GP,DRY_GP,PORTION_UNITS,nextIds,nextWet,nextDry,target};
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='medley-gp-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
 }
 
-function importData(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const s = JSON.parse(e.target.result);
-      if (!s || !s.MASTERS || !s.WET_GP) {
-        alert('Invalid file — use a Medley GP export (.json) file.');
-        return;
-      }
-      const exported = s.exportedAt
-        ? new Date(s.exportedAt).toLocaleString('en-GB') : 'unknown time';
-      if (!confirm(
-        'Replace all current data with file exported ' + exported + '?\n\nYour current data will be overwritten. Continue?'
-      )) { input.value=''; return; }
-      MASTERS  = s.MASTERS;
-      WET_GP   = s.WET_GP;
-      DRY_GP   = s.DRY_GP;
-      nextIds  = s.nextIds  || nextIds;
-      nextWet  = s.nextWet  || nextWet;
-      nextDry  = s.nextDry  || nextDry;
-      target   = s.target   || 70;
-      saveState();
-      render();
-      input.value = '';
-      alert('✓ Data imported and saved.');
-    } catch(err) { alert('Error reading file: ' + err.message); input.value=''; }
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const s=JSON.parse(e.target.result);
+      if(!s||!s.MASTERS||!s.WET_GP){alert('Invalid file — use a Medley GP export (.json) file.');return;}
+      const exported=s.exportedAt?new Date(s.exportedAt).toLocaleString('en-GB'):'unknown time';
+      if(!confirm('Replace all current data with file exported '+exported+'?\n\nYour current data will be overwritten. Continue?')){input.value='';return;}
+      MASTERS=s.MASTERS;WET_GP=s.WET_GP;DRY_GP=s.DRY_GP;
+      PORTION_UNITS=s.PORTION_UNITS||PORTION_UNITS;
+      nextIds=s.nextIds||nextIds;nextWet=s.nextWet||nextWet;nextDry=s.nextDry||nextDry;target=s.target||70;
+      saveState();render();input.value='';alert('✓ Data imported and saved.');
+    }catch(err){alert('Error reading file: '+err.message);input.value='';}
   };
   reader.readAsText(file);
 }
 
-/* ════════════════════════════════════════════
-   AUTHENTICATION
-   ════════════════════════════════════════════ */
-
-function checkAuth() {
-  return sessionStorage.getItem('medley-authed') === '1';
-}
-
-function attemptLogin() {
-  const pwd = (document.getElementById('pwd-input').value || '').trim();
-  if (pwd === ACCESS_PASSWORD) {
-    sessionStorage.setItem('medley-authed', '1');
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('login-error').style.display  = 'none';
-    const savedAt = loadState();
-    if (savedAt) updateSaveStatus(savedAt);
-    else { /* first ever open — default data already loaded */ }
+/* ═══════════════════ AUTH ═══════════════════ */
+function checkAuth(){return sessionStorage.getItem('medley-authed')==='1';}
+function attemptLogin(){
+  const pwd=(document.getElementById('pwd-input').value||'').trim();
+  if(pwd===ACCESS_PASSWORD){
+    sessionStorage.setItem('medley-authed','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('login-error').style.display='none';
+    const savedAt=loadState();if(savedAt)updateSaveStatus(savedAt);
     render();
   } else {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('pwd-input').value = '';
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('pwd-input').value='';
     document.getElementById('pwd-input').focus();
   }
 }
 
-/* ── Auto-save wrapper — called after every data mutation ─────── */
-function withSave(fn) {
-  return function(...args) { fn(...args); saveState(); };
-}
+function withSave(fn){return function(...args){fn(...args);saveState();};}
+saveMaster=withSave(saveMaster);delMaster=withSave(delMaster);addMaster=withSave(addMaster);
+setSell=withSave(setSell);setQty=withSave(setQty);setCost=withSave(setCost);
+delIng=withSave(delIng);delItem=withSave(delItem);addFromMaster=withSave(addFromMaster);
+addCustom=withSave(addCustom);addItem=withSave(addItem);
 
-saveMaster    = withSave(saveMaster);
-delMaster     = withSave(delMaster);
-addMaster     = withSave(addMaster);
-setSell       = withSave(setSell);
-setQty        = withSave(setQty);
-setCost       = withSave(setCost);
-delIng        = withSave(delIng);
-delItem       = withSave(delItem);
-addFromMaster = withSave(addFromMaster);
-addCustom     = withSave(addCustom);
-addItem       = withSave(addItem);
-
-/* ════════════════════════════════════════════
-   INIT
-   ════════════════════════════════════════════ */
-
-function init() {
+/* ═══════════════════ INIT ═══════════════════ */
+function init(){
   loadCloudConfig();
-  if(CLOUD) { setDot('ok'); showSyncConnected(); }
-
-  if (checkAuth()) {
-    document.getElementById('login-screen').style.display = 'none';
-    const savedAt = loadState();
-    if (savedAt) updateSaveStatus(savedAt);
+  if(CLOUD){setDot('ok');showSyncConnected();}
+  if(checkAuth()){
+    document.getElementById('login-screen').style.display='none';
+    const savedAt=loadState();if(savedAt)updateSaveStatus(savedAt);
     render();
-
-    // Auto-sync from cloud on load — always pull latest on open
     if(CLOUD){
       forceSyncFromCloud().then(()=>{
-        // After initial sync, set up background sync every 5 minutes
-        setInterval(()=>{
-          if(CLOUD && document.visibilityState==='visible'){
-            forceSyncFromCloud();
-          }
-        }, 5 * 60 * 1000);
+        setInterval(()=>{if(CLOUD&&document.visibilityState==='visible')forceSyncFromCloud();},5*60*1000);
       });
     }
-
-    // Also sync when tab becomes visible (user switches back to this tab)
-    document.addEventListener('visibilitychange',()=>{
-      if(CLOUD && document.visibilityState==='visible'){
-        forceSyncFromCloud();
-      }
-    });
-
+    document.addEventListener('visibilitychange',()=>{if(CLOUD&&document.visibilityState==='visible')forceSyncFromCloud();});
   } else {
-    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-screen').style.display='flex';
   }
 }
-
 init();
 </script>
 </body>
