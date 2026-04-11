@@ -612,6 +612,8 @@ let SHIFTS = [];
 let WASTAGE = [];
 let BATCHES = [];
 let nextBatchId = 1;
+// Batches are pre-loaded on first run — no import needed
+// On subsequent loads, localStorage/cloud data overrides these defaults
 let WASTAGE_REASONS = ['Out of date','Staff food','Spoiled','Staff drink','Spilt','Dropped','Test','Over-production','Broken'];
 let WASTAGE_DELETED = []; // IDs of deleted entries — prevents cloud merge from resurrecting them
 let nextWastageId = 1;
@@ -1420,6 +1422,11 @@ async function forceSyncFromCloud(){
     SHIFTS=merged.SHIFTS||s.SHIFTS||[];
     WASTAGE=merged.WASTAGE||s.WASTAGE||[];
     WASTAGE_DELETED=merged.WASTAGE_DELETED||s.WASTAGE_DELETED||[];
+    if(s.BATCHES&&s.BATCHES.length){
+      BATCHES=s.BATCHES;
+      nextBatchId=s.nextBatchId||nextBatchId;
+      syncAllBatchMasters();
+    }
     WASTAGE_REASONS=merged.WASTAGE_REASONS||s.WASTAGE_REASONS||WASTAGE_REASONS;
     nextWastageId=merged.nextWastageId||s.nextWastageId||nextWastageId;
     nextShiftId=merged.nextShiftId||s.nextShiftId||nextShiftId;
@@ -1547,7 +1554,7 @@ function renderBatches(){
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
     <div style="font-size:12px;color:var(--muted)">Each batch registers as a <strong>[BM…]</strong> master ingredient — link it directly in any GP recipe.</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn-sm" style="background:#f3f0ff;color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="importBibleBatches()">📖 Import / update from Food Bible</button>
+      <button class="btn-sm" style="background:#f3f0ff;color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="importBibleBatches()" title="Reset batches to Food Bible defaults (overwrites your edits)">📖 Reset to Food Bible defaults</button>
       <button class="btn-teal" style="background:#7c3aed" onclick="newBatch()">+ New batch recipe</button>
     </div>
   </div>`;
@@ -2393,10 +2400,12 @@ function updateSaveStatus(isoStr){
 }
 
 function exportData(){
-  const state={v:1,exportedAt:new Date().toISOString(),MASTERS,WET_GP,DRY_GP,nextIds,nextWet,nextDry,target};
+  // Full backup — includes everything: ingredients, recipes, batches, staff, wastage
+  const state=buildState();
+  state.exportedAt=new Date().toISOString();
   const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download='medley-gp-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
+  a.href=url;a.download='medley-FULL-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
 }
 
 function importData(input){
@@ -2456,6 +2465,14 @@ function init(){
   if(checkAuth()){
     document.getElementById('login-screen').style.display='none';
     const savedAt=loadState();if(savedAt)updateSaveStatus(savedAt);
+    // If no batches saved yet, pre-load the Bible batches so they're always there
+    if(!BATCHES.length){
+      const defaults=getBibleBatches();
+      defaults.forEach((b,i)=>BATCHES.push({id:i+1,...b}));
+      nextBatchId=BATCHES.length+1;
+      syncAllBatchMasters();
+      saveState(); // save defaults to localStorage immediately
+    }
     render();
     if(CLOUD){
       // Pull from cloud once on load only — no background auto-sync to avoid overwriting local changes
