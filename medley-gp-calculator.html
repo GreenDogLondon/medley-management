@@ -840,7 +840,7 @@ function renderGP(gpType){
     <button onclick="gpViewMode='active';render()" style="border:none;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;${gpViewMode==='active'?'background:var(--teal);color:#fff':'background:var(--teal-l);color:var(--teal)'}">● Active (${activeCount})</button>
     <button onclick="gpViewMode='archived';render()" style="border:none;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;${gpViewMode==='archived'?'background:#7f1d1d;color:#fff':'background:#fdeaea;color:#7f1d1d'}">◌ Archived (${archivedCount})</button>
     <button onclick="gpViewMode='all';render()" style="border:none;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;${gpViewMode==='all'?'background:var(--muted);color:#fff':'background:var(--bg);color:var(--muted)'}">All</button>
-    ${gpViewMode==='archived'?'<span style="font-size:11px;color:var(--muted);margin-left:4px">Archived items don't count toward averages or appear on the active menu</span>':''}
+    ${gpViewMode==='archived'?'<span style="font-size:11px;color:var(--muted);margin-left:4px">Archived items are hidden from averages and the active menu</span>':''}
   </div>
   <div class="metrics">
     <div class="metric"><div class="ml">Average GP%</div><div class="mv" style="color:${col}">${avgGP.toFixed(1)}%</div><div class="ms">Target ${target}% · ex VAT</div></div>
