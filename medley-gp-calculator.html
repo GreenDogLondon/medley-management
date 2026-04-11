@@ -1425,6 +1425,7 @@ async function forceSyncFromCloud(){
     if(s.BATCHES&&s.BATCHES.length){
       BATCHES=s.BATCHES;
       nextBatchId=s.nextBatchId||nextBatchId;
+      dedupBatches();
       syncAllBatchMasters();
     }
     WASTAGE_REASONS=merged.WASTAGE_REASONS||s.WASTAGE_REASONS||WASTAGE_REASONS;
@@ -1500,6 +1501,38 @@ function batchEffectiveYield(b){
   return b.yieldQty||0;
 }
 
+
+/* ── Deduplicate batches by name — keeps most complete version ── */
+function dedupBatches(){
+  const seen = new Map();
+  const deduped = [];
+  BATCHES.forEach(b => {
+    const key = b.name.toLowerCase().trim();
+    if(!seen.has(key)){
+      seen.set(key, deduped.length);
+      deduped.push(b);
+    } else {
+      // Keep the one with linkedMasterId, or the one with more ingredients
+      const existingIdx = seen.get(key);
+      const existing = deduped[existingIdx];
+      const preferNew = (b.linkedMasterId && !existing.linkedMasterId) ||
+                        (!existing.linkedMasterId && (b.ingredients||[]).length > (existing.ingredients||[]).length);
+      if(preferNew){
+        deduped[existingIdx] = {...b, id: existing.id}; // keep old ID to avoid breaking recipe links
+      }
+    }
+  });
+  if(deduped.length < BATCHES.length){
+    console.log('Deduped batches:', BATCHES.length, '->', deduped.length);
+    BATCHES = deduped;
+    // Re-assign sequential IDs
+    BATCHES.forEach((b,i) => b.id = i+1);
+    nextBatchId = BATCHES.length + 1;
+    syncAllBatchMasters();
+    saveState();
+  }
+}
+
 function batchIngCost(b){return(b.ingredients||[]).reduce((s,r)=>{const m=getMaster(r.mid);return s+(m?r.qty*cpu(m):0);},0);}
 function batchCostPerUnit(b){const y=batchEffectiveYield(b);if(!y||y<=0)return 0;return batchIngCost(b)/y;}
 function batchCostPerPortion(b){
@@ -1554,7 +1587,7 @@ function renderBatches(){
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
     <div style="font-size:12px;color:var(--muted)">Each batch registers as a <strong>[BM…]</strong> master ingredient — link it directly in any GP recipe.</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn-sm" style="background:#f3f0ff;color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="importBibleBatches()" title="Reset batches to Food Bible defaults (overwrites your edits)">📖 Reset to Food Bible defaults</button>
+      <button class="btn-sm" style="background:#f3f0ff;color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="importBibleBatches()" title="Reset batches to Food Bible defaults (overwrites your edits)">📖 Import from Food Bible</button>
       <button class="btn-teal" style="background:#7c3aed" onclick="newBatch()">+ New batch recipe</button>
     </div>
   </div>`;
@@ -1761,6 +1794,7 @@ function importBibleBatches(){
   if(BATCHES.length&&!confirm('This will add Food Bible batches to your existing list. Continue?'))return;
   const batches=getBibleBatches();
   batches.forEach(b=>{BATCHES.push({id:nextBatchId++,...b});});
+  dedupBatches(); // removes any duplicates immediately
   syncAllBatchMasters();
   saveState();render();
   alert('✅ Imported '+batches.length+' batch recipes from the Food Bible. Prices draw from Food Ingredients — update supplier prices there and batches auto-recalculate.');
@@ -2434,6 +2468,7 @@ function attemptLogin(){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('login-error').style.display='none';
     const savedAt=loadState();if(savedAt)updateSaveStatus(savedAt);
+    dedupBatches();
     render();
   } else {
     document.getElementById('login-error').style.display='block';
@@ -2465,14 +2500,7 @@ function init(){
   if(checkAuth()){
     document.getElementById('login-screen').style.display='none';
     const savedAt=loadState();if(savedAt)updateSaveStatus(savedAt);
-    // If no batches saved yet, pre-load the Bible batches so they're always there
-    if(!BATCHES.length){
-      const defaults=getBibleBatches();
-      defaults.forEach((b,i)=>BATCHES.push({id:i+1,...b}));
-      nextBatchId=BATCHES.length+1;
-      syncAllBatchMasters();
-      saveState(); // save defaults to localStorage immediately
-    }
+    dedupBatches();
     render();
     if(CLOUD){
       // Pull from cloud once on load only — no background auto-sync to avoid overwriting local changes
